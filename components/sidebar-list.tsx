@@ -2,11 +2,12 @@ import { clearChats, getChats } from '@/app/actions'
 import { ClearHistory } from '@/components/clear-history'
 import { SidebarItems } from '@/components/sidebar-items'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { cache } from 'react'
+import { cache, useEffect } from 'react'
 import Image from 'next/image'
 import { start } from 'repl'
 import { CiSettings } from 'react-icons/ci'
 import LoginWallet from './login-wallet'
+// import { useWalletSelector } from './contexts/WalletSelectorContext'
 
 interface SidebarListProps {
   userId?: string
@@ -19,6 +20,8 @@ const loadChats = cache(async (userId?: string) => {
 
 export async function SidebarList({ userId }: SidebarListProps) {
   const chats = (await loadChats(userId)) || []
+  // const { accounts } = useWalletSelector()
+  // console.log(accounts)
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">

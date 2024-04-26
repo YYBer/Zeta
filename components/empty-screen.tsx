@@ -22,10 +22,13 @@ const exampleMessages = [
 export function EmptyScreen() {
   return (
     <div className="lg:ml-56 md:32 sm:ml-4 max-w-4xl px-8">
-      <div className="flex flex-col gap-2 rounded-lg border bg-background p-8">
-        <h1 className="text-lg font-semibold">
-          Welcome to Sender OS.
+      <div className="flex flex-col gap-2 bg-background p-8">
+        <h1 className="font-semibold text-5xl text-red-300/75 pb-3">
+          Hello, Stella
         </h1>
+        <h2 className=" text-3xl font-semibold text-gray-400">
+          How can I help you today?
+        </h2>
       </div>
     </div>
   )
