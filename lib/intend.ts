@@ -1,22 +1,28 @@
-// not yet implement the storage deposit
-import { KeyPair, keyStores, Near, Contract, connect, utils } from "near-api-js";
-import { TransferAction, WalletSelector } from '@near-wallet-selector/core';
+// not yet implement storage_balance_of
+import { KeyPair, keyStores, Near, Contract, connect, utils, Account } from "near-api-js";
+import { FunctionCallAction, TransferAction, WalletSelector } from '@near-wallet-selector/core';
 
-// export interface NEP141_Contract extends Contract {
-//     ft_balance_of: (args: { account_id: string }) => Promise<string>;
-//     ft_transfer: (args: { receiver_id: string; amount: string; memo?: string }, gas: string, attachedDeposit: string) => Promise<void>;
-// }
+export interface NEP141_Contract extends Contract {
+    ft_balance_of: (args: { account_id: string }) => Promise<string>;
+    ft_transfer: (args: { receiver_id: string; amount: string; memo?: string }, gas: string, attachedDeposit: string) => Promise<void>;
+    storage_deposit: (args: { account_id: string }) => Promise<void>;
+    storage_balance_of: (args: { account_id: string }) => Promise<string>;
+}
 
 export interface Payload {
     userId: string;
     receiverId: string;
     amount: string;
     symbol: string;
+    // added:
+    //memo: string | null;
 }
+const THIRTY_TGAS = '30000000000000';
+const NO_DEPOSIT = '0';
 
 export const TOKEN_LIST: { [key: string]: string } = {
     NEAR: 'NEAR',
-    PTC: 'ft3.0xpj.testnet',
+    //PTC: 'ft5.0xpj.testnet',
 }
 
 // export async function getBalance(contract: NEP141_Contract, payload: Payload): Promise<void> {
@@ -28,20 +34,69 @@ export const TOKEN_LIST: { [key: string]: string } = {
 //     }
 // }
 
-// export async function transferToken(contract: NEP141_Contract, payload: Payload): Promise<void> {
-//     try {
-//         await contract.ft_transfer({
-//             receiver_id: payload.receiverId,
-//             amount: payload.amount.toString(),
-//         },
-//         "300000000000000", // gas
-//         "1", // attached deposit in yoctoNEAR (optional)
-//         );
-//         console.log(`Successfully transferred ${payload.amount.toString()} ${payload.symbol} to ${payload.receiverId}`);
-//     } catch (error) {
-//         console.error(`Failed to transfer ${payload.amount.toString()} ${payload.symbol} to ${payload.receiverId}:`, error);
-//     }
-// }
+export async function depositStorageForReceiver(walletSelector: WalletSelector, payload: Payload): Promise<void> {
+    const wallet = await walletSelector.wallet();
+    const args = {
+        account_id: payload.receiverId,
+    };
+    const contractId = TOKEN_LIST[payload.symbol]
+
+    const storage_deposit: FunctionCallAction = {
+        type: "FunctionCall",
+        params: {
+            methodName: "storage_deposit",
+            args: args,
+            gas: "30000000000000", // This is an example gas amount; adjust based on contract requirements
+            deposit: "1" // This should cover the storage cost, specified in yoctoNEAR
+        },
+    };
+
+    try {
+        // Use the wallet to sign and send the transaction with the function call action
+        await wallet.signAndSendTransaction({
+            receiverId: contractId, // The smart contract that handles the NEP-141 token
+            actions: [storage_deposit]
+        });
+
+        console.log(`Successfully deposited storage fee for account ${payload.receiverId} at contract ${contractId}`);
+    } catch (error) {
+        console.error(`Failed to deposit storage fee for account ${payload.receiverId} at contract ${contractId}:`, error);
+    }
+}
+
+
+export async function transferToken(walletSelector: WalletSelector, payload: Payload): Promise<void> {
+    const wallet = await walletSelector.wallet();
+    const args = {
+        reviever_id: payload.receiverId,
+        amount: payload.amount.toString(),
+        // memo: payload.memo
+    }
+    const contractId = TOKEN_LIST[payload.symbol]
+
+    // Create the transfer action
+    const transfer: FunctionCallAction = {
+        type: "FunctionCall",
+        params: {
+          methodName: "ft_transfer",
+          args: args,
+          gas: THIRTY_TGAS,
+          deposit: "1" // Sender account is required to attach exactly 1 yoctoNEAR to the function call
+        }
+    };
+
+    try {
+        // Use the wallet to sign and send the transaction with the transfer action
+        await wallet.signAndSendTransaction({
+            receiverId: contractId,
+            actions: [transfer],
+        });
+        
+        console.log(`Successfully transferred ${payload.amount.toString()} NEAR to ${payload.receiverId}`);
+    } catch (error) {
+        console.error(`Failed to transfer ${payload.amount.toString()} NEAR to ${payload.receiverId}:`, error);
+    }
+}
 
 // export async function init(contractId: string, walletSelector: WalletSelector): Promise<NEP141_Contract> {
 //     const wallet = await walletSelector.wallet();
@@ -51,23 +106,12 @@ export const TOKEN_LIST: { [key: string]: string } = {
 //     }
 //     const account = accounts[0];
 
-//     // Here's the contract init part
-//     const config = {
-//         // using wallet selector doesn't need KeyStore.
-//         networkId: 'testnet',
-//         nodeUrl: 'https://rpc.testnet.near.org',
-//         walletUrl: 'https://wallet.testnet.near.org',
-//         helperUrl: 'https://helper.testnet.near.org',
-//         explorerUrl: 'https://explorer.testnet.near.org',
-//     };
-
-//     const near: Near = await connect(config);
 //     return new Contract(
-//         await near.account(account.accountId),
+//         account,
 //         contractId, // token contract id
 //         {
 //             viewMethods: ["ft_balance_of"],
-//             changeMethods: ["mint", "storage_deposit", "ft_transfer"],
+//             changeMethods: ["mint", "ft_transfer", "storage_deposit", "storage_balance_of"],
 //             //useLocalViewExecution: false,
 //         }
 //     ) as NEP141_Contract;
