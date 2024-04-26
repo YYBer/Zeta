@@ -4,9 +4,9 @@ import { SidebarItems } from '@/components/sidebar-items'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { cache } from 'react'
 import Image from 'next/image'
-import SettingsIcon from '../icons/settings.svg'
 import { start } from 'repl'
 import { CiSettings } from 'react-icons/ci'
+import LoginWallet from './login-wallet'
 
 interface SidebarListProps {
   userId?: string
@@ -33,29 +33,21 @@ export async function SidebarList({ userId }: SidebarListProps) {
           </div>
         )}
       </div>
-      <div
-        className=" bg-slate-50 w-full ms-7"
-        style={{ height: '0.05rem', backgroundColor: 'hsl(var(--border))' }}
-      ></div>
       <div className="flex p-4 pt-0 justify-between items-center">
-        <div className="flex items-center p-4 truncate gap-3">
+        {/* <button className="h-10 w-full justify-center bg-sky-500 text-white px-4 shadow-none rounded-3xl border-none transition-colors hover:bg-red-500/40 dark:bg-zinc-900 dark:hover:bg-zinc-300/10">
+          Sign in
+        </button> */}
+        <LoginWallet />
+        {/* <div className="flex items-center p-4 truncate gap-3">
           <Image src="/user.png" width={35} height={35} alt="user" />{' '}
           <p>{userId}</p>
         </div>
-        {/* <Image
-          src="/settings.png"
-          width={25}
-          height={25}
-          alt="settings"
-          style={{ width: '35px !important', height: '35px' }}
-        /> */}
-        <CiSettings size={35} />
-        {/* <SettingsIcon /> */}
+        <CiSettings size={35} /> */}
       </div>
       {/* <div className="flex items-center justify-between p-4">
-        <ThemeToggle /> */}
-      {/* <ClearHistory clearChats={clearChats} isEnabled={chats?.length > 0} /> */}
-      {/* </div> */}
+        <ThemeToggle />
+        <ClearHistory clearChats={clearChats} isEnabled={chats?.length > 0} />
+      </div> */}
     </div>
   )
 }
