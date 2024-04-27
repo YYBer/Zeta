@@ -15,8 +15,9 @@ import { type AI } from '@/lib/chat/actions'
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
-import { FaAngleUp } from "react-icons/fa6"
+import { FaAngleUp } from 'react-icons/fa6'
 import { UserMessage } from './stocks/message'
+import Image from 'next/image'
 
 export function PromptForm({
   input,
@@ -53,7 +54,7 @@ export function PromptForm({
         if (!value) return
 
         // Optimistically add user message UI
-        setMessages(currentMessages => [
+        setMessages((currentMessages: any) => [
           ...currentMessages,
           {
             id: nanoid(),
@@ -63,7 +64,10 @@ export function PromptForm({
 
         // Submit and get response message
         const responseMessage = await submitUserMessage(value)
-        setMessages(currentMessages => [...currentMessages, responseMessage])
+        setMessages((currentMessages: any) => [
+          ...currentMessages,
+          responseMessage
+        ])
       }}
     >
       <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background pr-8 pl-4 sm:rounded-2xl sm:border sm:pr-12 sm:pl-4">
@@ -101,8 +105,13 @@ export function PromptForm({
         <div className="absolute right-0 top-[13px] sm:right-4">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button type="submit" size="icon" color='#1c1d33' disabled={input === ''}>
-                <FaAngleUp />
+              <Button type="submit" size="icon" disabled={input === ''}>
+                <Image
+                  src="/sendMSG.png"
+                  alt="sendMSG"
+                  width={40}
+                  height={40}
+                />
                 <span className="sr-only">Send message</span>
               </Button>
             </TooltipTrigger>

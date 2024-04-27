@@ -12,9 +12,9 @@ interface ChatHistoryProps {
   userId?: string
 }
 
-export async function ChatHistory({ userId }: ChatHistoryProps) {
+export function ChatHistory({ userId }: ChatHistoryProps) {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-slate-400 overflow-auto">
       <div className="flex items-center p-4 ms-5 pt-6">
         <Image src="/Mark.png" width={45} height={45} alt="mark" />
         <h3 className="text-xl font-medium font- ps-4">Sender OS</h3>
@@ -24,7 +24,7 @@ export async function ChatHistory({ userId }: ChatHistoryProps) {
           href="/"
           className={cn(
             buttonVariants({ variant: 'outline' }),
-            'h-10 w-full justify-start bg-zinc-50 px-4 shadow-none transition-colors hover:bg-zinc-200/40 dark:bg-zinc-900 dark:hover:bg-zinc-300/10'
+            'h-10 w-32 justify-center bg-sky-500 text-white px-4 shadow-none rounded-3xl border-none transition-colors hover:bg-red-500/40 dark:bg-zinc-900 dark:hover:bg-zinc-300/10'
           )}
         >
           <IconPlus className="-translate-x-2 stroke-2" />
