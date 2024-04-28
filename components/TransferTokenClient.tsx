@@ -10,6 +10,7 @@ const THIRTY_TGAS = '30000000000000';
 const TOKEN_LIST: { [key: string]: string } = {
   NEAR: 'NEAR',
   PTC: 'ft5.0xpj.testnet',
+  USDC: 'usdc.fakes.testnet'
   // Add other token symbols and their contract IDs
 };
 
@@ -57,12 +58,12 @@ export function TransferToken({ payload }: { payload: Payload }) {
       }
       const args = {
         receiver_id: payload.receiverId,
-        amount: utils.format.parseNearAmount(payload.amount.toString()),
+        amount: BigInt(Math.round(parseFloat(payload.amount) * 1e6)).toString(),
       };
       const contractId = TOKEN_LIST[payload.symbol];
       console.log("Contract ID: ", contractId);
       console.log("The args sent: ", args);
-
+ 
       const transferAction: TransferAction = {
         type: 'Transfer',
         params: {
@@ -71,10 +72,32 @@ export function TransferToken({ payload }: { payload: Payload }) {
         }
       };
 
+      const transfer: FunctionCallAction = {
+        type: 'FunctionCall',
+        params: {
+          methodName: 'ft_transfer',
+          args: args,
+          gas: THIRTY_TGAS,
+          deposit: '1'
+        }
+      }
+    
+ if (payload.symbol == 'NEAR')
+ {
       await wallet.signAndSendTransaction({
         receiverId: payload.receiverId,
         actions: [transferAction],
       });
+
+    }
+else 
+   { 
+    await wallet.signAndSendTransaction({
+      receiverId: contractId,
+      actions: [transfer]
+    })
+
+  }
 
       setSuccess(true);
       console.log(
