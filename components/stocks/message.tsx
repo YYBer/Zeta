@@ -20,7 +20,7 @@ export function UserMessage({ children }: { children: React.ReactNode }) {
         <FaUserCircle color='gray' className='size-[24px]' />
         <div className='pl-2'>You</div>
       </div>
-      <div className="ml-4 mt-2 flex-1 space-y-2 overflow-hidden p-3 bg-[#eeeaff] w-full rounded-md">
+      <div className="ml-4 mt-2 flex-1 text-black space-y-2 overflow-hidden p-3 bg-[#eeeaff] w-full rounded-md">
         {children}
       </div>
     </div>
@@ -48,7 +48,7 @@ export function BotMessage({
           remarkPlugins={[remarkGfm, remarkMath]}
           components={{
             p({ children }) {
-              return <p className="mb-2 last:mb-0">{children}</p>
+              return <p className="mb-2 text-black last:mb-0">{children}</p>
             },
             code({ node, inline, className, children, ...props }) {
               if (children.length) {

@@ -9,15 +9,15 @@ export default function LoginWallet() {
     modal.show()
   }
 
-  console.log(accounts)
+  console.log("account connected : ",accounts)
 
   return (
     <div className="h-10 w-full justify-center  text-white px-4 shadow-none rounded-3xl border-none transition-colors  dark:bg-zinc-900">
-      {accounts ? (
+      {accounts[0] ? (
         <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2 text-black  ">
+          <div className="flex items-center gap-2 text-white  ">
             <Image src={'/user.png'} alt="user" width={36} height={36} />
-            {accounts[0].accountId}
+            {accounts[0] && accounts[0].accountId? accounts[0].accountId:""}
           </div>
           <IoIosSettings />
         </div>

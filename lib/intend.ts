@@ -37,8 +37,8 @@ const THIRTY_TGAS = '30000000000000'
 const NO_DEPOSIT = '0'
 
 export const TOKEN_LIST: { [key: string]: string } = {
-  NEAR: 'NEAR'
-  //PTC: 'ft5.0xpj.testnet',
+  NEAR: 'NEAR',
+  PTC: 'ft5.0xpj.testnet',
 }
 
 // export async function getBalance(contract: NEP141_Contract, payload: Payload): Promise<void> {
