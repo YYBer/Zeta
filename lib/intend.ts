@@ -183,8 +183,5 @@ export async function TransferNear(walletSelector: WalletSelector, payload: Payl
 //    } else {
 //        transferToken(Payload)
 //    }
-
-//    in this case, getReceiverStorageBalance should return two values: total and available.
-//    If these two value are both 0 for Bob, Alice needs to deposit the storage for Bob.
 //    
 //    for more details about storage staking management: https://nomicon.io/Standards/StorageManagement
