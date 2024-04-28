@@ -61,15 +61,18 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
     useScrollAnchor()
 
   return (
-    <div className="relative flex h-screen overflow-hidden">
+    <div
+      className="relative 
+    flex h-screen overflow-hidden"
+    >
       <WalletSelectorContextProvider>
         <SidebarDesktop />
         <div
-          className="group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]"
+          className="group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[266px]"
           ref={scrollRef}
         >
           <div
-            className={cn('pb-[200px] pt-4 md:pt-10', className)}
+            className={cn('pb-[200px] pl-[65px] pt-4 md:pt-10', className)}
             ref={messagesRef}
           >
             {/* <LoginWallet /> */}
