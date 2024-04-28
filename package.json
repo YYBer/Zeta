@@ -12,6 +12,14 @@
     "format:write": "prettier --write \"{app,lib,components}/**/*.{ts,tsx,mdx}\" --cache",
     "format:check": "prettier --check \"{app,lib,components}**/*.{ts,tsx,mdx}\" --cache"
   },
+  "browser": {
+    "crypto": false,
+    "http": false,
+    "https": false,
+    "stream": false,
+    "os": false,
+    "fs": false
+  },
   "dependencies": {
     "@near-wallet-selector/account-export": "^8.9.7",
     "@near-wallet-selector/bitget-wallet": "^8.9.7",
