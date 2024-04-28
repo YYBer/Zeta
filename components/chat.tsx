@@ -68,11 +68,11 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
       <WalletSelectorContextProvider>
         <SidebarDesktop />
         <div
-          className="group w-full text-black overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[266px]"
+          className="group w-full text-grey-700 overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[266px]"
           ref={scrollRef}
         >
           <div
-            className={cn('pb-[200px] pl-[65px] pt-4 md:pt-10', className)}
+            className={cn('pb-[200px] pl-[65px] pt-4 md:pt-10 text-black', className)}
             ref={messagesRef}
           >
             {/* <LoginWallet /> */}
