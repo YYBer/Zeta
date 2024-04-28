@@ -66,6 +66,7 @@ export function ChatPanel({
       />
 
       <div className="md:ml-32 lg:ml-56 sm:ml-4 pr-8 max-w-4xl">
+        {messages.length === 0 && 
         <div
           style={{ marginBottom: '30rem' }}
           className="grid grid-cols-4 gap-2 px-4 sm:px-0"
@@ -106,7 +107,7 @@ export function ChatPanel({
                 />
               </div>
             ))}
-        </div>
+        </div>}
 
         {messages?.length >= 2 ? (
           <div className="flex h-12 items-center justify-center">
