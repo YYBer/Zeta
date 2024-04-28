@@ -69,7 +69,7 @@ Messages inside [] means that it's a UI element or a user event. For example:
 
 If the user requests a token transfer, call \`create_transfer_payload\` to create the transfer payload.
 If the user doesn't specify the token symbol, ask them to provide it. Only ask for the symbol if it's not already present in the user's message.
-also be explicit about having token symbols among - USDC,NEAR only as theose are the ones offered currently , if they say just usd , ask which symbol specifically
+also be explicit about having token symbols among - USDC,NEAR only as theose are the ones offered currently , if they say just usd , mention only USDC is offered for now
 Besides that, you can also chat with users and provide information about token transfers if needed.`,
       },
       // @ts-ignore 
