@@ -19,22 +19,18 @@ import { FaAngleUp } from 'react-icons/fa6'
 import { UserMessage } from './stocks/message'
 import Image from 'next/image'
 import { IconPlus } from './ui/icons'
+import { useInputPromptStore } from '@/lib/store/store'
 
-export function PromptForm({
-  input,
-  setInput
-}: {
-  input: string
-  setInput: (value: string) => void
-}) {
+export function PromptForm() {
   const router = useRouter()
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
   const { submitUserMessage } = useActions()
   // const [_, setMessages] = useUIState<typeof AI>()
-  const [aiState] = useAIState()
+  // const [aiState] = useAIState()
   const [messages, setMessages] = useUIState<typeof AI>()
   const [shareDialogOpen, setShareDialogOpen] = React.useState(false)
+  const { promptInput, setPromptInput } = useInputPromptStore();
 
   const exampleMessages = [
     {
@@ -58,8 +54,9 @@ export function PromptForm({
       message: `What are some recent events about $DOGE?`
     }
   ]
-
+ 
   React.useEffect(() => {
+    console.log('inputRef.current', inputRef.current)
     if (inputRef.current) {
       inputRef.current.focus()
     }
@@ -76,8 +73,8 @@ export function PromptForm({
           e.target['message']?.blur()
         }
 
-        const value = input.trim()
-        setInput('')
+        const value = promptInput.trim()
+        setPromptInput('')
         if (!value) return
 
         // Optimistically add user message UI
@@ -126,13 +123,13 @@ export function PromptForm({
           autoCorrect="off"
           name="message"
           rows={1}
-          value={input}
-          onChange={e => setInput(e.target.value)}
+          value={promptInput}
+          onChange={e => setPromptInput(e.target.value)}
         />
         <div className="absolute right-0 top-[13px] sm:right-4">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button type="submit" size="icon" disabled={input === ''}>
+              <Button type="submit" size="icon" disabled={promptInput === ''}>
                 <Image
                   src="/sendMSG.png"
                   alt="sendMSG"
@@ -155,22 +152,25 @@ export function PromptForm({
             <div
               key={example.heading}
               className={`h-8 flex items-center gap-2 px-4 py-1 rounded-xl bg-slate-400`}
-              onClick={async () => {
-                setMessages((currentMessages: any) => [
-                  ...currentMessages,
-                  {
-                    id: nanoid(),
-                    display: <UserMessage>{example.message}</UserMessage>
-                  }
-                ])
-
-                const responseMessage = await submitUserMessage(example.message)
-
-                setMessages((currentMessages: any) => [
-                  ...currentMessages,
-                  responseMessage
-                ])
+              onClick={() => {
+                setPromptInput(example.message)
               }}
+              // onClick={async () => {
+              //   setMessages((currentMessages: any) => [
+              //     ...currentMessages,
+              //     {
+              //       id: nanoid(),
+              //       display: <UserMessage>{example.message}</UserMessage>
+              //     }
+              //   ])
+
+              //   const responseMessage = await submitUserMessage(example.message)
+
+              //   setMessages((currentMessages: any) => [
+              //     ...currentMessages,
+              //     responseMessage
+              //   ])
+              // }}
             >
               <Image
                 src={`/${example.icon}`}
