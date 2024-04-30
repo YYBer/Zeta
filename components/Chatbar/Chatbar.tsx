@@ -132,12 +132,12 @@ export const Chatbar: FC<Props> = ({
           {t('New chat')}
         </button>
 
-        <button
+        {/* <button
           className="ml-2 flex flex-shrink-0 cursor-pointer items-center gap-3 rounded-md border border-white/20 p-3 text-[14px] leading-normal text-white transition-colors duration-200 hover:bg-gray-500/10"
           onClick={() => onCreateFolder(t('New folder'))}
         >
           <IconFolderPlus size={18} />
-        </button>
+        </button> */}
       </div>
 
       {conversations.length > 1 && (
@@ -195,7 +195,7 @@ export const Chatbar: FC<Props> = ({
         )}
       </div>
 
-      <ChatbarSettings
+      {/* <ChatbarSettings
         lightMode={lightMode}
         apiKey={apiKey}
         pluginKeys={pluginKeys}
@@ -207,7 +207,7 @@ export const Chatbar: FC<Props> = ({
         onImportConversations={onImportConversations}
         onPluginKeyChange={onPluginKeyChange}
         onClearPluginKey={onClearPluginKey}
-      />
+      /> */}
     </div>
   );
 };

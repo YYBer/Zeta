@@ -35,7 +35,7 @@
     --radius: 0.5rem;
   }
  
-  .dark {
+  /* .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
  
@@ -63,7 +63,7 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
-  }
+  } */
 }
  
 @layer base {
@@ -73,4 +73,11 @@
   body {
     @apply  text-foreground;
   }
+}
+
+.gradientBorder{
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(to right, rgb(247, 172, 189), rgb(0, 186, 227)) border-box;
+  /* border-radius: 50em; */
+  border: solid transparent;
 }

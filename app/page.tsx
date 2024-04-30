@@ -3,7 +3,6 @@
 import { Chat } from '@/components/Chat/Chat';
 import { Chatbar } from '@/components/Chatbar/Chatbar';
 import { Navbar } from '@/components/Mobile/Navbar';
-import { Promptbar } from '@/components/Promptbar/Promptbar';
 import { ChatBody, Conversation, Message } from '@/types/chat';
 import { KeyValuePair } from '@/types/data';
 import { ErrorMessage } from '@/types/error';
@@ -31,7 +30,8 @@ import {
 import { saveFolders } from '@/utils/app/folders';
 import { exportData, importData } from '@/utils/app/importExport';
 import { savePrompts } from '@/utils/app/prompts';
-import { IconArrowBarLeft, IconArrowBarRight } from '@tabler/icons-react';
+// import { ChevronLeft, ChevronRight } from '@tabler/icons-react';
+import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import { GetServerSideProps } from 'next';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -609,47 +609,7 @@ const Home: React.FC<HomeProps> = ({
     }
   };
 
-  // PROMPT OPERATIONS --------------------------------------------
 
-  const handleCreatePrompt = () => {
-    const newPrompt: Prompt = {
-      id: uuidv4(),
-      name: `Prompt ${prompts.length + 1}`,
-      description: '',
-      content: '',
-      model: {
-        id: 'gpt-4',
-        name: 'GPT-4',
-        maxLength: 24000,
-        tokenLimit: 8000,
-      },
-      folderId: null,
-    };
-
-    const updatedPrompts = [...prompts, newPrompt];
-
-    setPrompts(updatedPrompts);
-    savePrompts(updatedPrompts);
-  };
-
-  const handleUpdatePrompt = (prompt: Prompt) => {
-    const updatedPrompts = prompts.map((p) => {
-      if (p.id === prompt.id) {
-        return prompt;
-      }
-
-      return p;
-    });
-
-    setPrompts(updatedPrompts);
-    savePrompts(updatedPrompts);
-  };
-
-  const handleDeletePrompt = (prompt: Prompt) => {
-    const updatedPrompts = prompts.filter((p) => p.id !== prompt.id);
-    setPrompts(updatedPrompts);
-    savePrompts(updatedPrompts);
-  };
 
   // EFFECTS  --------------------------------------------
 
@@ -764,7 +724,7 @@ const Home: React.FC<HomeProps> = ({
     
     <>
       <Head>
-        <title>Chatbot UI</title>
+        <title>Sender OS</title>
         <meta name="description" content="ChatGPT but better." />
         <meta
           name="viewport"
@@ -810,23 +770,29 @@ const Home: React.FC<HomeProps> = ({
                   onClearPluginKey={handleClearPluginKey}
                 />
 
-                <button
-                  className="fixed top-5 left-[270px] z-50 h-7 w-7 hover:text-gray-400 dark:text-white dark:hover:text-gray-300 sm:top-0.5 sm:left-[270px] sm:h-8 sm:w-8 sm:text-neutral-700"
+                {/* <button
+                  className="fixed top-5 left-[270px] z-50 h-7 w-7  sm:top-0.5 sm:left-[270px] sm:h-8 sm:w-8 sm:text-neutral-700"
                   onClick={handleToggleChatbar}
                 >
-                  <IconArrowBarLeft />
+                  <IoIosArrowBack />
+                </button> */}
+                <button
+                  className="fixed top-5 left-[270px] text-black z-50 h-7 w-7 hover:text-gray-400 sm:top-0.5 sm:left-[270px] sm:h-8 sm:w-8 "
+                  onClick={handleToggleChatbar}
+                >
+                  <IoIosArrowBack />
                 </button>
-                <div
+                {/* <div
                   onClick={handleToggleChatbar}
                   className="absolute top-0 left-0 z-10 h-full w-full bg-black opacity-70 sm:hidden"
-                ></div>
+                ></div> */}
               </div>
             ) : (
               <button
-                className="fixed top-2.5 left-4 z-50 h-7 w-7 text-white hover:text-gray-400 dark:text-white dark:hover:text-gray-300 sm:top-0.5 sm:left-4 sm:h-8 sm:w-8 sm:text-neutral-700"
+                className="fixed top-2.5 left-4 z-50 h-7 w-7 text-black hover:text-gray-400 sm:top-0.5 sm:left-4 sm:h-8 sm:w-8"
                 onClick={handleToggleChatbar}
               >
-                <IconArrowBarRight />
+                <IoIosArrowForward />
               </button>
             )}
 
@@ -848,7 +814,7 @@ const Home: React.FC<HomeProps> = ({
               />
             </div>
 
-            {showPromptbar ? (
+            {/* {showPromptbar ? (
               <div>
                 <Promptbar
                   prompts={prompts}
@@ -878,7 +844,7 @@ const Home: React.FC<HomeProps> = ({
               >
                 <IconArrowBarLeft />
               </button>
-            )}
+            )} */}
           </div>
         </main>
       )}

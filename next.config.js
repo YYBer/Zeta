@@ -1,12 +1,20 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
-  webpack(config) {
-    config.module.rules.push({
-      test: /\.svg$/,
-      use: ['@svgr/webpack']
-    })
+  // webpack(config) {
+  //   config.module.rules.push({
+  //     test: /\.svg$/,
+  //     use: ['@svgr/webpack']
+  //   })
 
-    return config
+  //   return config
+  // },
+  webpack(config, { isServer, dev }) {
+    config.experiments = {
+      asyncWebAssembly: true,
+      layers: true,
+    };
+  
+    return config;
   },
   images: {
     remotePatterns: [
@@ -19,3 +27,4 @@ module.exports = {
     ]
   }
 }
+
