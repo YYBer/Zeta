@@ -12,7 +12,7 @@ import LoginWallet from './login-wallet'
 interface SidebarListProps {
   userId?: string
   children?: React.ReactNode
-}
+} 
 
 const loadChats = cache(async (userId?: string) => {
   return await getChats(userId)

@@ -10,7 +10,7 @@ import Image from 'next/image'
 
 interface ChatHistoryProps {
   userId?: string
-}
+} 
 
 export function ChatHistory({ userId }: ChatHistoryProps) {
   return (

@@ -31,7 +31,6 @@ export const viewport = {
     { media: '(prefers-color-scheme: dark)', color: 'black' }
   ]
 }
-
 interface RootLayoutProps {
   children: React.ReactNode
 }
@@ -54,6 +53,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           disableTransitionOnChange
         >
           <div className="flex flex-col min-h-screen">
+          <Toaster />
             {/* <Header /> */}
             <main className="flex flex-col flex-1">{children}</main>
           </div>
