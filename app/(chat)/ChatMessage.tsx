@@ -86,7 +86,7 @@ export const ChatMessage: FC<Props> = memo(
                 /> : <IconUser size={30}/>}
           </div>
 
-          <div className="prose mt-[-2px] w-full dark:prose-invert">
+          <div className="prose mt-[-2px] w-full">
           {message.role === 'assistant' ? <p className='text-lg font-semibold'>Sender</p> : <p className='text-lg font-semibold'>User</p>}           
            {message.role === 'user' ? (
               <div className="flex w-full">
@@ -130,7 +130,7 @@ export const ChatMessage: FC<Props> = memo(
                     </div>
                   </div>
                 ) : (
-                  <div className="prose whitespace-pre-wrap dark:prose-invert">
+                  <div className="prose whitespace-pre-wrap">
                     {message.content}
                   </div>
                 )}
@@ -174,7 +174,7 @@ export const ChatMessage: FC<Props> = memo(
                 </div>
 
                 <MemoizedReactMarkdown
-                  className="prose dark:prose-invert"
+                  className="prose"
                   remarkPlugins={[remarkGfm, remarkMath]}
                   rehypePlugins={[rehypeMathjax]}
                   components={{

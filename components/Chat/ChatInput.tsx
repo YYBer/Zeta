@@ -63,7 +63,7 @@ export const ChatInput: FC<Props> = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [showPluginSelect, setShowPluginSelect] = useState(false);
   const [plugin, setPlugin] = useState<Plugin | null>(null);
-  const [initState, setInitState] = useState(false) 
+  const [initState, setInitState] = useState(true) 
 
   const exampleMessages = [
     {
