@@ -87,7 +87,8 @@ export const ChatMessage: FC<Props> = memo(
           </div>
 
           <div className="prose mt-[-2px] w-full dark:prose-invert">
-            {message.role === 'user' ? (
+          {message.role === 'assistant' ? <p>Sender</p> : <p>User</p>}           
+           {message.role === 'user' ? (
               <div className="flex w-full">
                 {isEditing ? (
                   <div className="flex w-full flex-col">
