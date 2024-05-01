@@ -121,6 +121,10 @@ export const ChatInput: FC<Props> = ({
       return;
     }
 
+    
+
+    // <TransferToken payload={{ receiverId : 'bungeetest.testnet', amount : '0.01', symbol: 'NEAR' }} />
+
     setInitState(false)
 
     onSend({ role: 'user', content }, plugin);
@@ -283,9 +287,8 @@ export const ChatInput: FC<Props> = ({
   }, []);
 
   return (
-    <div className='h-full flex justify-center items-start'>
 
-
+  <div className={`${initState ? 'h-full flex justify-center items-start ' : ''}`}>
    { initState ? (
       <div className="w-full border-transparent  pt-6 md:pt-2">
         
@@ -298,7 +301,7 @@ export const ChatInput: FC<Props> = ({
 
           {!messageIsStreaming && !conversationIsEmpty && (
             <button
-              className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4  md:mb-0 md:mt-2"
+              className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4  md:mb-0 md:mt-2 text-black"
               onClick={onRegenerate}
             >
               <IconRepeat size={16} /> {t('Regenerate response')}
@@ -331,7 +334,7 @@ export const ChatInput: FC<Props> = ({
               />
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button onClick={handleSend} size="icon">
+                  <Button onClick={handleSend} size="icon" className='mb-2'>
                     <Image
                       src="/send.svg"
                       alt="sendMSG"
@@ -376,7 +379,7 @@ export const ChatInput: FC<Props> = ({
         <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
           {messageIsStreaming && (
             <button
-              className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4  md:mb-0 md:mt-2"
+              className=" "
               onClick={handleStopConversation}
             >
               <IconPlayerStop size={16} /> {t('Stop Generating')}
@@ -385,7 +388,7 @@ export const ChatInput: FC<Props> = ({
   
           {!messageIsStreaming && !conversationIsEmpty && (
             <button
-              className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4  md:mb-0 md:mt-2"
+              className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4  md:mb-0 md:mt-2 text-black"
               onClick={onRegenerate}
             >
               <IconRepeat size={16} /> {t('Regenerate response')}
@@ -445,7 +448,7 @@ export const ChatInput: FC<Props> = ({
               {/* <div className="absolute right-0 bottom-[13px] sm:right-4"> */}
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button onClick={handleSend} size="icon">
+                  <Button onClick={handleSend} size="icon" className='mb-2'>
                     <Image
                       src="/sendMSG.png"
                       alt="sendMSG"
@@ -551,6 +554,6 @@ export const ChatInput: FC<Props> = ({
         </div>
       </div>
     )}
-    </div>
+  </div>
   )
 };

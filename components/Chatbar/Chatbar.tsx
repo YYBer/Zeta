@@ -125,7 +125,8 @@ export const Chatbar: FC<Props> = ({
   }, [searchTerm, conversations]);
 
   useEffect(() => {
-    // console.log('wallet', wallet, signedAccountId)
+    console.log('wallet', wallet)
+    console.log('signedAccountId', signedAccountId)
     if (!wallet) return;
 
     if (signedAccountId) {
@@ -224,7 +225,8 @@ export const Chatbar: FC<Props> = ({
             <p className='text-base'>{label}</p>
            
           </div>
-          <IoIosSettings className='w-[24px] h-[24px]'/>
+          <button onClick={action} > <IoIosSettings className='w-[24px] h-[24px]'/> </button>
+          
         </div>
       ) : (
         <div className='navbar-nav pt-1 flex items-center justify-center'>

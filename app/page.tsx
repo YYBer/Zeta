@@ -85,6 +85,7 @@ const Home: React.FC<HomeProps> = ({
   useEffect(() => {
     // create wallet instance
     const wallet = new Wallet({ createAccessKeyFor: HelloNearContract, networkId: NetworkId })
+    console.log('wallet ', wallet)
     wallet.startUp(setSignedAccountId);
     setWallet(wallet);
   }, [])
@@ -101,6 +102,9 @@ const Home: React.FC<HomeProps> = ({
     deleteCount = 0,
     plugin: Plugin | null = null,
   ) => {
+    
+    console.log('message', message)
+
     if (selectedConversation) {
       let updatedConversation: Conversation;
 
@@ -150,14 +154,28 @@ const Home: React.FC<HomeProps> = ({
       }
 
       const controller = new AbortController();
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        signal: controller.signal,
-        body,
-      });
+
+      // const response = await fetch(endpoint, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   signal: controller.signal,
+      //   body,
+      // });
+
+      let chatBodys = [
+        {
+          name: "human",
+          text: message.content
+        }
+      ]
+
+      const response = await fetch("api/message", {
+          method: "POST",
+          body: JSON.stringify({ messages: chatBodys}),
+          signal: controller.signal,
+        });
 
       if (!response.ok) {
         setLoading(false);
@@ -203,6 +221,8 @@ const Home: React.FC<HomeProps> = ({
           const { value, done: doneReading } = await reader.read();
           done = doneReading;
           const chunkValue = decoder.decode(value);
+
+          console.log('chunkValue', chunkValue)
 
           text += chunkValue;
 
