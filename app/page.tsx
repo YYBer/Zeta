@@ -40,6 +40,9 @@ import { env } from 'process';
 import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
+import { Wallet } from "@/lib/wallets/near-wallet";
+import { NetworkId, HelloNearContract } from "@/config";
+import { useWalletStore } from '@/lib/store/store';
 
 interface HomeProps {
   // serverSideApiKeyIsSet: boolean;
@@ -77,6 +80,14 @@ const Home: React.FC<HomeProps> = ({
 
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [showPromptbar, setShowPromptbar] = useState<boolean>(true);
+  const { wallet, signedAccountId, setWallet, setSignedAccountId } = useWalletStore();
+
+  useEffect(() => {
+    // create wallet instance
+    const wallet = new Wallet({ createAccessKeyFor: HelloNearContract, networkId: NetworkId })
+    wallet.startUp(setSignedAccountId);
+    setWallet(wallet);
+  }, [])
 
   // REFS ----------------------------------------------
 

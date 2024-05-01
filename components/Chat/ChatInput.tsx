@@ -308,7 +308,6 @@ export const ChatInput: FC<Props> = ({
           <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md bg-white sm:mx-4">
           
         <div className="relative gradientBorder flex grow px-4 flex-col overflow-x-auto sm:rounded-2xl sm:border">
-            <div className='text-black pt-2'>555</div>
           <div className='flex items-end'>
             <textarea
                 ref={textareaRef}

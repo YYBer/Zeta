@@ -10,6 +10,11 @@ import { ChatFolders } from '../Folders/Chat/ChatFolders';
 import { Search } from '../Sidebar/Search';
 import { ChatbarSettings } from './ChatbarSettings';
 import { Conversations } from './Conversations';
+// import { useEffect, useState } from 'react';
+import { useWalletStore } from '@/lib/store/store';
+import { IoIosSettings } from 'react-icons/io'
+import Image from 'next/image'
+
 
 interface Props {
   loading: boolean;
@@ -65,6 +70,9 @@ export const Chatbar: FC<Props> = ({
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [filteredConversations, setFilteredConversations] =
     useState<Conversation[]>(conversations);
+    const { wallet, signedAccountId, setWallet, setSignedAccountId } = useWalletStore();
+    const [action, setAction] = useState(() => { });
+    const [label, setLabel] = useState('Loading...');
 
   const handleUpdateConversation = (
     conversation: Conversation,
@@ -115,6 +123,20 @@ export const Chatbar: FC<Props> = ({
       setFilteredConversations(conversations);
     }
   }, [searchTerm, conversations]);
+
+  useEffect(() => {
+    // console.log('wallet', wallet, signedAccountId)
+    if (!wallet) return;
+
+    if (signedAccountId) {
+      setAction(() => wallet.signOut);
+      let userName = signedAccountId.split(".")[0];
+      setLabel(userName);
+    } else {
+      setAction(() => wallet.signIn);
+      setLabel('Login');
+    } 
+  }, [signedAccountId, wallet, setAction, setLabel]);
 
   return (
     <div
@@ -194,6 +216,23 @@ export const Chatbar: FC<Props> = ({
           </div>
         )}
       </div>
+
+      {!signedAccountId? (
+        <div className="flex justify-between items-center h-10 px-4">
+          <div className="flex items-center gap-2 text-white  ">
+            <Image src={'/user.png'} alt="user" width={36} height={36} />
+            <p className='text-base'>{label}</p>
+           
+          </div>
+          <IoIosSettings className='w-[24px] h-[24px]'/>
+        </div>
+      ) : (
+        <div className='navbar-nav pt-1 flex items-center justify-center'>
+        <button className="btn btn-secondary bg-white w-52 text-black rounded-3xl h-10" onClick={action} > Sign In </button>
+      </div>
+      )}
+
+      
 
       {/* <ChatbarSettings
         lightMode={lightMode}
