@@ -14,7 +14,11 @@ import { Conversations } from './Conversations';
 import { useWalletStore } from '@/lib/store/store';
 import { IoIosSettings } from 'react-icons/io'
 import Image from 'next/image'
-
+import { TransferToken, Payload } from '@/components/trasferTokenClient';
+import { getBalance } from '@/utils/getBalanceClient';
+//import { getBalance } from './tmp';
+import LoginWallet from '@/utils/login-wallet';
+import { WalletSelectorContextProvider } from '@/components/WalletSelectorContext'; 
 
 interface Props {
   loading: boolean;
@@ -42,6 +46,13 @@ interface Props {
   onPluginKeyChange: (pluginKey: PluginKey) => void;
   onClearPluginKey: (pluginKey: PluginKey) => void;
 }
+
+const MockPayload: Payload = {
+  userId: '0xpj.testnet',
+  receiverId: '0xpjunior.testnet',
+  amount: '1',
+  symbol: 'NEAR'
+};
 
 export const Chatbar: FC<Props> = ({
   loading,
@@ -139,7 +150,43 @@ export const Chatbar: FC<Props> = ({
     } 
   }, [signedAccountId, wallet, setAction, setLabel]);
 
+  // transfer and login
+  const [showTransfer, setShowTransfer] = useState(false);
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
+  
+  const handleLoginSuccess = () => {
+    setIsWalletConnected(true);
+  };
+
+  useEffect(() => {
+    console.log('Wallet connected: ', isWalletConnected);
+  }, [isWalletConnected]);
+
+  const handleTransferClick = () => {
+    if (isWalletConnected) {
+      setShowTransfer(true);
+    } else {
+      alert("Please connect your wallet first!");
+    }
+  };
+
+  // getbalance
+  const [accountId, setAccountId] = useState('');
+  const [tokenSymbol, setTokenSymbol] = useState('');
+  const [balance, setBalance] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (accountId !== '' && tokenSymbol !== '') {
+      getBalance(accountId, tokenSymbol).then(setBalance).catch(e => {
+        setError(`Failed to fetch balance: ${e.message}`);
+        console.error(e);
+      });
+    }
+  }, [accountId, tokenSymbol]); // 依赖项包括 accountId 和 tokenSymbol
+
   return (
+    <WalletSelectorContextProvider>
     <div
       className={`fixed top-0 bottom-0 z-50 flex h-full w-[260px] flex-none flex-col space-y-2 bg-[#202123] p-2 transition-all sm:relative sm:top-0`}
     >
@@ -218,7 +265,15 @@ export const Chatbar: FC<Props> = ({
         )}
       </div>
 
-      {!signedAccountId? (
+      <div className="card">
+          <LoginWallet onWalletConnect={handleLoginSuccess} />
+          <button onClick={handleTransferClick} disabled={!isWalletConnected} >
+            Transfer
+          </button>
+          {showTransfer && <TransferToken payload={MockPayload} />}
+        </div>
+
+      {/* {!signedAccountId? (
         <div className="flex justify-between items-center h-10 px-4">
           <div className="flex items-center gap-2 text-white  ">
             <Image src={'/user.png'} alt="user" width={36} height={36} />
@@ -232,7 +287,7 @@ export const Chatbar: FC<Props> = ({
         <div className='navbar-nav pt-1 flex items-center justify-center'>
         <button className="btn btn-secondary bg-white w-52 text-black rounded-3xl h-10" onClick={action} > Sign In </button>
       </div>
-      )}
+      )} */}
 
       
 
@@ -250,5 +305,6 @@ export const Chatbar: FC<Props> = ({
         onClearPluginKey={onClearPluginKey}
       /> */}
     </div>
+    </WalletSelectorContextProvider>
   );
 };

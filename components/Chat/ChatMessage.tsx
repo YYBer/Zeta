@@ -7,6 +7,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import { CodeBlock } from '../Markdown/CodeBlock';
 import { MemoizedReactMarkdown } from '../Markdown/MemoizedReactMarkdown';
+import Image from 'next/image'
 
 interface Props {
   message: Message;
@@ -74,14 +75,20 @@ export const ChatMessage: FC<Props> = memo(
       <div
         className={`group px-4 ${
           message.role === 'assistant'
-            ? 'border-b border-black/10 bg-gray-50 text-gray-800 dark:border-gray-900/50 dark:bg-[#444654] dark:text-gray-100'
-            : 'border-b border-black/10 bg-white text-gray-800 dark:border-gray-900/50 dark:bg-[#343541] dark:text-gray-100'
+            ? 'border-b border-black/10 bg-white text-gray-800 '
+            : 'border-b border-black/10 bg-white text-gray-800'
         }`}
         style={{ overflowWrap: 'anywhere' }}
       >
         <div className="relative m-auto flex gap-4 p-4 text-base md:max-w-2xl md:gap-6 md:py-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
           <div className="min-w-[40px] text-right font-bold">
-            {message.role === 'assistant' ? <IconRobot size={30}/> : <IconUser size={30}/>}
+            {message.role === 'assistant' ? <Image
+                  className="float-right"
+                  src='/brand-logo'
+                  alt='brand-logo'
+                  width={30}
+                  height={30}
+                />  : <IconUser size={30}/>}
           </div>
 
           <div className="prose mt-[-2px] w-full dark:prose-invert">

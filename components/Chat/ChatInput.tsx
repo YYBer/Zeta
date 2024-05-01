@@ -29,6 +29,7 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
+// import { TransferToken } from '../TransferTokenClient';
 
 interface Props {
   messageIsStreaming: boolean;
@@ -62,7 +63,7 @@ export const ChatInput: FC<Props> = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [showPluginSelect, setShowPluginSelect] = useState(false);
   const [plugin, setPlugin] = useState<Plugin | null>(null);
-  const [initState, setInitState] = useState(true)
+  const [initState, setInitState] = useState(false) 
 
   const exampleMessages = [
     {
@@ -120,10 +121,6 @@ export const ChatInput: FC<Props> = ({
       alert(t('Please enter a message'));
       return;
     }
-
-    
-
-    // <TransferToken payload={{ receiverId : 'bungeetest.testnet', amount : '0.01', symbol: 'NEAR' }} />
 
     setInitState(false)
 
@@ -286,6 +283,8 @@ export const ChatInput: FC<Props> = ({
     };
   }, []);
 
+  console.log('textareaRef', textareaRef?.current)
+
   return (
 
   <div className={`${initState ? 'h-full flex justify-center items-start ' : ''}`}>
@@ -311,12 +310,13 @@ export const ChatInput: FC<Props> = ({
           <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md bg-white sm:mx-4">
           
         <div className="relative gradientBorder flex grow px-4 flex-col overflow-x-auto sm:rounded-2xl sm:border">
-          <div className='flex items-end'>
+          <div className='flex items-end mt-4'>
             <textarea
                 ref={textareaRef}
-                className="min-h-[60px] w-full resize-none pr-4 py-[1.3rem] focus-within:outline-none sm:text-sm bg-transparent text-black"
+                className="min-h-[40px] py-4 w-full resize-none pr-4 focus-within:outline-none sm:text-sm bg-transparent text-black"
                 style={{
                   resize: 'none',
+                  // bottom: '0px',
                   bottom: `${textareaRef?.current?.scrollHeight}px`,
                   maxHeight: '400px',
                   overflow: `${
@@ -371,6 +371,7 @@ export const ChatInput: FC<Props> = ({
         </div>
           </div>
         </div>
+        
       </div>
     ) 
     : 
@@ -379,7 +380,7 @@ export const ChatInput: FC<Props> = ({
         <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
           {messageIsStreaming && (
             <button
-              className=" "
+              className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4 text-black hover:opacity-90  md:mb-0 md:mt-2"
               onClick={handleStopConversation}
             >
               <IconPlayerStop size={16} /> {t('Stop Generating')}
@@ -388,45 +389,23 @@ export const ChatInput: FC<Props> = ({
   
           {!messageIsStreaming && !conversationIsEmpty && (
             <button
-              className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4  md:mb-0 md:mt-2 text-black"
+              className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4 text-black hover:opacity-90  md:mb-0 md:mt-2"
               onClick={onRegenerate}
             >
               <IconRepeat size={16} /> {t('Regenerate response')}
             </button>
           )}
   
-          <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border border-black/10 sm:mx-4">
-            {/* <button
-              className="absolute left-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
-              onClick={() => setShowPluginSelect(!showPluginSelect)}
-              onKeyDown={(e) => {}}
-            >
-              {plugin ? <IconBrandGoogle size={20} /> : <IconBolt size={20} />}
-            </button> */}
-  
-            {/* {showPluginSelect && (
-              <div className="absolute left-0 bottom-14 bg-white dark:bg-[#343541]">
-                <PluginSelect
-                  plugin={plugin}
-                  onPluginChange={(plugin: Plugin) => {
-                    setPlugin(plugin);
-                    setShowPluginSelect(false);
-  
-                    if (textareaRef && textareaRef.current) {
-                      textareaRef.current.focus();
-                    }
-                  }}
-                />
-              </div>
-            )} */}
-  
+          <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border sm:mx-4">
+           
         <div className="relative flex max-h-60 max-w-full gradientBorder p-4 grow flex-col overflow-x-auto sm:rounded-2xl sm:border">
-          <div className='flex items-end'>
+        <div className='flex items-end mt-4'>
             <textarea
                 ref={textareaRef}
-                className="min-h-[60px] w-full px-2 bg-transparent text-black resize-none pr-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
+                className="min-h-[40px] py-4 w-full resize-none pr-4 focus-within:outline-none sm:text-sm bg-transparent text-black"
                 style={{
                   resize: 'none',
+                  // bottom: '0px',
                   bottom: `${textareaRef?.current?.scrollHeight}px`,
                   maxHeight: '400px',
                   overflow: `${
@@ -435,9 +414,6 @@ export const ChatInput: FC<Props> = ({
                       : 'hidden'
                   }`,
                 }}
-                // placeholder={
-                //   t('Type a message or type "/" to select a prompt...') || ''
-                // }
                 value={content}
                 rows={1}
                 onCompositionStart={() => setIsTyping(true)}
@@ -445,35 +421,22 @@ export const ChatInput: FC<Props> = ({
                 onChange={handleChange}
                 onKeyDown={handleKeyDown}
               />
-              {/* <div className="absolute right-0 bottom-[13px] sm:right-4"> */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button onClick={handleSend} size="icon" className='mb-2'>
                     <Image
-                      src="/sendMSG.png"
+                      src="/send.svg"
                       alt="sendMSG"
                       width={40}
                       height={40}
                     />
                     <span className="sr-only">Send message</span>
                   </Button>
-                  {/* <button
-                  className="absolute right-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
-                  onClick={handleSend}
-                >
-                  {messageIsStreaming ? (
-                    <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-neutral-800 opacity-60 dark:border-neutral-100"></div>
-                  ) : (
-                    <IconSend size={18} />
-                  )}
-                </button> */}
                 </TooltipTrigger>
                 <TooltipContent>How can I help you?</TooltipContent>
               </Tooltip>
-            {/* </div> */}
           </div>
-  
-            
+    
           <div className="w-full bg-black" style={{ height: '1px' }}></div>
           <div className="flex justify-start max-w-full py-4 overflow-x-auto gap-3">
             <div className="flex gap-1 items-center">
@@ -493,65 +456,110 @@ export const ChatInput: FC<Props> = ({
               </div>
             ))}
           </div>
-        </div>
-  
-            {/* <textarea
-              ref={textareaRef}
-              className="min-h-[60px] w-full resize-none pr-4 py-[1.3rem] bg-gray-200 focus-within:outline-none sm:text-sm"
-              style={{
-                resize: 'none',
-                bottom: `${textareaRef?.current?.scrollHeight}px`,
-                maxHeight: '400px',
-                overflow: `${
-                  textareaRef.current && textareaRef.current.scrollHeight > 400
-                    ? 'auto'
-                    : 'hidden'
-                }`,
-              }}
-              placeholder={
-                t('Type a message or type "/" to select a prompt...') || ''
-              }
-              value={content}
-              rows={1}
-              onCompositionStart={() => setIsTyping(true)}
-              onCompositionEnd={() => setIsTyping(false)}
-              onChange={handleChange}
-              onKeyDown={handleKeyDown}
-            />
-  
-            <button
-              className="absolute right-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
-              onClick={handleSend}
-            >
-              {messageIsStreaming ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-neutral-800 opacity-60 dark:border-neutral-100"></div>
-              ) : (
-                <IconSend size={18} />
-              )}
-            </button> */}
-  
-            {/* {showPromptList && filteredPrompts.length > 0 && (
-              <div className="absolute bottom-12 w-full">
-                <PromptList
-                  activePromptIndex={activePromptIndex}
-                  prompts={filteredPrompts}
-                  onSelect={handleInitModal}
-                  onMouseOver={setActivePromptIndex}
-                  promptListRef={promptListRef}
-                />
-              </div>
-            )}
-  
-            {isModalVisible && (
-              <VariableModal
-                prompt={prompts[activePromptIndex]}
-                variables={variables}
-                onSubmit={handleSubmit}
-                onClose={() => setIsModalVisible(false)}
-              />
-            )} */}
+        </div> 
           </div>
         </div>
+        {/* <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
+        {messageIsStreaming && (
+          <button
+            className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4 text-black hover:opacity-50 dark:border-neutral-600 dark:bg-[#343541] dark:text-white md:mb-0 md:mt-2"
+            onClick={handleStopConversation}
+          >
+            <IconPlayerStop size={16} /> {t('Stop Generating')}
+          </button>
+        )}
+
+        {!messageIsStreaming && !conversationIsEmpty && (
+          <button
+            className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4 text-black hover:opacity-50 dark:border-neutral-600 dark:bg-[#343541] dark:text-white md:mb-0 md:mt-2"
+            onClick={onRegenerate}
+          >
+            <IconRepeat size={16} /> {t('Regenerate response')}
+          </button>
+        )}
+
+        <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border border-black/10 bg-white shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:bg-[#40414F] dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] sm:mx-4">
+          <button
+            className="absolute left-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+            onClick={() => setShowPluginSelect(!showPluginSelect)}
+            onKeyDown={(e) => {}}
+          >
+            {plugin ? <IconBrandGoogle size={20} /> : <IconBolt size={20} />}
+          </button>
+
+          {showPluginSelect && (
+            <div className="absolute left-0 bottom-14 bg-white dark:bg-[#343541]">
+              <PluginSelect
+                plugin={plugin}
+                onPluginChange={(plugin: Plugin) => {
+                  setPlugin(plugin);
+                  setShowPluginSelect(false);
+
+                  if (textareaRef && textareaRef.current) {
+                    textareaRef.current.focus();
+                  }
+                }}
+              />
+            </div>
+          )}
+
+          <textarea
+            ref={textareaRef}
+            className="m-0 w-full resize-none border-0 bg-transparent p-0 py-2 pr-8 pl-10 text-black dark:bg-transparent dark:text-white md:py-3 md:pl-10"
+            style={{
+              resize: 'none',
+              bottom: `${textareaRef?.current?.scrollHeight}px`,
+              maxHeight: '400px',
+              overflow: `${
+                textareaRef.current && textareaRef.current.scrollHeight > 400
+                  ? 'auto'
+                  : 'hidden'
+              }`,
+            }}
+            placeholder={
+              t('Type a message or type "/" to select a prompt...') || ''
+            }
+            value={content}
+            rows={1}
+            onCompositionStart={() => setIsTyping(true)}
+            onCompositionEnd={() => setIsTyping(false)}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+          />
+
+          <button
+            className="absolute right-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+            onClick={handleSend}
+          >
+            {messageIsStreaming ? (
+              <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-neutral-800 opacity-60 dark:border-neutral-100"></div>
+            ) : (
+              <IconSend size={18} />
+            )}
+          </button>
+
+          {showPromptList && filteredPrompts.length > 0 && (
+            <div className="absolute bottom-12 w-full">
+              <PromptList
+                activePromptIndex={activePromptIndex}
+                prompts={filteredPrompts}
+                onSelect={handleInitModal}
+                onMouseOver={setActivePromptIndex}
+                promptListRef={promptListRef}
+              />
+            </div>
+          )}
+
+          {isModalVisible && (
+            <VariableModal
+              prompt={prompts[activePromptIndex]}
+              variables={variables}
+              onSubmit={handleSubmit}
+              onClose={() => setIsModalVisible(false)}
+            />
+          )}
+        </div>
+      </div> */}
       </div>
     )}
   </div>

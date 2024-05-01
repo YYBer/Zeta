@@ -9,6 +9,7 @@ import { Providers } from '@/components/providers'
 import { Toaster } from '@/components/ui/sonner'
 import '@near-wallet-selector/modal-ui/styles.css'
 
+
 export const metadata = {
   metadataBase: process.env.VERCEL_URL
     ? new URL(`https://${process.env.VERCEL_URL}`)
@@ -46,19 +47,21 @@ export default function RootLayout({ children }: RootLayoutProps) {
         )}
       >
         {/* <Toaster position="top-center" /> */}
-        <Providers
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <div className="flex flex-col min-h-screen">
-          <Toaster />
-            {/* <Header /> */}
-            <main className="flex flex-col flex-1">{children}</main>
-          </div>
-          {/* <TailwindIndicator /> */}
-        </Providers>
+        
+          <Providers
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div className="flex flex-col min-h-screen">
+            <Toaster />
+              {/* <Header /> */}
+              <main className="flex flex-col flex-1">{children}</main>
+            </div>
+            {/* <TailwindIndicator /> */}
+          </Providers>
+
       </body>
     </html>
   )

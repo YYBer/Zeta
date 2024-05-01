@@ -1,26 +1,26 @@
-// import { setupCoin98Wallet } from "@near-wallet-selector/coin98-wallet";
+//import { setupCoin98Wallet } from "@near-wallet-selector/coin98-wallet";
 import type { AccountState, WalletSelector } from "@near-wallet-selector/core";
 import { setupWalletSelector } from "@near-wallet-selector/core";
-// import { setupHereWallet } from "@near-wallet-selector/here-wallet";
-// import { setupMathWallet } from "@near-wallet-selector/math-wallet";
-// import { setupMeteorWallet } from "@near-wallet-selector/meteor-wallet";
-// import { setupNarwallets } from "@near-wallet-selector/narwallets";
+//import { setupHereWallet } from "@near-wallet-selector/here-wallet";
+//import { setupMathWallet } from "@near-wallet-selector/math-wallet";
+//import { setupMeteorWallet } from "@near-wallet-selector/meteor-wallet";
+//import { setupNarwallets } from "@near-wallet-selector/narwallets";
 import type { WalletSelectorModal } from "@near-wallet-selector/modal-ui";
 import { setupModal } from "@near-wallet-selector/modal-ui";
-// import { setupNearFi } from "@near-wallet-selector/nearfi";
-// import { setupNightly } from "@near-wallet-selector/nightly";
+//import { setupNearFi } from "@near-wallet-selector/nearfi";
+//import { setupNightly } from "@near-wallet-selector/nightly";
 import { setupSender } from "@near-wallet-selector/sender";
-// import { setupBitgetWallet } from "@near-wallet-selector/bitget-wallet";
-// import { setupWalletConnect } from "@near-wallet-selector/wallet-connect";
-// import { setupWelldoneWallet } from "@near-wallet-selector/welldone-wallet";
-// // import { setupNearSnap } from "@near-wallet-selector/near-snap";
-// import { setupNeth } from "@near-wallet-selector/neth";
+//import { setupBitgetWallet } from "@near-wallet-selector/bitget-wallet";
+//import { setupWalletConnect } from "@near-wallet-selector/wallet-connect";
+//import { setupWelldoneWallet } from "@near-wallet-selector/welldone-wallet";
+// import { setupNearSnap } from "@near-wallet-selector/near-snap";
+//import { setupNeth } from "@near-wallet-selector/neth";
 import { setupMyNearWallet } from "@near-wallet-selector/my-near-wallet";
-// import { setupLedger } from "@near-wallet-selector/ledger";
-// import { setupXDEFI } from "@near-wallet-selector/xdefi";
-// import { setupRamperWallet } from "@near-wallet-selector/ramper-wallet";
-// import { setupNearMobileWallet } from "@near-wallet-selector/near-mobile-wallet";
-// import { setupMintbaseWallet } from "@near-wallet-selector/mintbase-wallet";
+//import { setupLedger } from "@near-wallet-selector/ledger";
+//import { setupXDEFI } from "@near-wallet-selector/xdefi";
+//import { setupRamperWallet } from "@near-wallet-selector/ramper-wallet";
+//import { setupNearMobileWallet } from "@near-wallet-selector/near-mobile-wallet";
+//import { setupMintbaseWallet } from "@near-wallet-selector/mintbase-wallet";
 
 import type { ReactNode } from "react";
 import React, {
@@ -66,19 +66,19 @@ export const WalletSelectorContextProvider: React.FC<{
       debug: true,
       modules: [
         setupMyNearWallet(),
-        // setupLedger(),
+        //setupLedger(),
         setupSender(),
-        // setupBitgetWallet(),
-        // setupMathWallet(),
-        // setupNightly(),
-        // setupMeteorWallet(),
+        //setupBitgetWallet(),
+        //setupMathWallet(),
+        //setupNightly(),
+        //setupMeteorWallet(),
         // setupNearSnap(),
-        // setupNarwallets(),
-        // setupWelldoneWallet(),
-        // setupHereWallet(),
-        // setupCoin98Wallet(),
-        // setupNearFi(),
-        // setupRamperWallet(),
+        //setupNarwallets(),
+        //setupWelldoneWallet(),
+        //setupHereWallet(),
+        //setupCoin98Wallet(),
+        //setupNearFi(),
+        //setupRamperWallet(),
         // setupNeth({
         //   gas: "300000000000000",
         //   bundle: false,
@@ -93,8 +93,8 @@ export const WalletSelectorContextProvider: React.FC<{
         //     icons: ["https://avatars.githubusercontent.com/u/37784886"],
         //   },
         // }),
-        // setupNearMobileWallet(),
-        // setupMintbaseWallet({ contractId: "guest-book.testnet" }),
+        //setupNearMobileWallet(),
+        //setupMintbaseWallet({ contractId: "guest-book.testnet" }),
       ],
     });
     const _modal = setupModal(_selector, {

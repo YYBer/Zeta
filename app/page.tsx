@@ -43,6 +43,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { Wallet } from '@/lib/wallets/near-wallet'
 import { NetworkId, HelloNearContract } from '@/config'
 import { useWalletStore } from '@/lib/store/store'
+import { WalletSelectorContextProvider } from '@/components/contexts/WalletSelectorContext'
 
 interface HomeProps {
   // serverSideApiKeyIsSet: boolean;
@@ -380,7 +381,7 @@ const Home: React.FC<HomeProps> = ({
   // BASIC HANDLERS --------------------------------------------
 
   const handleLightMode = (mode: 'dark' | 'light') => {
-    setLightMode(mode)
+    setLightMode('light')
     localStorage.setItem('theme', mode)
   }
 
@@ -768,122 +769,124 @@ const Home: React.FC<HomeProps> = ({
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      {selectedConversation && (
-        <main
-          className={`flex h-screen w-screen flex-col text-sm text-white dark:text-white ${lightMode}`}
-        >
-          <div className="fixed top-0 w-full sm:hidden">
-            <Navbar
-              selectedConversation={selectedConversation}
-              onNewConversation={handleNewConversation}
-            />
-          </div>
-
-          <div className="flex h-full w-full pt-[48px] sm:pt-0">
-            {showSidebar ? (
-              <div>
-                <Chatbar
-                  loading={messageIsStreaming}
-                  conversations={conversations}
-                  lightMode={lightMode}
-                  selectedConversation={selectedConversation}
-                  apiKey={apiKey}
-                  pluginKeys={pluginKeys}
-                  folders={folders.filter(folder => folder.type === 'chat')}
-                  onToggleLightMode={handleLightMode}
-                  onCreateFolder={name => handleCreateFolder(name, 'chat')}
-                  onDeleteFolder={handleDeleteFolder}
-                  onUpdateFolder={handleUpdateFolder}
-                  onNewConversation={handleNewConversation}
-                  onSelectConversation={handleSelectConversation}
-                  onDeleteConversation={handleDeleteConversation}
-                  onUpdateConversation={handleUpdateConversation}
-                  // onApiKeyChange={handleApiKeyChange}
-                  onClearConversations={handleClearConversations}
-                  onExportConversations={handleExportData}
-                  onImportConversations={handleImportConversations}
-                  onPluginKeyChange={handlePluginKeyChange}
-                  onClearPluginKey={handleClearPluginKey}
-                />
-
-                {/* <button
-                  className="fixed top-5 left-[270px] z-50 h-7 w-7  sm:top-0.5 sm:left-[270px] sm:h-8 sm:w-8 sm:text-neutral-700"
-                  onClick={handleToggleChatbar}
-                >
-                  <IoIosArrowBack />
-                </button> */}
-                <button
-                  className="fixed top-5 left-[270px] text-black z-50 h-7 w-7 hover:text-gray-400 sm:top-0.5 sm:left-[270px] sm:h-8 sm:w-8 "
-                  onClick={handleToggleChatbar}
-                >
-                  <IoIosArrowBack />
-                </button>
-                {/* <div
-                  onClick={handleToggleChatbar}
-                  className="absolute top-0 left-0 z-10 h-full w-full bg-black opacity-70 sm:hidden"
-                ></div> */}
-              </div>
-            ) : (
-              <button
-                className="fixed top-2.5 left-4 z-50 h-7 w-7 text-black hover:text-gray-400 sm:top-0.5 sm:left-4 sm:h-8 sm:w-8"
-                onClick={handleToggleChatbar}
-              >
-                <IoIosArrowForward />
-              </button>
-            )}
-
-            <div className="flex flex-1">
-              <Chat
-                conversation={selectedConversation}
-                messageIsStreaming={messageIsStreaming}
-                apiKey={apiKey}
-                serverSideApiKeyIsSet={serverSideApiKeyIsSet}
-                defaultModelId={defaultModelId}
-                modelError={modelError}
-                models={models}
-                loading={loading}
-                prompts={prompts}
-                onSend={handleSend}
-                onUpdateConversation={handleUpdateConversation}
-                onEditMessage={handleEditMessage}
-                stopConversationRef={stopConversationRef}
+      <WalletSelectorContextProvider>
+        {selectedConversation && (
+          <main
+            className={`flex h-screen w-screen flex-col text-sm text-white dark:text-white ${lightMode}`}
+          >
+            <div className="fixed top-0 w-full sm:hidden">
+              <Navbar
+                selectedConversation={selectedConversation}
+                onNewConversation={handleNewConversation}
               />
             </div>
 
-            {/* {showPromptbar ? (
-              <div>
-                <Promptbar
-                  prompts={prompts}
-                  folders={folders.filter((folder) => folder.type === 'prompt')}
-                  onCreatePrompt={handleCreatePrompt}
-                  onUpdatePrompt={handleUpdatePrompt}
-                  onDeletePrompt={handleDeletePrompt}
-                  onCreateFolder={(name) => handleCreateFolder(name, 'prompt')}
-                  onDeleteFolder={handleDeleteFolder}
-                  onUpdateFolder={handleUpdateFolder}
-                />
+            <div className="flex h-full w-full pt-[48px] sm:pt-0">
+              {showSidebar ? (
+                <div>
+                  <Chatbar
+                    loading={messageIsStreaming}
+                    conversations={conversations}
+                    lightMode={lightMode}
+                    selectedConversation={selectedConversation}
+                    apiKey={apiKey}
+                    pluginKeys={pluginKeys}
+                    folders={folders.filter(folder => folder.type === 'chat')}
+                    onToggleLightMode={handleLightMode}
+                    onCreateFolder={name => handleCreateFolder(name, 'chat')}
+                    onDeleteFolder={handleDeleteFolder}
+                    onUpdateFolder={handleUpdateFolder}
+                    onNewConversation={handleNewConversation}
+                    onSelectConversation={handleSelectConversation}
+                    onDeleteConversation={handleDeleteConversation}
+                    onUpdateConversation={handleUpdateConversation}
+                    // onApiKeyChange={handleApiKeyChange}
+                    onClearConversations={handleClearConversations}
+                    onExportConversations={handleExportData}
+                    onImportConversations={handleImportConversations}
+                    onPluginKeyChange={handlePluginKeyChange}
+                    onClearPluginKey={handleClearPluginKey}
+                  />
+
+                  {/* <button
+                    className="fixed top-5 left-[270px] z-50 h-7 w-7  sm:top-0.5 sm:left-[270px] sm:h-8 sm:w-8 sm:text-neutral-700"
+                    onClick={handleToggleChatbar}
+                  >
+                    <IoIosArrowBack />
+                  </button> */}
+                  <button
+                    className="fixed top-5 left-[270px] text-black z-50 h-7 w-7 hover:text-gray-400 sm:top-0.5 sm:left-[270px] sm:h-8 sm:w-8 "
+                    onClick={handleToggleChatbar}
+                  >
+                    <IoIosArrowBack />
+                  </button>
+                  {/* <div
+                    onClick={handleToggleChatbar}
+                    className="absolute top-0 left-0 z-10 h-full w-full bg-black opacity-70 sm:hidden"
+                  ></div> */}
+                </div>
+              ) : (
                 <button
-                  className="fixed top-5 right-[270px] z-50 h-7 w-7 hover:text-gray-400 dark:text-white dark:hover:text-gray-300 sm:top-0.5 sm:right-[270px] sm:h-8 sm:w-8 sm:text-neutral-700"
+                  className="fixed top-2.5 left-4 z-50 h-7 w-7 text-black hover:text-gray-400 sm:top-0.5 sm:left-4 sm:h-8 sm:w-8"
+                  onClick={handleToggleChatbar}
+                >
+                  <IoIosArrowForward />
+                </button>
+              )}
+
+              <div className="flex flex-1">
+                <Chat
+                  conversation={selectedConversation}
+                  messageIsStreaming={messageIsStreaming}
+                  apiKey={apiKey}
+                  serverSideApiKeyIsSet={serverSideApiKeyIsSet}
+                  defaultModelId={defaultModelId}
+                  modelError={modelError}
+                  models={models}
+                  loading={loading}
+                  prompts={prompts}
+                  onSend={handleSend}
+                  onUpdateConversation={handleUpdateConversation}
+                  onEditMessage={handleEditMessage}
+                  stopConversationRef={stopConversationRef}
+                />
+              </div>
+
+              {/* {showPromptbar ? (
+                <div>
+                  <Promptbar
+                    prompts={prompts}
+                    folders={folders.filter((folder) => folder.type === 'prompt')}
+                    onCreatePrompt={handleCreatePrompt}
+                    onUpdatePrompt={handleUpdatePrompt}
+                    onDeletePrompt={handleDeletePrompt}
+                    onCreateFolder={(name) => handleCreateFolder(name, 'prompt')}
+                    onDeleteFolder={handleDeleteFolder}
+                    onUpdateFolder={handleUpdateFolder}
+                  />
+                  <button
+                    className="fixed top-5 right-[270px] z-50 h-7 w-7 hover:text-gray-400 dark:text-white dark:hover:text-gray-300 sm:top-0.5 sm:right-[270px] sm:h-8 sm:w-8 sm:text-neutral-700"
+                    onClick={handleTogglePromptbar}
+                  >
+                    <IconArrowBarRight />
+                  </button>
+                  <div
+                    onClick={handleTogglePromptbar}
+                    className="absolute top-0 left-0 z-10 h-full w-full bg-black opacity-70 sm:hidden"
+                  ></div>
+                </div>
+              ) : (
+                <button
+                  className="fixed top-2.5 right-4 z-50 h-7 w-7 text-white hover:text-gray-400 dark:text-white dark:hover:text-gray-300 sm:top-0.5 sm:right-4 sm:h-8 sm:w-8 sm:text-neutral-700"
                   onClick={handleTogglePromptbar}
                 >
-                  <IconArrowBarRight />
+                  <IconArrowBarLeft />
                 </button>
-                <div
-                  onClick={handleTogglePromptbar}
-                  className="absolute top-0 left-0 z-10 h-full w-full bg-black opacity-70 sm:hidden"
-                ></div>
-              </div>
-            ) : (
-              <button
-                className="fixed top-2.5 right-4 z-50 h-7 w-7 text-white hover:text-gray-400 dark:text-white dark:hover:text-gray-300 sm:top-0.5 sm:right-4 sm:h-8 sm:w-8 sm:text-neutral-700"
-                onClick={handleTogglePromptbar}
-              >
-                <IconArrowBarLeft />
-              </button>
-            )} */}
-          </div>
-        </main>
-      )}
+              )} */}
+            </div>
+          </main>
+        )}
+      </WalletSelectorContextProvider>
     </>
   )
 }
