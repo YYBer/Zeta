@@ -192,7 +192,7 @@ export const Chatbar: FC<Props> = ({
     >
       <div className="flex items-center">
         <button
-          className="flex w-[190px] flex-shrink-0 cursor-pointer select-none items-center gap-3 p-3 text-[14px] leading-normal text-white transition-colors duration-200 hover:bg-gray-500/10"
+          className="flex w-[190px] flex-shrink-0 cursor-pointer select-none items-center gap-3d p-3 text-[14px] leading-normal text-white transition-colors duration-200 hover:bg-gray-500/10"
           onClick={() => {
             onNewConversation();
             setSearchTerm('');
@@ -267,10 +267,10 @@ export const Chatbar: FC<Props> = ({
 
       <div className="card">
           <LoginWallet onWalletConnect={handleLoginSuccess} />
-          <button onClick={handleTransferClick} disabled={!isWalletConnected} >
+          {/* <button onClick={handleTransferClick} disabled={!isWalletConnected} >
             Transfer
-          </button>
-          {showTransfer && <TransferToken payload={MockPayload} />}
+          </button> */}
+          {/* {showTransfer && <TransferToken payload={MockPayload} />} */}
         </div>
 
       {/* {!signedAccountId? (
