@@ -15,20 +15,19 @@ import {
   MessagesPlaceholder,
   SystemMessagePromptTemplate
 } from 'langchain/prompts'
+import { Message } from '@/types/chat'
 
 export const runtime = 'edge'
 
-function mapStoredMessagesToChatMessages(
-  messages: BaseMessage[]
-): BaseMessage[] {
+function mapStoredMessagesToChatMessages(messages: Message[]): BaseMessage[] {
   return messages.map(message => {
-    switch (message.name) {
-      case 'human':
-        return new HumanMessage(message.text)
-      case 'ai':
-        return new AIMessage(message.text)
-      case 'system':
-        return new SystemMessage(message.text)
+    switch (message.role) {
+      case 'user':
+        return new HumanMessage(message.content.toString())
+      case 'assistant':
+        return new AIMessage(message.content.toString())
+      // case 'system':
+      // return new SystemMessage(message.content.toString())
       default:
         throw new Error('Role must be defined for generic messages')
     }
@@ -37,8 +36,8 @@ function mapStoredMessagesToChatMessages(
 
 export async function POST(req: Request) {
   const body = await req.json()
-  const messages = body.messages
-  const prompt = body.prompt
+  const messages: Message[] = body.messages
+  const prompt: string = body.prompt
 
   const encoder = new TextEncoder()
   const stream = new TransformStream()
@@ -72,6 +71,8 @@ export async function POST(req: Request) {
   const memory = new BufferMemory({
     chatHistory: lcChatMessageHistory,
     returnMessages: true,
+    outputKey: 'output',
+    inputKey: 'input',
     memoryKey: 'history'
   })
 

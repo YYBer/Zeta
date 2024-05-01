@@ -1,98 +1,102 @@
 'use client'
 
-import { Chat } from '@/components/Chat/Chat';
-import { Chatbar } from '@/components/Chatbar/Chatbar';
-import { Navbar } from '@/components/Mobile/Navbar';
-import { ChatBody, Conversation, Message } from '@/types/chat';
-import { KeyValuePair } from '@/types/data';
-import { ErrorMessage } from '@/types/error';
-import { LatestExportFormat, SupportedExportFormats } from '@/types/export';
-import { Folder, FolderType } from '@/types/folder';
+import { Chat } from '@/components/Chat/Chat'
+import { Chatbar } from '@/components/Chatbar/Chatbar'
+import { Navbar } from '@/components/Mobile/Navbar'
+import { ChatBody, Conversation, Message } from '@/types/chat'
+import { KeyValuePair } from '@/types/data'
+import { ErrorMessage } from '@/types/error'
+import { LatestExportFormat, SupportedExportFormats } from '@/types/export'
+import { Folder, FolderType } from '@/types/folder'
 import {
   OpenAIModel,
   OpenAIModelID,
   OpenAIModels,
-  fallbackModelID,
-} from '@/types/openai';
-import { Plugin, PluginKey } from '@/types/plugin';
-import { Prompt } from '@/types/prompt';
-import { getEndpoint } from '@/utils/app/api';
+  fallbackModelID
+} from '@/types/openai'
+import { Plugin, PluginKey } from '@/types/plugin'
+import { Prompt } from '@/types/prompt'
+import { getEndpoint } from '@/utils/app/api'
 import {
   cleanConversationHistory,
-  cleanSelectedConversation,
-} from '@/utils/app/clean';
-import { DEFAULT_SYSTEM_PROMPT } from '@/utils/app/const';
+  cleanSelectedConversation
+} from '@/utils/app/clean'
+import { DEFAULT_SYSTEM_PROMPT } from '@/utils/app/const'
 import {
   saveConversation,
   saveConversations,
-  updateConversation,
-} from '@/utils/app/conversation';
-import { saveFolders } from '@/utils/app/folders';
-import { exportData, importData } from '@/utils/app/importExport';
-import { savePrompts } from '@/utils/app/prompts';
+  updateConversation
+} from '@/utils/app/conversation'
+import { saveFolders } from '@/utils/app/folders'
+import { exportData, importData } from '@/utils/app/importExport'
+import { savePrompts } from '@/utils/app/prompts'
 // import { ChevronLeft, ChevronRight } from '@tabler/icons-react';
-import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
-import { GetServerSideProps } from 'next';
-import { useTranslation } from 'next-i18next';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import Head from 'next/head';
-import { env } from 'process';
-import { useEffect, useRef, useState } from 'react';
-import toast from 'react-hot-toast';
-import { v4 as uuidv4 } from 'uuid';
-import { Wallet } from "@/lib/wallets/near-wallet";
-import { NetworkId, HelloNearContract } from "@/config";
-import { useWalletStore } from '@/lib/store/store';
+import { IoIosArrowForward, IoIosArrowBack } from 'react-icons/io'
+import { GetServerSideProps } from 'next'
+import { useTranslation } from 'next-i18next'
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
+import Head from 'next/head'
+import { env } from 'process'
+import { useEffect, useRef, useState } from 'react'
+import toast from 'react-hot-toast'
+import { v4 as uuidv4 } from 'uuid'
+import { Wallet } from '@/lib/wallets/near-wallet'
+import { NetworkId, HelloNearContract } from '@/config'
+import { useWalletStore } from '@/lib/store/store'
 
 interface HomeProps {
   // serverSideApiKeyIsSet: boolean;
-  serverSidePluginKeysSet: boolean;
-  defaultModelId: OpenAIModelID;
+  serverSidePluginKeysSet: boolean
+  defaultModelId: OpenAIModelID
 }
 
 const Home: React.FC<HomeProps> = ({
   // serverSideApiKeyIsSet,
   serverSidePluginKeysSet,
-  defaultModelId,
+  defaultModelId
 }) => {
-  const { t } = useTranslation('chat');
+  const { t } = useTranslation('chat')
 
   // STATE ----------------------------------------------
 
-  const [apiKey, setApiKey] = useState<string>('');
-  const [pluginKeys, setPluginKeys] = useState<PluginKey[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [lightMode, setLightMode] = useState<'dark' | 'light'>('dark');
-  const [messageIsStreaming, setMessageIsStreaming] = useState<boolean>(false);
+  const [apiKey, setApiKey] = useState<string>('')
+  const [pluginKeys, setPluginKeys] = useState<PluginKey[]>([])
+  const [loading, setLoading] = useState<boolean>(false)
+  const [lightMode, setLightMode] = useState<'dark' | 'light'>('dark')
+  const [messageIsStreaming, setMessageIsStreaming] = useState<boolean>(false)
 
-  const [modelError, setModelError] = useState<ErrorMessage | null>(null);
+  const [modelError, setModelError] = useState<ErrorMessage | null>(null)
 
-  const [models, setModels] = useState<OpenAIModel[]>([]);
+  const [models, setModels] = useState<OpenAIModel[]>([])
 
-  const [folders, setFolders] = useState<Folder[]>([]);
+  const [folders, setFolders] = useState<Folder[]>([])
 
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConversation, setSelectedConversation] =
-    useState<Conversation>();
-  const [currentMessage, setCurrentMessage] = useState<Message>();
+    useState<Conversation>()
+  const [currentMessage, setCurrentMessage] = useState<Message>()
 
-  const [showSidebar, setShowSidebar] = useState<boolean>(true);
+  const [showSidebar, setShowSidebar] = useState<boolean>(true)
 
-  const [prompts, setPrompts] = useState<Prompt[]>([]);
-  const [showPromptbar, setShowPromptbar] = useState<boolean>(true);
-  const { wallet, signedAccountId, setWallet, setSignedAccountId } = useWalletStore();
+  const [prompts, setPrompts] = useState<Prompt[]>([])
+  const [showPromptbar, setShowPromptbar] = useState<boolean>(true)
+  const { wallet, signedAccountId, setWallet, setSignedAccountId } =
+    useWalletStore()
 
   useEffect(() => {
     // create wallet instance
-    const wallet = new Wallet({ createAccessKeyFor: HelloNearContract, networkId: NetworkId })
+    const wallet = new Wallet({
+      createAccessKeyFor: HelloNearContract,
+      networkId: NetworkId
+    })
     console.log('wallet ', wallet)
-    wallet.startUp(setSignedAccountId);
-    setWallet(wallet);
+    wallet.startUp(setSignedAccountId)
+    setWallet(wallet)
   }, [])
 
   // REFS ----------------------------------------------
 
-  const stopConversationRef = useRef<boolean>(false);
+  const stopConversationRef = useRef<boolean>(false)
   const serverSideApiKeyIsSet = !!process.env.NEXT_PUBLIC_OPENAI_API_KEY
 
   // FETCH RESPONSE ----------------------------------------------
@@ -100,60 +104,59 @@ const Home: React.FC<HomeProps> = ({
   const handleSend = async (
     message: Message,
     deleteCount = 0,
-    plugin: Plugin | null = null,
+    plugin: Plugin | null = null
   ) => {
-    
     console.log('message', message)
 
     if (selectedConversation) {
-      let updatedConversation: Conversation;
+      let updatedConversation: Conversation
 
       if (deleteCount) {
-        const updatedMessages = [...selectedConversation.messages];
+        const updatedMessages = [...selectedConversation.messages]
         for (let i = 0; i < deleteCount; i++) {
-          updatedMessages.pop();
+          updatedMessages.pop()
         }
 
         updatedConversation = {
           ...selectedConversation,
-          messages: [...updatedMessages, message],
-        };
+          messages: [...updatedMessages, message]
+        }
       } else {
         updatedConversation = {
           ...selectedConversation,
-          messages: [...selectedConversation.messages, message],
-        };
+          messages: [...selectedConversation.messages, message]
+        }
       }
 
-      setSelectedConversation(updatedConversation);
-      setLoading(true);
-      setMessageIsStreaming(true);
+      setSelectedConversation(updatedConversation)
+      setLoading(true)
+      setMessageIsStreaming(true)
 
       const chatBody: ChatBody = {
         model: updatedConversation.model,
         messages: updatedConversation.messages,
         key: apiKey,
-        prompt: updatedConversation.prompt,
-      };
+        prompt: updatedConversation.prompt
+      }
 
-      const endpoint = getEndpoint(plugin);
-      let body;
+      const endpoint = getEndpoint(plugin)
+      let body
 
       if (!plugin) {
-        body = JSON.stringify(chatBody);
+        body = JSON.stringify(chatBody)
       } else {
         body = JSON.stringify({
           ...chatBody,
           googleAPIKey: pluginKeys
-            .find((key) => key.pluginId === 'google-search')
-            ?.requiredKeys.find((key) => key.key === 'GOOGLE_API_KEY')?.value,
+            .find(key => key.pluginId === 'google-search')
+            ?.requiredKeys.find(key => key.key === 'GOOGLE_API_KEY')?.value,
           googleCSEId: pluginKeys
-            .find((key) => key.pluginId === 'google-search')
-            ?.requiredKeys.find((key) => key.key === 'GOOGLE_CSE_ID')?.value,
-        });
+            .find(key => key.pluginId === 'google-search')
+            ?.requiredKeys.find(key => key.key === 'GOOGLE_CSE_ID')?.value
+        })
       }
 
-      const controller = new AbortController();
+      const controller = new AbortController()
 
       // const response = await fetch(endpoint, {
       //   method: 'POST',
@@ -164,162 +167,167 @@ const Home: React.FC<HomeProps> = ({
       //   body,
       // });
 
-      let chatBodys = [
-        {
-          name: "human",
-          text: message.content
-        }
-      ]
+      // let chatBodys = [
+      //   {
+      //     name: "human",
+      //     text: message.content
+      //   }
+      // ]
+      console.log('messages', updatedConversation.messages)
+      console.log('prompt', updatedConversation.prompt)
 
-      const response = await fetch("api/message", {
-          method: "POST",
-          body: JSON.stringify({ messages: chatBodys}),
-          signal: controller.signal,
-        });
+      const response = await fetch('api/message', {
+        method: 'POST',
+        body: JSON.stringify({
+          messages: updatedConversation.messages,
+          prompt: updatedConversation.prompt
+        }),
+        signal: controller.signal
+      })
 
       if (!response.ok) {
-        setLoading(false);
-        setMessageIsStreaming(false);
-        toast.error(response.statusText);
-        return;
+        setLoading(false)
+        setMessageIsStreaming(false)
+        toast.error(response.statusText)
+        return
       }
 
-      const data = response.body;
+      const data = response.body
 
       if (!data) {
-        setLoading(false);
-        setMessageIsStreaming(false);
-        return;
+        setLoading(false)
+        setMessageIsStreaming(false)
+        return
       }
 
       if (!plugin) {
         if (updatedConversation.messages.length === 1) {
-          const { content } = message;
+          const { content } = message
           const customName =
-            content.length > 30 ? content.substring(0, 30) + '...' : content;
+            content.length > 30 ? content.substring(0, 30) + '...' : content
 
           updatedConversation = {
             ...updatedConversation,
-            name: customName,
-          };
+            name: customName
+          }
         }
 
-        setLoading(false);
+        setLoading(false)
 
-        const reader = data.getReader();
-        const decoder = new TextDecoder();
-        let done = false;
-        let isFirst = true;
-        let text = '';
+        const reader = data.getReader()
+        const decoder = new TextDecoder()
+        let done = false
+        let isFirst = true
+        let text = ''
 
         while (!done) {
           if (stopConversationRef.current === true) {
-            controller.abort();
-            done = true;
-            break;
+            controller.abort()
+            done = true
+            break
           }
-          const { value, done: doneReading } = await reader.read();
-          done = doneReading;
-          const chunkValue = decoder.decode(value);
+          const { value, done: doneReading } = await reader.read()
+          done = doneReading
+          const chunkValue = decoder.decode(value)
 
           console.log('chunkValue', chunkValue)
 
-          text += chunkValue;
+          text += chunkValue
 
           if (isFirst) {
-            isFirst = false;
+            isFirst = false
             const updatedMessages: Message[] = [
               ...updatedConversation.messages,
-              { role: 'assistant', content: chunkValue },
-            ];
+              { role: 'assistant', content: chunkValue }
+            ]
 
             updatedConversation = {
               ...updatedConversation,
-              messages: updatedMessages,
-            };
+              messages: updatedMessages
+            }
 
-            setSelectedConversation(updatedConversation);
+            setSelectedConversation(updatedConversation)
           } else {
             const updatedMessages: Message[] = updatedConversation.messages.map(
               (message, index) => {
                 if (index === updatedConversation.messages.length - 1) {
                   return {
                     ...message,
-                    content: text,
-                  };
+                    content: text
+                  }
                 }
 
-                return message;
-              },
-            );
+                return message
+              }
+            )
 
             updatedConversation = {
               ...updatedConversation,
-              messages: updatedMessages,
-            };
+              messages: updatedMessages
+            }
 
-            setSelectedConversation(updatedConversation);
+            setSelectedConversation(updatedConversation)
           }
         }
 
-        saveConversation(updatedConversation);
+        saveConversation(updatedConversation)
 
         const updatedConversations: Conversation[] = conversations.map(
-          (conversation) => {
+          conversation => {
             if (conversation.id === selectedConversation.id) {
-              return updatedConversation;
+              return updatedConversation
             }
 
-            return conversation;
-          },
-        );
+            return conversation
+          }
+        )
 
         if (updatedConversations.length === 0) {
-          updatedConversations.push(updatedConversation);
+          updatedConversations.push(updatedConversation)
         }
 
-        setConversations(updatedConversations);
-        saveConversations(updatedConversations);
+        setConversations(updatedConversations)
+        saveConversations(updatedConversations)
 
-        setMessageIsStreaming(false);
+        setMessageIsStreaming(false)
       } else {
-        const { answer } = await response.json();
+        const { answer } = await response.json()
 
         const updatedMessages: Message[] = [
           ...updatedConversation.messages,
-          { role: 'assistant', content: answer },
-        ];
+          { role: 'assistant', content: answer }
+        ]
 
         updatedConversation = {
           ...updatedConversation,
-          messages: updatedMessages,
-        };
-
-        setSelectedConversation(updatedConversation);
-        saveConversation(updatedConversation);
-
-        const updatedConversations: Conversation[] = conversations.map(
-          (conversation) => {
-            if (conversation.id === selectedConversation.id) {
-              return updatedConversation;
-            }
-
-            return conversation;
-          },
-        );
-
-        if (updatedConversations.length === 0) {
-          updatedConversations.push(updatedConversation);
+          messages: updatedMessages
         }
 
-        setConversations(updatedConversations);
-        saveConversations(updatedConversations);
+        setSelectedConversation(updatedConversation)
+        saveConversation(updatedConversation)
 
-        setLoading(false);
-        setMessageIsStreaming(false);
+        const updatedConversations: Conversation[] = conversations.map(
+          conversation => {
+            if (conversation.id === selectedConversation.id) {
+              return updatedConversation
+            }
+
+            return conversation
+          }
+        )
+
+        if (updatedConversations.length === 0) {
+          updatedConversations.push(updatedConversation)
+        }
+
+        setConversations(updatedConversations)
+        saveConversations(updatedConversations)
+
+        setLoading(false)
+        setMessageIsStreaming(false)
       }
     }
-  };
+  }
 
   // FETCH MODELS ----------------------------------------------
 
@@ -329,52 +337,52 @@ const Home: React.FC<HomeProps> = ({
       code: null,
       messageLines: [
         t(
-          'Make sure your OpenAI API key is set in the bottom left of the sidebar.',
+          'Make sure your OpenAI API key is set in the bottom left of the sidebar.'
         ),
-        t('If you completed this step, OpenAI may be experiencing issues.'),
-      ],
-    } as ErrorMessage;
+        t('If you completed this step, OpenAI may be experiencing issues.')
+      ]
+    } as ErrorMessage
 
     // const response = await modelHandler(key)
     const response = await fetch('/api/models', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        key,
-      }),
-    });
+        key
+      })
+    })
 
     if (!response.ok) {
       try {
-        const data = await response.json();
+        const data = await response.json()
         Object.assign(error, {
           code: data.error?.code,
-          messageLines: [data.error?.message],
-        });
+          messageLines: [data.error?.message]
+        })
       } catch (e) {}
-      setModelError(error);
-      return;
+      setModelError(error)
+      return
     }
 
-    const data = await response.json();
+    const data = await response.json()
 
     if (!data) {
-      setModelError(error);
-      return;
+      setModelError(error)
+      return
     }
 
-    setModels(data);
-    setModelError(null);
-  };
+    setModels(data)
+    setModelError(null)
+  }
 
   // BASIC HANDLERS --------------------------------------------
 
   const handleLightMode = (mode: 'dark' | 'light') => {
-    setLightMode(mode);
-    localStorage.setItem('theme', mode);
-  };
+    setLightMode(mode)
+    localStorage.setItem('theme', mode)
+  }
 
   // const handleApiKeyChange = (apiKey: string) => {
   //   setApiKey(apiKey);
@@ -382,71 +390,71 @@ const Home: React.FC<HomeProps> = ({
   // };
 
   const handlePluginKeyChange = (pluginKey: PluginKey) => {
-    if (pluginKeys.some((key) => key.pluginId === pluginKey.pluginId)) {
-      const updatedPluginKeys = pluginKeys.map((key) => {
+    if (pluginKeys.some(key => key.pluginId === pluginKey.pluginId)) {
+      const updatedPluginKeys = pluginKeys.map(key => {
         if (key.pluginId === pluginKey.pluginId) {
-          return pluginKey;
+          return pluginKey
         }
 
-        return key;
-      });
+        return key
+      })
 
-      setPluginKeys(updatedPluginKeys);
+      setPluginKeys(updatedPluginKeys)
 
-      localStorage.setItem('pluginKeys', JSON.stringify(updatedPluginKeys));
+      localStorage.setItem('pluginKeys', JSON.stringify(updatedPluginKeys))
     } else {
-      setPluginKeys([...pluginKeys, pluginKey]);
+      setPluginKeys([...pluginKeys, pluginKey])
 
       localStorage.setItem(
         'pluginKeys',
-        JSON.stringify([...pluginKeys, pluginKey]),
-      );
+        JSON.stringify([...pluginKeys, pluginKey])
+      )
     }
-  };
+  }
 
   const handleClearPluginKey = (pluginKey: PluginKey) => {
     const updatedPluginKeys = pluginKeys.filter(
-      (key) => key.pluginId !== pluginKey.pluginId,
-    );
+      key => key.pluginId !== pluginKey.pluginId
+    )
 
     if (updatedPluginKeys.length === 0) {
-      setPluginKeys([]);
-      localStorage.removeItem('pluginKeys');
-      return;
+      setPluginKeys([])
+      localStorage.removeItem('pluginKeys')
+      return
     }
 
-    setPluginKeys(updatedPluginKeys);
+    setPluginKeys(updatedPluginKeys)
 
-    localStorage.setItem('pluginKeys', JSON.stringify(updatedPluginKeys));
-  };
+    localStorage.setItem('pluginKeys', JSON.stringify(updatedPluginKeys))
+  }
 
   const handleToggleChatbar = () => {
-    setShowSidebar(!showSidebar);
-    localStorage.setItem('showChatbar', JSON.stringify(!showSidebar));
-  };
+    setShowSidebar(!showSidebar)
+    localStorage.setItem('showChatbar', JSON.stringify(!showSidebar))
+  }
 
   const handleTogglePromptbar = () => {
-    setShowPromptbar(!showPromptbar);
-    localStorage.setItem('showPromptbar', JSON.stringify(!showPromptbar));
-  };
+    setShowPromptbar(!showPromptbar)
+    localStorage.setItem('showPromptbar', JSON.stringify(!showPromptbar))
+  }
 
   const handleExportData = () => {
-    exportData();
-  };
+    exportData()
+  }
 
   const handleImportConversations = (data: SupportedExportFormats) => {
-    const { history, folders, prompts }: LatestExportFormat = importData(data);
+    const { history, folders, prompts }: LatestExportFormat = importData(data)
 
-    setConversations(history);
-    setSelectedConversation(history[history.length - 1]);
-    setFolders(folders);
-    setPrompts(prompts);
-  };
+    setConversations(history)
+    setSelectedConversation(history[history.length - 1])
+    setFolders(folders)
+    setPrompts(prompts)
+  }
 
   const handleSelectConversation = (conversation: Conversation) => {
-    setSelectedConversation(conversation);
-    saveConversation(conversation);
-  };
+    setSelectedConversation(conversation)
+    saveConversation(conversation)
+  }
 
   // FOLDER OPERATIONS  --------------------------------------------
 
@@ -454,68 +462,68 @@ const Home: React.FC<HomeProps> = ({
     const newFolder: Folder = {
       id: uuidv4(),
       name,
-      type,
-    };
+      type
+    }
 
-    const updatedFolders = [...folders, newFolder];
+    const updatedFolders = [...folders, newFolder]
 
-    setFolders(updatedFolders);
-    saveFolders(updatedFolders);
-  };
+    setFolders(updatedFolders)
+    saveFolders(updatedFolders)
+  }
 
   const handleDeleteFolder = (folderId: string) => {
-    const updatedFolders = folders.filter((f) => f.id !== folderId);
-    setFolders(updatedFolders);
-    saveFolders(updatedFolders);
+    const updatedFolders = folders.filter(f => f.id !== folderId)
+    setFolders(updatedFolders)
+    saveFolders(updatedFolders)
 
-    const updatedConversations: Conversation[] = conversations.map((c) => {
+    const updatedConversations: Conversation[] = conversations.map(c => {
       if (c.folderId === folderId) {
         return {
           ...c,
-          folderId: null,
-        };
+          folderId: null
+        }
       }
 
-      return c;
-    });
-    setConversations(updatedConversations);
-    saveConversations(updatedConversations);
+      return c
+    })
+    setConversations(updatedConversations)
+    saveConversations(updatedConversations)
 
-    const updatedPrompts: Prompt[] = prompts.map((p) => {
+    const updatedPrompts: Prompt[] = prompts.map(p => {
       if (p.folderId === folderId) {
         return {
           ...p,
-          folderId: null,
-        };
+          folderId: null
+        }
       }
 
-      return p;
-    });
-    setPrompts(updatedPrompts);
-    savePrompts(updatedPrompts);
-  };
+      return p
+    })
+    setPrompts(updatedPrompts)
+    savePrompts(updatedPrompts)
+  }
 
   const handleUpdateFolder = (folderId: string, name: string) => {
-    const updatedFolders = folders.map((f) => {
+    const updatedFolders = folders.map(f => {
       if (f.id === folderId) {
         return {
           ...f,
-          name,
-        };
+          name
+        }
       }
 
-      return f;
-    });
+      return f
+    })
 
-    setFolders(updatedFolders);
-    saveFolders(updatedFolders);
-  };
+    setFolders(updatedFolders)
+    saveFolders(updatedFolders)
+  }
 
   // CONVERSATION OPERATIONS  --------------------------------------------
 
   const handleNewConversation = () => {
-    const lastConversation = conversations[conversations.length - 1];
- 
+    const lastConversation = conversations[conversations.length - 1]
+
     const newConversation: Conversation = {
       id: uuidv4(),
       name: `${t('New Conversation')}`,
@@ -524,35 +532,35 @@ const Home: React.FC<HomeProps> = ({
         id: 'gpt-4',
         name: 'GPT-4',
         maxLength: 24000,
-        tokenLimit: 8000,
+        tokenLimit: 8000
       },
       prompt: DEFAULT_SYSTEM_PROMPT,
-      folderId: null,
-    };
+      folderId: null
+    }
 
-    const updatedConversations = [...conversations, newConversation];
+    const updatedConversations = [...conversations, newConversation]
 
-    setSelectedConversation(newConversation);
-    setConversations(updatedConversations);
+    setSelectedConversation(newConversation)
+    setConversations(updatedConversations)
 
-    saveConversation(newConversation);
-    saveConversations(updatedConversations);
+    saveConversation(newConversation)
+    saveConversations(updatedConversations)
 
-    setLoading(false);
-  };
+    setLoading(false)
+  }
 
   const handleDeleteConversation = (conversation: Conversation) => {
     const updatedConversations = conversations.filter(
-      (c) => c.id !== conversation.id,
-    );
-    setConversations(updatedConversations);
-    saveConversations(updatedConversations);
+      c => c.id !== conversation.id
+    )
+    setConversations(updatedConversations)
+    saveConversations(updatedConversations)
 
     if (updatedConversations.length > 0) {
       setSelectedConversation(
-        updatedConversations[updatedConversations.length - 1],
-      );
-      saveConversation(updatedConversations[updatedConversations.length - 1]);
+        updatedConversations[updatedConversations.length - 1]
+      )
+      saveConversation(updatedConversations[updatedConversations.length - 1])
     } else {
       setSelectedConversation({
         id: uuidv4(),
@@ -562,36 +570,36 @@ const Home: React.FC<HomeProps> = ({
           id: 'gpt-4',
           name: 'GPT-4',
           maxLength: 24000,
-          tokenLimit: 8000,
+          tokenLimit: 8000
         },
         prompt: DEFAULT_SYSTEM_PROMPT,
-        folderId: null,
-      });
-      localStorage.removeItem('selectedConversation');
+        folderId: null
+      })
+      localStorage.removeItem('selectedConversation')
     }
-  };
+  }
 
   const handleUpdateConversation = (
     conversation: Conversation,
-    data: KeyValuePair,
+    data: KeyValuePair
   ) => {
     const updatedConversation = {
       ...conversation,
-      [data.key]: data.value,
-    };
+      [data.key]: data.value
+    }
 
     const { single, all } = updateConversation(
       updatedConversation,
-      conversations,
-    );
+      conversations
+    )
 
-    setSelectedConversation(single);
-    setConversations(all);
-  };
+    setSelectedConversation(single)
+    setConversations(all)
+  }
 
   const handleClearConversations = () => {
-    setConversations([]);
-    localStorage.removeItem('conversationHistory');
+    setConversations([])
+    localStorage.removeItem('conversationHistory')
 
     setSelectedConversation({
       id: uuidv4(),
@@ -601,139 +609,137 @@ const Home: React.FC<HomeProps> = ({
         id: 'gpt-4',
         name: 'GPT-4',
         maxLength: 24000,
-        tokenLimit: 8000,
+        tokenLimit: 8000
       },
       prompt: DEFAULT_SYSTEM_PROMPT,
-      folderId: null,
-    });
-    localStorage.removeItem('selectedConversation');
+      folderId: null
+    })
+    localStorage.removeItem('selectedConversation')
 
-    const updatedFolders = folders.filter((f) => f.type !== 'chat');
-    setFolders(updatedFolders);
-    saveFolders(updatedFolders);
-  };
+    const updatedFolders = folders.filter(f => f.type !== 'chat')
+    setFolders(updatedFolders)
+    saveFolders(updatedFolders)
+  }
 
   const handleEditMessage = (message: Message, messageIndex: number) => {
     if (selectedConversation) {
       const updatedMessages = selectedConversation.messages
         .map((m, i) => {
           if (i < messageIndex) {
-            return m;
+            return m
           }
         })
-        .filter((m) => m) as Message[];
+        .filter(m => m) as Message[]
 
       const updatedConversation = {
         ...selectedConversation,
-        messages: updatedMessages,
-      };
+        messages: updatedMessages
+      }
 
       const { single, all } = updateConversation(
         updatedConversation,
-        conversations,
-      );
+        conversations
+      )
 
-      setSelectedConversation(single);
-      setConversations(all);
+      setSelectedConversation(single)
+      setConversations(all)
 
-      setCurrentMessage(message);
+      setCurrentMessage(message)
     }
-  };
-
-
+  }
 
   // EFFECTS  --------------------------------------------
 
   useEffect(() => {
     if (currentMessage) {
-      handleSend(currentMessage);
-      setCurrentMessage(undefined);
+      handleSend(currentMessage)
+      setCurrentMessage(undefined)
     }
-  }, [currentMessage]);
+  }, [currentMessage])
 
   useEffect(() => {
     if (window.innerWidth < 640) {
-      setShowSidebar(false);
+      setShowSidebar(false)
     }
-  }, [selectedConversation]);
+  }, [selectedConversation])
 
   useEffect(() => {
     if (apiKey) {
-      fetchModels(apiKey);
+      fetchModels(apiKey)
     }
-  }, [apiKey]);
+  }, [apiKey])
 
   // ON LOAD --------------------------------------------
 
   useEffect(() => {
-    const theme = localStorage.getItem('theme');
+    const theme = localStorage.getItem('theme')
     if (theme) {
-      setLightMode(theme as 'dark' | 'light');
+      setLightMode(theme as 'dark' | 'light')
     }
 
-    const apiKey = localStorage.getItem('apiKey');
+    const apiKey = localStorage.getItem('apiKey')
 
     console.log('serverSideApiKeyIsSet', serverSideApiKeyIsSet)
 
     if (serverSideApiKeyIsSet) {
-      fetchModels('');
-      setApiKey('');
-      localStorage.removeItem('apiKey');
+      fetchModels('')
+      setApiKey('')
+      localStorage.removeItem('apiKey')
     } else if (apiKey) {
-      setApiKey(apiKey);
-      fetchModels(apiKey);
+      setApiKey(apiKey)
+      fetchModels(apiKey)
     }
 
-    const pluginKeys = localStorage.getItem('pluginKeys');
+    const pluginKeys = localStorage.getItem('pluginKeys')
     if (serverSidePluginKeysSet) {
-      setPluginKeys([]);
-      localStorage.removeItem('pluginKeys');
+      setPluginKeys([])
+      localStorage.removeItem('pluginKeys')
     } else if (pluginKeys) {
-      setPluginKeys(JSON.parse(pluginKeys));
+      setPluginKeys(JSON.parse(pluginKeys))
     }
 
     if (window.innerWidth < 640) {
-      setShowSidebar(false);
+      setShowSidebar(false)
     }
 
-    const showChatbar = localStorage.getItem('showChatbar');
+    const showChatbar = localStorage.getItem('showChatbar')
     if (showChatbar) {
-      setShowSidebar(showChatbar === 'true');
+      setShowSidebar(showChatbar === 'true')
     }
 
-    const showPromptbar = localStorage.getItem('showPromptbar');
+    const showPromptbar = localStorage.getItem('showPromptbar')
     if (showPromptbar) {
-      setShowPromptbar(showPromptbar === 'true');
+      setShowPromptbar(showPromptbar === 'true')
     }
 
-    const folders = localStorage.getItem('folders');
+    const folders = localStorage.getItem('folders')
     if (folders) {
-      setFolders(JSON.parse(folders));
+      setFolders(JSON.parse(folders))
     }
 
-    const prompts = localStorage.getItem('prompts');
+    const prompts = localStorage.getItem('prompts')
     if (prompts) {
-      setPrompts(JSON.parse(prompts));
+      setPrompts(JSON.parse(prompts))
     }
 
-    const conversationHistory = localStorage.getItem('conversationHistory');
+    const conversationHistory = localStorage.getItem('conversationHistory')
     if (conversationHistory) {
       const parsedConversationHistory: Conversation[] =
-        JSON.parse(conversationHistory);
+        JSON.parse(conversationHistory)
       const cleanedConversationHistory = cleanConversationHistory(
-        parsedConversationHistory,
-      );
-      setConversations(cleanedConversationHistory);
+        parsedConversationHistory
+      )
+      setConversations(cleanedConversationHistory)
     }
 
-    const selectedConversation = localStorage.getItem('selectedConversation');
+    const selectedConversation = localStorage.getItem('selectedConversation')
     if (selectedConversation) {
       const parsedSelectedConversation: Conversation =
-        JSON.parse(selectedConversation);
+        JSON.parse(selectedConversation)
       const cleanedSelectedConversation = cleanSelectedConversation(
-        parsedSelectedConversation,
-      );
-      setSelectedConversation(cleanedSelectedConversation);
+        parsedSelectedConversation
+      )
+      setSelectedConversation(cleanedSelectedConversation)
     } else {
       setSelectedConversation({
         id: uuidv4(),
@@ -743,16 +749,15 @@ const Home: React.FC<HomeProps> = ({
           id: 'gpt-4',
           name: 'GPT-4',
           maxLength: 24000,
-          tokenLimit: 8000,
+          tokenLimit: 8000
         },
         prompt: DEFAULT_SYSTEM_PROMPT,
-        folderId: null,
-      });
+        folderId: null
+      })
     }
-  }, [serverSideApiKeyIsSet]);
+  }, [serverSideApiKeyIsSet])
 
   return (
-    
     <>
       <Head>
         <title>Sender OS</title>
@@ -784,9 +789,9 @@ const Home: React.FC<HomeProps> = ({
                   selectedConversation={selectedConversation}
                   apiKey={apiKey}
                   pluginKeys={pluginKeys}
-                  folders={folders.filter((folder) => folder.type === 'chat')}
+                  folders={folders.filter(folder => folder.type === 'chat')}
                   onToggleLightMode={handleLightMode}
-                  onCreateFolder={(name) => handleCreateFolder(name, 'chat')}
+                  onCreateFolder={name => handleCreateFolder(name, 'chat')}
                   onDeleteFolder={handleDeleteFolder}
                   onUpdateFolder={handleUpdateFolder}
                   onNewConversation={handleNewConversation}
@@ -880,7 +885,6 @@ const Home: React.FC<HomeProps> = ({
         </main>
       )}
     </>
-  );
-};
-export default Home;
-
+  )
+}
+export default Home
