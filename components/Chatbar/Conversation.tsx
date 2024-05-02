@@ -107,6 +107,7 @@ export const ConversationComponent: FC<Props> = ({
           <div className="absolute right-1 z-10 flex text-gray-300">
             <button
               className="min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100"
+              title='edit'
               onClick={(e) => {
                 e.stopPropagation();
                 if (isDeleting) {
@@ -122,6 +123,7 @@ export const ConversationComponent: FC<Props> = ({
             </button>
             <button
               className="min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100"
+              title='delete'
               onClick={(e) => {
                 e.stopPropagation();
                 setIsDeleting(false);
@@ -139,6 +141,7 @@ export const ConversationComponent: FC<Props> = ({
           <div className="absolute right-1 z-10 flex text-gray-300">
             <button
               className="min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100"
+              title='edit'
               onClick={(e) => {
                 e.stopPropagation();
                 setIsRenaming(true);
@@ -149,6 +152,7 @@ export const ConversationComponent: FC<Props> = ({
             </button>
             <button
               className="min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100"
+              title='delete'
               onClick={(e) => {
                 e.stopPropagation();
                 setIsDeleting(true);

@@ -47,7 +47,7 @@ export default function LoginWallet({ onWalletConnect }: LoginWalletProps) {
   // }, [signedAccountId, wallet, setAction, setLabel]);
 
   return (
-    <div className="h-10 w-full justify-center text-white px-4 shadow-none rounded-3xl border-none transition-colors dark:bg-zinc-900">
+    <div className="h-10 w-full justify-center text-white px-4 shadow-none rounded-3xl border-none transition-colors">
       {accounts.length > 0 ? (
         <div className="flex justify-between items-center h-10">
           <div className="flex items-center gap-2 text-white  ">

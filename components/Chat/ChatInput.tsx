@@ -61,6 +61,8 @@ export const ChatInput: FC<Props> = ({
 }) => {
   const { t } = useTranslation('chat');
 
+  console.log('conversationIsEmpty', conversationIsEmpty)
+
   const [content, setContent] = useState<string>();
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [showPromptList, setShowPromptList] = useState(false);
@@ -70,7 +72,7 @@ export const ChatInput: FC<Props> = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [showPluginSelect, setShowPluginSelect] = useState(false);
   const [plugin, setPlugin] = useState<Plugin | null>(null);
-  const [initState, setInitState] = useState(false) 
+  // const [initState, setInitState] = useState(false) 
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [showTransfer, setShowTransfer] = useState(true);
 
@@ -131,7 +133,7 @@ export const ChatInput: FC<Props> = ({
       return;
     }
 
-    setInitState(false)
+    // setInitState(false)
 
     onSend({ role: 'user', content }, plugin);
     setContent('');
@@ -301,13 +303,13 @@ export const ChatInput: FC<Props> = ({
   }, []);
 
   return (
-    <div className={`${initState ? 'h-full flex justify-center items-start ' : ''}`}>
-    { initState ? (
+    <div className={`${conversationIsEmpty ? 'h-full flex justify-center items-start ' : ''}`}>
+    { conversationIsEmpty ? (
         <div className="w-full border-transparent  pt-6 md:pt-2">
           
           <div className='flex gap-2 justify-center flex-col items-center'>
-            <h1 className='text-6xl text-[#141C2A]'>Sender OS</h1>
-            <p className='text-xl text-[#9CA8B4]'>How can I help you today</p>
+            <h1 className='font-raleway font-medium text-6xl text-[#141C2A]'>Sender <span className='font-raleway font-light'>OS</span> </h1>
+            <p className=' text-xl text-[#9CA8B4]'>How can I help you today</p>
           </div>
           
           <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">

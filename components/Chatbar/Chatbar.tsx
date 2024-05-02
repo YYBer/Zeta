@@ -21,9 +21,9 @@ interface Props {
   apiKey: string;
   // pluginKeys: PluginKey[];
   folders: Folder[];
-  onCreateFolder: (name: string) => void;
-  onDeleteFolder: (folderId: string) => void;
-  onUpdateFolder: (folderId: string, name: string) => void;
+  // onCreateFolder: (name: string) => void;
+  // onDeleteFolder: (folderId: string) => void;
+  // onUpdateFolder: (folderId: string, name: string) => void;
   onNewConversation: () => void;
   // onToggleLightMode: (mode: 'light' | 'dark') => void;
   onSelectConversation: (conversation: Conversation) => void;
@@ -50,9 +50,9 @@ export const Chatbar: FC<Props> = ({
   apiKey,
   // pluginKeys,
   folders,
-  onCreateFolder,
-  onDeleteFolder,
-  onUpdateFolder,
+  // onCreateFolder,
+  // onDeleteFolder,
+  // onUpdateFolder,
   onNewConversation,
   // onToggleLightMode,
   onSelectConversation,
@@ -166,7 +166,7 @@ export const Chatbar: FC<Props> = ({
 
   return (
     <div
-      className={`fixed top-0 bottom-0 z-50 flex h-full w-[260px] flex-none flex-col space-y-2 bg-[#202123] p-2 transition-all sm:relative sm:top-0`}
+      className={`fixed top-0 bottom-0 z-50 flex h-full w-[260px] flex-none flex-col space-y-2 bg-[#2B3849] p-2 transition-all sm:relative sm:top-0`}
     >
       <div className="flex items-center">
         <button

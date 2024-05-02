@@ -1,5 +1,6 @@
-import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
+// import { GeistSans } from 'geist/font/sans'
+// import { GeistMono } from 'geist/font/mono'
+import { inter, raleway, lato } from '@/components/ui/fonts';
 
 import '@/app/globals.css'
 import { cn } from '@/lib/utils'
@@ -42,8 +43,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body
         className={cn(
           'font-sans antialiased',
-          GeistSans.variable,
-          GeistMono.variable
+          inter.className,
+          raleway.className,
+          // lato.className
         )}
       >
         {/* <Toaster position="top-center" /> */}

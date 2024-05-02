@@ -426,18 +426,18 @@ const Home: React.FC<HomeProps> = ({
 
   // FOLDER OPERATIONS  --------------------------------------------
 
-  const handleCreateFolder = (name: string, type: FolderType) => {
-    const newFolder: Folder = {
-      id: uuidv4(),
-      name,
-      type
-    }
+  // const handleCreateFolder = (name: string, type: FolderType) => {
+  //   const newFolder: Folder = {
+  //     id: uuidv4(),
+  //     name,
+  //     type
+  //   }
 
-    const updatedFolders = [...folders, newFolder]
+  //   const updatedFolders = [...folders, newFolder]
 
-    setFolders(updatedFolders)
-    saveFolders(updatedFolders)
-  }
+  //   setFolders(updatedFolders)
+  //   saveFolders(updatedFolders)
+  // }
 
   const handleDeleteFolder = (folderId: string) => {
     const updatedFolders = folders.filter(f => f.id !== folderId)
@@ -745,9 +745,9 @@ const Home: React.FC<HomeProps> = ({
                     // pluginKeys={pluginKeys}
                     folders={folders.filter(folder => folder.type === 'chat')}
                     // onToggleLightMode={handleLightMode}
-                    onCreateFolder={name => handleCreateFolder(name, 'chat')}
-                    onDeleteFolder={handleDeleteFolder}
-                    onUpdateFolder={handleUpdateFolder}
+                    // onCreateFolder={name => handleCreateFolder(name, 'chat')}
+                    // onDeleteFolder={handleDeleteFolder}
+                    // onUpdateFolder={handleUpdateFolder}
                     onNewConversation={handleNewConversation}
                     onSelectConversation={handleSelectConversation}
                     onDeleteConversation={handleDeleteConversation}
@@ -767,10 +767,11 @@ const Home: React.FC<HomeProps> = ({
                     <IoIosArrowBack />
                   </button> */}
                   <button
-                    className="fixed top-5 left-[270px] text-black z-50 h-7 w-7 hover:text-gray-400 sm:top-0.5 sm:left-[270px] sm:h-8 sm:w-8 "
+                    className="fixed bottom-[50%] left-[270px] text-black z-50 h-7 w-7 hover:text-gray-400"
                     onClick={handleToggleChatbar}
+                    title="Toggle ChatBar" 
                   >
-                    <IoIosArrowBack />
+                    <IoIosArrowBack className='w-[24px] h-[24px]'/>
                   </button>
                   {/* <div
                     onClick={handleToggleChatbar}
@@ -779,10 +780,11 @@ const Home: React.FC<HomeProps> = ({
                 </div>
               ) : (
                 <button
-                  className="fixed top-2.5 left-4 z-50 h-7 w-7 text-black hover:text-gray-400 sm:top-0.5 sm:left-4 sm:h-8 sm:w-8"
+                  className="fixed bottom-[50%] left-4 z-50 h-7 w-7 text-black hover:text-gray-400"
                   onClick={handleToggleChatbar}
+                  title="Toggle ChatBar" 
                 >
-                  <IoIosArrowForward />
+                  <IoIosArrowForward className='w-[24px] h-[24px]' />
                 </button>
               )}
 
