@@ -8,11 +8,26 @@ import remarkMath from 'remark-math';
 import { CodeBlock } from '@/components/Markdown/CodeBlock';
 import { MemoizedReactMarkdown } from '@/components/Markdown/MemoizedReactMarkdown';
 import Image from 'next/image'
+import { useInputJSONStore } from '@/lib/store/store'
+import { IoWalletSharp } from "react-icons/io5";
+import { PiArrowBendUpRight } from "react-icons/pi";
+import { PiNoteFill } from "react-icons/pi";
+import { TransferToken, Payload } from '@/components/Wallet/TransferTokenClient';
+import { useWalletSelector } from '@/components/contexts/WalletSelectorContext';
+import { useWalletInfoStore } from '@/lib/store/store'
 interface Props {
   message: Message;
   messageIndex: number;
   onEditMessage: (message: Message, messageIndex: number) => void;
 }
+
+const MockPayload: Payload = {
+  userId: '9b5adfd2530b9c2657b088cfc8755e3c25a6cef7fb9b44c659d12b2bd30a3f62',
+  receiverId: 'c7413c9c61fd11557efbfae8a063daebfa5774432aca543833d05bcd7050d9e6',
+  amount: '0.01',
+  symbol: 'USDC'
+};
+ 
 
 export const ChatMessage: FC<Props> = memo(
   ({ message, messageIndex, onEditMessage }) => {
@@ -21,8 +36,13 @@ export const ChatMessage: FC<Props> = memo(
     const [isTyping, setIsTyping] = useState<boolean>(false);
     const [messageContent, setMessageContent] = useState(message.content);
     const [messagedCopied, setMessageCopied] = useState(false);
-
+    const { inputJSON } = useInputJSONStore()
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const [isWalletConnected, setIsWalletConnected] = useState(false);
+    const [showTransfer, setShowTransfer] = useState(true);
+    const [transferObject , setTransferObject] = useState()
+    const { modal, accounts, selector } = useWalletSelector();
+    const { walletInfo } = useWalletInfoStore() 
 
     const toggleEditing = () => {
       setIsEditing(!isEditing);
@@ -70,6 +90,27 @@ export const ChatMessage: FC<Props> = memo(
       }
     }, [isEditing]);
 
+
+    const handleTransferClick = () => {
+      if (isWalletConnected) {
+        setShowTransfer(true);
+      } else {
+        alert("Please connect your wallet first!");
+      }
+    };
+
+    useEffect(() => {
+        if(inputJSON.length > 0){
+        // Remove backslashes to unescape the string
+        const unescapedString = inputJSON.replace(/\\/g, '');
+    
+        // Parse the string into an object
+        const jsonObject = JSON.parse(unescapedString);
+        setTransferObject(jsonObject)
+        }
+    }, [inputJSON])
+    
+
     return (
       <div
         className='group px-4 bg-white text-gray-800'
@@ -93,7 +134,7 @@ export const ChatMessage: FC<Props> = memo(
                 {isEditing ? (
                   <div className="flex w-full flex-col">
                     <textarea
-                      ref={textareaRef}
+                      ref={textareaRef} 
                       className="w-full resize-none whitespace-pre-wrap border-none dark:bg-[#343541]"
                       value={messageContent}
                       onChange={handleInputChange}
@@ -144,6 +185,7 @@ export const ChatMessage: FC<Props> = memo(
                     }
                     `}
                     onClick={toggleEditing}
+                    title='toggleEdit'
                   >
                     <IconEdit size={20} />
                   </button>
@@ -167,6 +209,7 @@ export const ChatMessage: FC<Props> = memo(
                     <button
                       className="translate-x-[1000px] text-gray-500 hover:text-gray-700 focus:translate-x-0 group-hover:translate-x-0 dark:text-gray-400 dark:hover:text-gray-300"
                       onClick={copyOnClick}
+                      title="copy"
                     >
                       <IconCopy size={20} />
                     </button>
@@ -218,7 +261,72 @@ export const ChatMessage: FC<Props> = memo(
                   }}
                 >
                   {message.content}
-                </MemoizedReactMarkdown>
+                </MemoizedReactMarkdown> 
+
+                {message.content.includes("{") ? (
+                  <div className='flex flex-col bg-[#E5E7EB] rounded-xl justify-center items-center'>
+                    <div className="flex w-10/12 mx-auto">
+                      <Image
+                        src='/chartFlowLine.svg'
+                        alt='chartFlowLine'
+                        width={15}
+                        height={10}
+                        className="mr-5"
+                        // className="w-2 h-10"
+                      />
+                      <div className="flex w-full flex-col ">
+                      <div className='flex flex-col gap-2 mt-8'>
+                        <div>Transfer from:</div>
+                        <div className='flex flex-col justify-end'>
+                          <div className='flex items-center gap-2 text-base'><IoWalletSharp /> Wallet</div>
+                          <div className='text-lg font-bold'>{walletInfo}</div>
+                        </div>
+                        <div className='flex flex-col justify-end'>
+                          <div className='flex items-center gap-2 text-base'><PiArrowBendUpRight /> Transfer amount</div>
+                          <div className='text-lg font-bold text-[#10B981]'>{`${transferObject?.amount} ${transferObject?.token}`}</div>
+                        </div>
+                        <div className='flex flex-col justify-end'>
+                          <div className='flex items-center gap-2 text-base'><PiNoteFill /> Transfer note</div>
+                          <div>Lorem ipsum dolor sit amet consectetur adipisicing elit.</div>
+                        </div>
+                      </div>
+                    </div>
+                    </div>
+
+                    <div className="flex w-10/12 mx-auto">
+                      <div>
+                      <Image
+                        src='/chartFlowLine.svg'
+                        alt='chartFlowLine'
+                        width={10}
+                        height={5}
+                        className="mr-5"
+                        // className="w-2 h-10"
+                      />
+                      </div>
+                      
+                      <div className="flex w-full flex-col mt-8">
+                      <div className='flex flex-col gap-2'>
+                        <div>Transfer To:</div>
+                        <div className='flex flex-col justify-end'>
+                          <div className='flex items-center gap-2 text-base'><IoWalletSharp /> Wallet</div>
+                          <div className='text-lg font-bold'>{transferObject?.recipient}</div>
+                        </div>
+                      </div>
+                    </div>
+                    </div>
+                    <div className='flex flex-col mb-4 w-10/12 border-2 bg-[#F0F9FF] px-4 rounded-xl'>
+                      <button className='flex justify-start my-2' onClick={handleTransferClick} disabled={!isWalletConnected} >
+                      Please confirm the action.
+                        <div></div>
+                      </button>
+                      {showTransfer && <TransferToken payload={MockPayload} />}
+                    </div>
+                  </div>
+                 
+                ) : (
+                  <></>
+                )}
               </>
             )}
           </div>

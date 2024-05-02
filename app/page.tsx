@@ -43,7 +43,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { Wallet } from '@/lib/wallets/near-wallet'
 import { NetworkId, HelloNearContract } from '@/config'
 import { WalletSelectorContextProvider } from '@/components/contexts/WalletSelectorContext'
-
+import { useInputJSONStore } from '@/lib/store/store'
 interface HomeProps {
   // serverSideApiKeyIsSet: boolean;
   serverSidePluginKeysSet: boolean
@@ -80,6 +80,9 @@ const Home: React.FC<HomeProps> = ({
 
   const [prompts, setPrompts] = useState<Prompt[]>([])
   const [showPromptbar, setShowPromptbar] = useState<boolean>(true)
+  const { setInputJSON } = useInputJSONStore()
+
+
 
   // REFS ----------------------------------------------
 
@@ -153,6 +156,8 @@ const Home: React.FC<HomeProps> = ({
         signal: controller.signal
       })
 
+      console.log('response', response)
+
       if (!response.ok) {
         setLoading(false)
         setMessageIsStreaming(false)
@@ -200,6 +205,10 @@ const Home: React.FC<HomeProps> = ({
 
           console.log('chunkValue', chunkValue)
 
+          if(chunkValue.includes("{")) {
+            setInputJSON(chunkValue)
+            console.log('save')
+          }
           text += chunkValue
 
           if (isFirst) {
@@ -253,6 +262,8 @@ const Home: React.FC<HomeProps> = ({
         if (updatedConversations.length === 0) {
           updatedConversations.push(updatedConversation)
         }
+
+        console.log('updateConversations', updatedConversations)
 
         setConversations(updatedConversations)
         saveConversations(updatedConversations)

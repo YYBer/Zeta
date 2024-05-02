@@ -29,7 +29,6 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
-import { TransferToken, Payload } from '@/components/Wallet/trasferTokenClient';
 
 interface Props {
   messageIsStreaming: boolean;
@@ -42,13 +41,7 @@ interface Props {
   textareaRef: MutableRefObject<HTMLTextAreaElement | null>;
 }
 
-const MockPayload: Payload = {
-  userId: '9b5adfd2530b9c2657b088cfc8755e3c25a6cef7fb9b44c659d12b2bd30a3f62',
-  receiverId: 'c7413c9c61fd11557efbfae8a063daebfa5774432aca543833d05bcd7050d9e6',
-  amount: '0.01',
-  symbol: 'NEAR'
-};
- 
+
 export const ChatInput: FC<Props> = ({
   messageIsStreaming,
   model,
@@ -61,8 +54,6 @@ export const ChatInput: FC<Props> = ({
 }) => {
   const { t } = useTranslation('chat');
 
-  console.log('conversationIsEmpty', conversationIsEmpty)
-
   const [content, setContent] = useState<string>();
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [showPromptList, setShowPromptList] = useState(false);
@@ -73,29 +64,28 @@ export const ChatInput: FC<Props> = ({
   const [showPluginSelect, setShowPluginSelect] = useState(false);
   const [plugin, setPlugin] = useState<Plugin | null>(null);
   // const [initState, setInitState] = useState(false) 
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
-  const [showTransfer, setShowTransfer] = useState(true);
+
 
   const exampleMessages = [
     {
       heading: 'Transfer',
-      message: `What are the trending memecoins today?`
+      message: `I want to transfer 0.01 near to bugee.testnet`
     },
     {
       heading: 'Check Balance',
-      message: 'What is the price of $DOGE right now?'
+      message: 'What is the price of $NEAR right now?'
     },
     {
-      heading: 'Exchange ETH',
-      message: `I would like to buy 42 $DOGE`
+      heading: 'Exchange NEAR',
+      message: `I would like to buy 42 $NEAR`
     },
     {
       heading: 'Create wallet',
-      message: `What are some recent events about $DOGE?`
+      message: `Help to create a wallet`
     },
     {
       heading: 'Buy NEAR',
-      message: `I would like to buy 42 $DOGE`
+      message: `I would like to buy 12 $NEAR`
     },
   ]
 
@@ -261,13 +251,6 @@ export const ChatInput: FC<Props> = ({
     }
   };
 
-  const handleTransferClick = () => {
-    if (isWalletConnected) {
-      setShowTransfer(true);
-    } else {
-      alert("Please connect your wallet first!");
-    }
-  };
 
   useEffect(() => {
     if (promptListRef.current) {

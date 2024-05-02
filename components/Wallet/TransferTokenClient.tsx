@@ -8,6 +8,9 @@ import { register } from 'module';
 import { deployContract } from 'near-api-js/lib/transaction';
 const { utils, keyStores, connect, Contract } = nearAPI;
 type ContractType = InstanceType<typeof Contract>;
+import { PiSpinnerGapBold } from "react-icons/pi";
+
+
 interface NEP141_Contract extends ContractType {
   ft_balance_of: (args: { account_id: string }) => Promise<string>;
   storage_balance_of: (args: { account_id: string }) => Promise<{total: string, available: string}>;
@@ -38,7 +41,7 @@ const TOKEN_LIST: { [key: string]: string } = {
   USDC: '17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1'
 };
 
-interface Payload {
+export interface Payload {
   userId: string;
   receiverId: string;
   amount: string;
@@ -235,31 +238,36 @@ export function TransferToken({ payload }: { payload: Payload }) {
 
   return (
     <div className='text-black'>
-      {loading && <p>Transferring tokens... for payload: {`${JSON.stringify(payload)}`}</p>}
+      {loading && 
+        <div className='flex flex-col gap-2'>
+          <div className='flex gap-2 items-center text-[#0EA5E9]'><PiSpinnerGapBold className='spinner'/><div>Simulating the transfer</div></div>
+          <div className='mb-2'>We will simulate whether the transaction is successful. This is a simulated transaction, not an actual one.</div>
+        </div>
+      }
       {/* {error && <p className="text-red-500">Error: {error}</p>} */}
       {success && <p className="text-green-500">Token transfer successful!</p>}
       {cancelled && <p className="text-red-500">Transaction Cancelled</p>}
 
       {!confirmTransfer && !cancelled && (
-        <div className="flex justify-center space-x-4 mt-4">
+        <div className="flex space-x-4 my-2">
           <button
-            className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
+            className="px-4 py-2 bg-[#0EA5E9] w-3/4 text-white rounded-full hover:bg-blue-600"
             onClick={handleConfirm}
           >
             Confirm
           </button>
           <button
-            className="px-4 py-2 bg-gray-500 text-white rounded-full hover:bg-gray-600"
+            className="px-4 py-2 border-[#0EA5E9] w-1/4 border text-[#0EA5E9] rounded-full hover:bg-gray-600"
             onClick={handleCancel}
           >
-            Cancel
+            Not now
           </button>
         </div>
       )}
 
-      {confirmTransfer && (
+      {/* {confirmTransfer && (
         <p className="text-center mt-2">Please approve the transaction on your wallet...</p>
-      )}
+      )} */}
     </div>
   );
 }

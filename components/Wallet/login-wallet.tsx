@@ -3,15 +3,16 @@ import { useWalletSelector } from '@/components/contexts/WalletSelectorContext';
 import "@near-wallet-selector/modal-ui/styles.css";
 import Image from 'next/image'
 import { IoIosSettings } from 'react-icons/io'
-
-
+import { useWalletInfoStore } from '@/lib/store/store'
+ 
 interface LoginWalletProps {
   onWalletConnect: () => void;
 }
 
 export default function LoginWallet({ onWalletConnect }: LoginWalletProps) {
   const { modal, accounts, selector } = useWalletSelector();
-  const [label, setLabel] = useState('Loading...');
+  // const [label, setLabel] = useState('Loading...');
+  const { walletInfo, setWalletInfo } = useWalletInfoStore() 
 
   useEffect(() => {
     if (accounts.length > 0) {
@@ -20,7 +21,7 @@ export default function LoginWallet({ onWalletConnect }: LoginWalletProps) {
 
       if(userName.length > 10) userName = userName.substring(0, 10) + '...'
 
-      setLabel(userName);
+      setWalletInfo(userName);
     }
   }, [accounts, onWalletConnect]); // 依赖项包括 accounts 和 onWalletConnect
 
@@ -33,26 +34,13 @@ export default function LoginWallet({ onWalletConnect }: LoginWalletProps) {
     await wallet.signOut();
   };
 
-  // useEffect(() => {
-  //   if (!wallet) return;
-
-  //   if (signedAccountId) {
-  //     setAction(() => wallet.signOut);
-  //     let userName = signedAccountId.split(".")[0];
-  //     setLabel(userName);
-  //   } else {
-  //     setAction(() => wallet.signIn);
-  //     setLabel('Login');
-  //   } 
-  // }, [signedAccountId, wallet, setAction, setLabel]);
-
   return (
     <div className="h-10 w-full justify-center text-white px-4 shadow-none rounded-3xl border-none transition-colors">
       {accounts.length > 0 ? (
         <div className="flex justify-between items-center h-10">
           <div className="flex items-center gap-2 text-white  ">
             <Image src={'/user.png'} alt="user" width={36} height={36} />
-            <p className='text-base'>{label}</p>
+            <p className='text-base'>{walletInfo}</p>
           </div>
           <button onClick={onLogoutWallet} title="Logout Wallet"> 
             <IoIosSettings className='w-[24px] h-[24px]'/> 
