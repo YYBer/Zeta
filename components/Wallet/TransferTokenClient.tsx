@@ -20,7 +20,7 @@ interface Payload {
   amount: string;
   symbol: string;
 }
-
+ 
 export function TransferToken({ payload }: { payload: Payload }) {
   const { selector, modal, accounts } = useWalletSelector();
   const [loading, setLoading] = useState(false);
@@ -28,6 +28,8 @@ export function TransferToken({ payload }: { payload: Payload }) {
   const [success, setSuccess] = useState(false);
   const [confirmTransfer, setConfirmTransfer] = useState(false);
   const [cancelled, setCancelled] = useState(false);
+
+  console.log('payload', payload)
 
   useEffect(() => {
     if (payload && selector && modal && accounts.length > 0 && confirmTransfer) {

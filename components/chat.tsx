@@ -13,7 +13,7 @@ import { Message } from '@/lib/chat/actions'
 import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
 import { toast } from 'sonner'
 import { WalletSelectorContextProvider } from './contexts/WalletSelectorContext'
-import LoginWallet from './login-wallet'
+// import LoginWallet from './login-wallet'
 import { SidebarDesktop } from './sidebar-desktop'
 
 export interface ChatProps extends React.ComponentProps<'div'> {

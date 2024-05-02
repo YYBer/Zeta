@@ -8,80 +8,68 @@ import { useTranslation } from 'next-i18next';
 import { FC, useEffect, useState } from 'react';
 import { ChatFolders } from '../Folders/Chat/ChatFolders';
 import { Search } from '../Sidebar/Search';
-import { ChatbarSettings } from './ChatbarSettings';
+// import { ChatbarSettings } from './ChatbarSettings';
 import { Conversations } from './Conversations';
-// import { useEffect, useState } from 'react';
-import { useWalletStore } from '@/lib/store/store';
-import { IoIosSettings } from 'react-icons/io'
-import Image from 'next/image'
-import { TransferToken, Payload } from '@/components/trasferTokenClient';
-import { getBalance } from '@/utils/getBalanceClient';
-//import { getBalance } from './tmp';
-import LoginWallet from '@/utils/login-wallet';
-import { WalletSelectorContextProvider } from '@/components/WalletSelectorContext'; 
+import LoginWallet from '@/components/Wallet/login-wallet';
+
 
 interface Props {
   loading: boolean;
   conversations: Conversation[];
-  lightMode: 'light' | 'dark';
+  // lightMode: 'light' | 'dark';
   selectedConversation: Conversation;
   apiKey: string;
-  pluginKeys: PluginKey[];
+  // pluginKeys: PluginKey[];
   folders: Folder[];
   onCreateFolder: (name: string) => void;
   onDeleteFolder: (folderId: string) => void;
   onUpdateFolder: (folderId: string, name: string) => void;
   onNewConversation: () => void;
-  onToggleLightMode: (mode: 'light' | 'dark') => void;
+  // onToggleLightMode: (mode: 'light' | 'dark') => void;
   onSelectConversation: (conversation: Conversation) => void;
   onDeleteConversation: (conversation: Conversation) => void;
   onUpdateConversation: (
     conversation: Conversation,
     data: KeyValuePair,
   ) => void;
-  onApiKeyChange: (apiKey: string) => void;
+  // onApiKeyChange: (apiKey: string) => void;
   onClearConversations: () => void;
-  onExportConversations: () => void;
-  onImportConversations: (data: SupportedExportFormats) => void;
-  onPluginKeyChange: (pluginKey: PluginKey) => void;
-  onClearPluginKey: (pluginKey: PluginKey) => void;
+  // onExportConversations: () => void;
+  // onImportConversations: (data: SupportedExportFormats) => void;
+  // onPluginKeyChange: (pluginKey: PluginKey) => void;
+  // onClearPluginKey: (pluginKey: PluginKey) => void;
 }
 
-const MockPayload: Payload = {
-  userId: '0xpj.testnet',
-  receiverId: '0xpjunior.testnet',
-  amount: '1',
-  symbol: 'NEAR'
-};
+
 
 export const Chatbar: FC<Props> = ({
   loading,
   conversations,
-  lightMode,
+  // lightMode,
   selectedConversation,
   apiKey,
-  pluginKeys,
+  // pluginKeys,
   folders,
   onCreateFolder,
   onDeleteFolder,
   onUpdateFolder,
   onNewConversation,
-  onToggleLightMode,
+  // onToggleLightMode,
   onSelectConversation,
   onDeleteConversation,
   onUpdateConversation,
-  onApiKeyChange,
+  // onApiKeyChange,
   onClearConversations,
-  onExportConversations,
-  onImportConversations,
-  onPluginKeyChange,
-  onClearPluginKey,
+  // onExportConversations,
+  // onImportConversations,
+  // onPluginKeyChange,
+  // onClearPluginKey,
 }) => {
   const { t } = useTranslation('sidebar');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [filteredConversations, setFilteredConversations] =
     useState<Conversation[]>(conversations);
-    const { wallet, signedAccountId, setWallet, setSignedAccountId } = useWalletStore();
+    // const { wallet, signedAccountId, setWallet, setSignedAccountId } = useWalletStore();
     const [action, setAction] = useState(() => { });
     const [label, setLabel] = useState('Loading...');
 
@@ -135,20 +123,20 @@ export const Chatbar: FC<Props> = ({
     }
   }, [searchTerm, conversations]);
 
-  useEffect(() => {
-    console.log('wallet', wallet)
-    console.log('signedAccountId', signedAccountId)
-    if (!wallet) return;
+  // useEffect(() => {
+  //   // console.log('wallet', wallet)
+  //   // console.log('signedAccountId', signedAccountId)
+  //   if (!wallet) return;
 
-    if (signedAccountId) {
-      setAction(() => wallet.signOut);
-      let userName = signedAccountId.split(".")[0];
-      setLabel(userName);
-    } else {
-      setAction(() => wallet.signIn);
-      setLabel('Login');
-    } 
-  }, [signedAccountId, wallet, setAction, setLabel]);
+  //   if (signedAccountId) {
+  //     setAction(() => wallet.signOut);
+  //     let userName = signedAccountId.split(".")[0];
+  //     setLabel(userName);
+  //   } else {
+  //     setAction(() => wallet.signIn);
+  //     setLabel('Login');
+  //   } 
+  // }, [signedAccountId, wallet, setAction, setLabel]);
 
   // transfer and login
   const [showTransfer, setShowTransfer] = useState(false);
@@ -176,17 +164,7 @@ export const Chatbar: FC<Props> = ({
   const [balance, setBalance] = useState('');
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (accountId !== '' && tokenSymbol !== '') {
-      getBalance(accountId, tokenSymbol).then(setBalance).catch(e => {
-        setError(`Failed to fetch balance: ${e.message}`);
-        console.error(e);
-      });
-    }
-  }, [accountId, tokenSymbol]); // 依赖项包括 accountId 和 tokenSymbol
-
   return (
-    <WalletSelectorContextProvider>
     <div
       className={`fixed top-0 bottom-0 z-50 flex h-full w-[260px] flex-none flex-col space-y-2 bg-[#202123] p-2 transition-all sm:relative sm:top-0`}
     >
@@ -266,45 +244,8 @@ export const Chatbar: FC<Props> = ({
       </div>
 
       <div className="card">
-          <LoginWallet onWalletConnect={handleLoginSuccess} />
-          {/* <button onClick={handleTransferClick} disabled={!isWalletConnected} >
-            Transfer
-          </button> */}
-          {/* {showTransfer && <TransferToken payload={MockPayload} />} */}
-        </div>
-
-      {/* {!signedAccountId? (
-        <div className="flex justify-between items-center h-10 px-4">
-          <div className="flex items-center gap-2 text-white  ">
-            <Image src={'/user.png'} alt="user" width={36} height={36} />
-            <p className='text-base'>{label}</p>
-           
-          </div>
-          <button onClick={action} > <IoIosSettings className='w-[24px] h-[24px]'/> </button>
-          
-        </div>
-      ) : (
-        <div className='navbar-nav pt-1 flex items-center justify-center'>
-        <button className="btn btn-secondary bg-white w-52 text-black rounded-3xl h-10" onClick={action} > Sign In </button>
-      </div>
-      )} */}
-
-      
-
-      {/* <ChatbarSettings
-        lightMode={lightMode}
-        apiKey={apiKey}
-        pluginKeys={pluginKeys}
-        conversationsCount={conversations.length}
-        onToggleLightMode={onToggleLightMode}
-        onApiKeyChange={onApiKeyChange}
-        onClearConversations={onClearConversations}
-        onExportConversations={onExportConversations}
-        onImportConversations={onImportConversations}
-        onPluginKeyChange={onPluginKeyChange}
-        onClearPluginKey={onClearPluginKey}
-      /> */}
+        <LoginWallet onWalletConnect={handleLoginSuccess} />
+      </div>    
     </div>
-    </WalletSelectorContextProvider>
   );
 };

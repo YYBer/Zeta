@@ -147,7 +147,7 @@ export async function getDecimals(contract: NEP141_Contract, payload: Payload): 
 //  (done integrating) call
 export async function TransferNear(walletSelector: WalletSelector, payload: Payload): Promise<void> {
     const wallet = await walletSelector.wallet();
-
+ 
     // Create the transfer action
     const transferAction: TransferAction = {
         type: "Transfer",

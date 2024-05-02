@@ -42,7 +42,6 @@ import toast from 'react-hot-toast'
 import { v4 as uuidv4 } from 'uuid'
 import { Wallet } from '@/lib/wallets/near-wallet'
 import { NetworkId, HelloNearContract } from '@/config'
-import { useWalletStore } from '@/lib/store/store'
 import { WalletSelectorContextProvider } from '@/components/contexts/WalletSelectorContext'
 
 interface HomeProps {
@@ -81,19 +80,6 @@ const Home: React.FC<HomeProps> = ({
 
   const [prompts, setPrompts] = useState<Prompt[]>([])
   const [showPromptbar, setShowPromptbar] = useState<boolean>(true)
-  const { wallet, signedAccountId, setWallet, setSignedAccountId } =
-    useWalletStore()
-
-  useEffect(() => {
-    // create wallet instance
-    const wallet = new Wallet({
-      createAccessKeyFor: HelloNearContract,
-      networkId: NetworkId
-    })
-    console.log('wallet ', wallet)
-    wallet.startUp(setSignedAccountId)
-    setWallet(wallet)
-  }, [])
 
   // REFS ----------------------------------------------
 
@@ -107,7 +93,6 @@ const Home: React.FC<HomeProps> = ({
     deleteCount = 0,
     plugin: Plugin | null = null
   ) => {
-    console.log('message', message)
 
     if (selectedConversation) {
       let updatedConversation: Conversation
@@ -158,24 +143,6 @@ const Home: React.FC<HomeProps> = ({
       }
 
       const controller = new AbortController()
-
-      // const response = await fetch(endpoint, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   signal: controller.signal,
-      //   body,
-      // });
-
-      // let chatBodys = [
-      //   {
-      //     name: "human",
-      //     text: message.content
-      //   }
-      // ]
-      console.log('messages', updatedConversation.messages)
-      console.log('prompt', updatedConversation.prompt)
 
       const response = await fetch('api/message', {
         method: 'POST',
@@ -439,18 +406,18 @@ const Home: React.FC<HomeProps> = ({
     localStorage.setItem('showPromptbar', JSON.stringify(!showPromptbar))
   }
 
-  const handleExportData = () => {
-    exportData()
-  }
+  // const handleExportData = () => {
+  //   exportData()
+  // }
 
-  const handleImportConversations = (data: SupportedExportFormats) => {
-    const { history, folders, prompts }: LatestExportFormat = importData(data)
+  // const handleImportConversations = (data: SupportedExportFormats) => {
+  //   const { history, folders, prompts }: LatestExportFormat = importData(data)
 
-    setConversations(history)
-    setSelectedConversation(history[history.length - 1])
-    setFolders(folders)
-    setPrompts(prompts)
-  }
+  //   setConversations(history)
+  //   setSelectedConversation(history[history.length - 1])
+  //   setFolders(folders)
+  //   setPrompts(prompts)
+  // }
 
   const handleSelectConversation = (conversation: Conversation) => {
     setSelectedConversation(conversation)
@@ -680,8 +647,6 @@ const Home: React.FC<HomeProps> = ({
 
     const apiKey = localStorage.getItem('apiKey')
 
-    console.log('serverSideApiKeyIsSet', serverSideApiKeyIsSet)
-
     if (serverSideApiKeyIsSet) {
       // fetchModels('')
       setApiKey('')
@@ -691,14 +656,6 @@ const Home: React.FC<HomeProps> = ({
       // fetchModels(apiKey)
     }
 
-    const pluginKeys = localStorage.getItem('pluginKeys')
-    if (serverSidePluginKeysSet) {
-      setPluginKeys([])
-      localStorage.removeItem('pluginKeys')
-    } else if (pluginKeys) {
-      setPluginKeys(JSON.parse(pluginKeys))
-    }
-
     if (window.innerWidth < 640) {
       setShowSidebar(false)
     }
@@ -706,11 +663,6 @@ const Home: React.FC<HomeProps> = ({
     const showChatbar = localStorage.getItem('showChatbar')
     if (showChatbar) {
       setShowSidebar(showChatbar === 'true')
-    }
-
-    const showPromptbar = localStorage.getItem('showPromptbar')
-    if (showPromptbar) {
-      setShowPromptbar(showPromptbar === 'true')
     }
 
     const folders = localStorage.getItem('folders')
@@ -787,12 +739,12 @@ const Home: React.FC<HomeProps> = ({
                   <Chatbar
                     loading={messageIsStreaming}
                     conversations={conversations}
-                    lightMode={lightMode}
+                    // lightMode={lightMode}
                     selectedConversation={selectedConversation}
                     apiKey={apiKey}
-                    pluginKeys={pluginKeys}
+                    // pluginKeys={pluginKeys}
                     folders={folders.filter(folder => folder.type === 'chat')}
-                    onToggleLightMode={handleLightMode}
+                    // onToggleLightMode={handleLightMode}
                     onCreateFolder={name => handleCreateFolder(name, 'chat')}
                     onDeleteFolder={handleDeleteFolder}
                     onUpdateFolder={handleUpdateFolder}
@@ -802,10 +754,10 @@ const Home: React.FC<HomeProps> = ({
                     onUpdateConversation={handleUpdateConversation}
                     // onApiKeyChange={handleApiKeyChange}
                     onClearConversations={handleClearConversations}
-                    onExportConversations={handleExportData}
-                    onImportConversations={handleImportConversations}
-                    onPluginKeyChange={handlePluginKeyChange}
-                    onClearPluginKey={handleClearPluginKey}
+                    // onExportConversations={handleExportData}
+                    // onImportConversations={handleImportConversations}
+                    // onPluginKeyChange={handlePluginKeyChange}
+                    // onClearPluginKey={handleClearPluginKey}
                   />
 
                   {/* <button
@@ -851,38 +803,6 @@ const Home: React.FC<HomeProps> = ({
                   stopConversationRef={stopConversationRef}
                 />
               </div>
-
-              {/* {showPromptbar ? (
-                <div>
-                  <Promptbar
-                    prompts={prompts}
-                    folders={folders.filter((folder) => folder.type === 'prompt')}
-                    onCreatePrompt={handleCreatePrompt}
-                    onUpdatePrompt={handleUpdatePrompt}
-                    onDeletePrompt={handleDeletePrompt}
-                    onCreateFolder={(name) => handleCreateFolder(name, 'prompt')}
-                    onDeleteFolder={handleDeleteFolder}
-                    onUpdateFolder={handleUpdateFolder}
-                  />
-                  <button
-                    className="fixed top-5 right-[270px] z-50 h-7 w-7 hover:text-gray-400 dark:text-white dark:hover:text-gray-300 sm:top-0.5 sm:right-[270px] sm:h-8 sm:w-8 sm:text-neutral-700"
-                    onClick={handleTogglePromptbar}
-                  >
-                    <IconArrowBarRight />
-                  </button>
-                  <div
-                    onClick={handleTogglePromptbar}
-                    className="absolute top-0 left-0 z-10 h-full w-full bg-black opacity-70 sm:hidden"
-                  ></div>
-                </div>
-              ) : (
-                <button
-                  className="fixed top-2.5 right-4 z-50 h-7 w-7 text-white hover:text-gray-400 dark:text-white dark:hover:text-gray-300 sm:top-0.5 sm:right-4 sm:h-8 sm:w-8 sm:text-neutral-700"
-                  onClick={handleTogglePromptbar}
-                >
-                  <IconArrowBarLeft />
-                </button>
-              )} */}
             </div>
           </main>
         )}

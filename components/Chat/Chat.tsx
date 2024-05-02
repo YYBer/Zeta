@@ -257,6 +257,7 @@ export const Chat: FC<Props> = memo(
                   ))}
 
                   {loading && <ChatLoader />}
+                  <div className='h-24 w-full'></div>
 
                   <div
                     className="h-[162px] bg-white"

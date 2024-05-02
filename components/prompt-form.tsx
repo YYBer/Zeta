@@ -148,6 +148,7 @@ export function PromptForm() {
             <Image src={'/intent.png'} alt="intent" width={24} height={24} />
             Intent
           </div>
+          
           {exampleMessages.map((example, index) => (
             <div
               key={example.heading}
@@ -155,22 +156,6 @@ export function PromptForm() {
               onClick={() => {
                 setPromptInput(example.message)
               }}
-              // onClick={async () => {
-              //   setMessages((currentMessages: any) => [
-              //     ...currentMessages,
-              //     {
-              //       id: nanoid(),
-              //       display: <UserMessage>{example.message}</UserMessage>
-              //     }
-              //   ])
-
-              //   const responseMessage = await submitUserMessage(example.message)
-
-              //   setMessages((currentMessages: any) => [
-              //     ...currentMessages,
-              //     responseMessage
-              //   ])
-              // }}
             >
               <Image
                 src={`/${example.icon}`}

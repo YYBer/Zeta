@@ -1,6 +1,6 @@
 'use client';
 import { FunctionCallAction } from '@near-wallet-selector/core';
-import { useWalletSelector } from './WalletSelectorContext';
+import { useWalletSelector } from '@/components/contexts/WalletSelectorContext';
 import { useEffect, useState } from 'react';
 import { TransferAction } from '@near-wallet-selector/core';
 import * as nearAPI from "near-api-js";

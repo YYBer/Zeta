@@ -29,7 +29,7 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
-// import { TransferToken } from '../TransferTokenClient';
+import { TransferToken, Payload } from '@/components/Wallet/trasferTokenClient';
 
 interface Props {
   messageIsStreaming: boolean;
@@ -42,6 +42,13 @@ interface Props {
   textareaRef: MutableRefObject<HTMLTextAreaElement | null>;
 }
 
+const MockPayload: Payload = {
+  userId: '9b5adfd2530b9c2657b088cfc8755e3c25a6cef7fb9b44c659d12b2bd30a3f62',
+  receiverId: 'c7413c9c61fd11557efbfae8a063daebfa5774432aca543833d05bcd7050d9e6',
+  amount: '0.01',
+  symbol: 'NEAR'
+};
+ 
 export const ChatInput: FC<Props> = ({
   messageIsStreaming,
   model,
@@ -63,7 +70,9 @@ export const ChatInput: FC<Props> = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [showPluginSelect, setShowPluginSelect] = useState(false);
   const [plugin, setPlugin] = useState<Plugin | null>(null);
-  const [initState, setInitState] = useState(true) 
+  const [initState, setInitState] = useState(false) 
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
+  const [showTransfer, setShowTransfer] = useState(true);
 
   const exampleMessages = [
     {
@@ -250,6 +259,14 @@ export const ChatInput: FC<Props> = ({
     }
   };
 
+  const handleTransferClick = () => {
+    if (isWalletConnected) {
+      setShowTransfer(true);
+    } else {
+      alert("Please connect your wallet first!");
+    }
+  };
+
   useEffect(() => {
     if (promptListRef.current) {
       promptListRef.current.scrollTop = activePromptIndex * 30;
@@ -283,285 +300,178 @@ export const ChatInput: FC<Props> = ({
     };
   }, []);
 
-  console.log('textareaRef', textareaRef?.current)
-
   return (
-
-  <div className={`${initState ? 'h-full flex justify-center items-start ' : ''}`}>
-   { initState ? (
-      <div className="w-full border-transparent  pt-6 md:pt-2">
-        
-        <div className='flex gap-2 justify-center flex-col items-center'>
-          <h1 className='text-6xl text-[#141C2A]'>Sender OS</h1>
-          <p className='text-xl text-[#9CA8B4]'>How can I help you today</p>
-        </div>
-        
-        <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
-
-          {!messageIsStreaming && !conversationIsEmpty && (
-            <button
-              className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4  md:mb-0 md:mt-2 text-black"
-              onClick={onRegenerate}
-            >
-              <IconRepeat size={16} /> {t('Regenerate response')}
-            </button>
-          )}
-
-          <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md bg-white sm:mx-4">
+    <div className={`${initState ? 'h-full flex justify-center items-start ' : ''}`}>
+    { initState ? (
+        <div className="w-full border-transparent  pt-6 md:pt-2">
           
-        <div className="relative gradientBorder flex grow px-4 flex-col overflow-x-auto sm:rounded-2xl sm:border">
-          <div className='flex items-end mt-4'>
-            <textarea
-                ref={textareaRef}
-                className="min-h-[40px] py-4 w-full resize-none pr-4 focus-within:outline-none sm:text-sm bg-transparent text-black"
-                style={{
-                  resize: 'none',
-                  // bottom: '0px',
-                  bottom: `${textareaRef?.current?.scrollHeight}px`,
-                  maxHeight: '400px',
-                  overflow: `${
-                    textareaRef.current && textareaRef.current.scrollHeight > 400
-                      ? 'auto'
-                      : 'hidden'
-                  }`,
-                }}
-                value={content}
-                rows={1}
-                onCompositionStart={() => setIsTyping(true)}
-                onCompositionEnd={() => setIsTyping(false)}
-                onChange={handleChange}
-                onKeyDown={handleKeyDown}
-              />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button onClick={handleSend} size="icon" className='mb-2'>
-                    <Image
-                      src="/send.svg"
-                      alt="sendMSG"
-                      width={40}
-                      height={40}
-                    />
-                    <span className="sr-only">Send message</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>How can I help you?</TooltipContent>
-              </Tooltip>
+          <div className='flex gap-2 justify-center flex-col items-center'>
+            <h1 className='text-6xl text-[#141C2A]'>Sender OS</h1>
+            <p className='text-xl text-[#9CA8B4]'>How can I help you today</p>
           </div>
+          
+          <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
 
-            
-          <div className="w-full bg-black" style={{ height: '1px' }}></div>
-          <div className="flex justify-start max-w-full py-4 overflow-x-auto gap-3">
-            <div className="flex gap-1 items-center">
-              <Image src={'/intent.png'} alt="intent" width={24} height={24} />
+            <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md bg-white sm:mx-4">
+          
+          <div className="relative gradientBorder flex grow px-4 flex-col overflow-x-auto sm:rounded-2xl sm:border">
+            <div className='flex items-end mt-4'>
+              <textarea
+                  ref={textareaRef}
+                  className="min-h-[40px] py-4 w-full resize-none pr-4 focus-within:outline-none sm:text-sm bg-transparent text-black"
+                  style={{
+                    resize: 'none',
+                    // bottom: '0px',
+                    bottom: `${textareaRef?.current?.scrollHeight}px`,
+                    maxHeight: '400px',
+                    overflow: `${
+                      textareaRef.current && textareaRef.current.scrollHeight > 400
+                        ? 'auto'
+                        : 'hidden'
+                    }`,
+                  }}
+                  value={content}
+                  rows={1}
+                  onCompositionStart={() => setIsTyping(true)}
+                  onCompositionEnd={() => setIsTyping(false)}
+                  onChange={handleChange}
+                  onKeyDown={handleKeyDown}
+                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button onClick={handleSend} size="icon" className='mb-2'>
+                      <Image
+                        src="/send.svg"
+                        alt="sendMSG"
+                        width={40}
+                        height={40}
+                      />
+                      <span className="sr-only">Send message</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>How can I help you?</TooltipContent>
+                </Tooltip>
             </div>
-            {exampleMessages.map((example, index) => (
-              <div
-                key={example.heading}
-                className={`h-8 flex items-center gap-2 px-4 py-1 text-black rounded-2xl bg-[#E6E6E6] cursor-pointers`}
-                onClick={() => {
-                  setContent(example.message)
-                }}
-              >
-                <div className="text-md font-semibold text-nowrap cursor-pointer">
-                  {example.heading}
-                </div>
+
+              
+            <div className="w-full bg-black" style={{ height: '1px' }}></div>
+            <div className="flex justify-start max-w-full py-4 overflow-x-auto gap-3">
+              <div className="flex gap-1 items-center">
+                <Image src={'/intent.png'} alt="intent" width={24} height={24} />
               </div>
-            ))}
-          </div>
-        </div>
-          </div>
-        </div>
-        
-      </div>
-    ) 
-    : 
-    (
-      <div className="absolute bottom-0 left-0 w-full border-transparent  pt-6 md:pt-2">
-        <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
-          {messageIsStreaming && (
-            <button
-              className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4 text-black hover:opacity-90  md:mb-0 md:mt-2"
-              onClick={handleStopConversation}
-            >
-              <IconPlayerStop size={16} /> {t('Stop Generating')}
-            </button>
-          )}
-  
-          {!messageIsStreaming && !conversationIsEmpty && (
-            <button
-              className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4 text-black hover:opacity-90  md:mb-0 md:mt-2"
-              onClick={onRegenerate}
-            >
-              <IconRepeat size={16} /> {t('Regenerate response')}
-            </button>
-          )}
-  
-          <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border sm:mx-4">
-           
-        <div className="relative flex max-h-60 max-w-full gradientBorder p-4 grow flex-col overflow-x-auto sm:rounded-2xl sm:border">
-        <div className='flex items-end mt-4'>
-            <textarea
-                ref={textareaRef}
-                className="min-h-[40px] py-4 w-full resize-none pr-4 focus-within:outline-none sm:text-sm bg-transparent text-black"
-                style={{
-                  resize: 'none',
-                  // bottom: '0px',
-                  bottom: `${textareaRef?.current?.scrollHeight}px`,
-                  maxHeight: '400px',
-                  overflow: `${
-                    textareaRef.current && textareaRef.current.scrollHeight > 400
-                      ? 'auto'
-                      : 'hidden'
-                  }`,
-                }}
-                value={content}
-                rows={1}
-                onCompositionStart={() => setIsTyping(true)}
-                onCompositionEnd={() => setIsTyping(false)}
-                onChange={handleChange}
-                onKeyDown={handleKeyDown}
-              />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button onClick={handleSend} size="icon" className='mb-2'>
-                    <Image
-                      src="/send.svg"
-                      alt="sendMSG"
-                      width={40}
-                      height={40}
-                    />
-                    <span className="sr-only">Send message</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>How can I help you?</TooltipContent>
-              </Tooltip>
-          </div>
-    
-          <div className="w-full bg-black" style={{ height: '1px' }}></div>
-          <div className="flex justify-start max-w-full py-4 overflow-x-auto gap-3">
-            <div className="flex gap-1 items-center">
-              <Image src={'/intent.png'} alt="intent" width={24} height={24} />
-            </div>
-            {exampleMessages.map((example, index) => (
-              <div
-                key={example.heading}
-                className={`h-8 flex items-center gap-2 px-4 py-1 text-black rounded-2xl bg-[#E6E6E6] cursor-pointers`}
-                onClick={() => {
-                  setContent(example.message)
-                }}
-              >
-                <div className="text-md font-semibold text-nowrap cursor-pointer">
-                  {example.heading}
+              {exampleMessages.map((example, index) => (
+                <div
+                  key={example.heading}
+                  className={`h-8 flex items-center gap-2 px-4 py-1 text-black rounded-2xl bg-[#E6E6E6] cursor-pointers`}
+                  onClick={() => {
+                    setContent(example.message)
+                  }}
+                >
+                  <div className="text-md font-semibold text-nowrap cursor-pointer">
+                    {example.heading}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div> 
-          </div>
-        </div>
-        {/* <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
-        {messageIsStreaming && (
-          <button
-            className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4 text-black hover:opacity-50 dark:border-neutral-600 dark:bg-[#343541] dark:text-white md:mb-0 md:mt-2"
-            onClick={handleStopConversation}
-          >
-            <IconPlayerStop size={16} /> {t('Stop Generating')}
-          </button>
-        )}
-
-        {!messageIsStreaming && !conversationIsEmpty && (
-          <button
-            className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4 text-black hover:opacity-50 dark:border-neutral-600 dark:bg-[#343541] dark:text-white md:mb-0 md:mt-2"
-            onClick={onRegenerate}
-          >
-            <IconRepeat size={16} /> {t('Regenerate response')}
-          </button>
-        )}
-
-        <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border border-black/10 bg-white shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:bg-[#40414F] dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] sm:mx-4">
-          <button
-            className="absolute left-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
-            onClick={() => setShowPluginSelect(!showPluginSelect)}
-            onKeyDown={(e) => {}}
-          >
-            {plugin ? <IconBrandGoogle size={20} /> : <IconBolt size={20} />}
-          </button>
-
-          {showPluginSelect && (
-            <div className="absolute left-0 bottom-14 bg-white dark:bg-[#343541]">
-              <PluginSelect
-                plugin={plugin}
-                onPluginChange={(plugin: Plugin) => {
-                  setPlugin(plugin);
-                  setShowPluginSelect(false);
-
-                  if (textareaRef && textareaRef.current) {
-                    textareaRef.current.focus();
-                  }
-                }}
-              />
+              ))}
             </div>
-          )}
-
-          <textarea
-            ref={textareaRef}
-            className="m-0 w-full resize-none border-0 bg-transparent p-0 py-2 pr-8 pl-10 text-black dark:bg-transparent dark:text-white md:py-3 md:pl-10"
-            style={{
-              resize: 'none',
-              bottom: `${textareaRef?.current?.scrollHeight}px`,
-              maxHeight: '400px',
-              overflow: `${
-                textareaRef.current && textareaRef.current.scrollHeight > 400
-                  ? 'auto'
-                  : 'hidden'
-              }`,
-            }}
-            placeholder={
-              t('Type a message or type "/" to select a prompt...') || ''
-            }
-            value={content}
-            rows={1}
-            onCompositionStart={() => setIsTyping(true)}
-            onCompositionEnd={() => setIsTyping(false)}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-          />
-
-          <button
-            className="absolute right-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
-            onClick={handleSend}
-          >
-            {messageIsStreaming ? (
-              <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-neutral-800 opacity-60 dark:border-neutral-100"></div>
-            ) : (
-              <IconSend size={18} />
+          </div>
+            </div>
+          </div>
+          
+        </div>
+      ) 
+      : 
+      (
+        <div className="absolute bottom-0 left-0 w-full border-transparent bg-gradient-to-b from-transparent via-white to-white pt-6 md:pt-2">
+          <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
+            {messageIsStreaming && (
+              <button
+                className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4 text-black hover:opacity-90  md:mb-0 md:mt-2"
+                onClick={handleStopConversation}
+              >
+                <IconPlayerStop size={16} /> {t('Stop Generating')}
+              </button>
             )}
-          </button>
-
-          {showPromptList && filteredPrompts.length > 0 && (
-            <div className="absolute bottom-12 w-full">
-              <PromptList
-                activePromptIndex={activePromptIndex}
-                prompts={filteredPrompts}
-                onSelect={handleInitModal}
-                onMouseOver={setActivePromptIndex}
-                promptListRef={promptListRef}
-              />
+    
+            {!messageIsStreaming && !conversationIsEmpty && (
+              <>
+                {/* <button onClick={handleTransferClick} disabled={!isWalletConnected} >
+                Transfer
+                </button>
+                {showTransfer && <TransferToken payload={MockPayload} />} */}
+              <button
+                className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4 text-black hover:opacity-90  md:mb-0 md:mt-2"
+                onClick={onRegenerate}
+              >
+                <IconRepeat size={16} /> {t('Regenerate response')}
+              </button>
+              </>
+            )}
+    
+            <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border sm:mx-4">
+            
+          <div className="relative flex max-h-60 max-w-full gradientBorder p-4 grow flex-col overflow-x-auto sm:rounded-2xl sm:border">
+          <div className='flex items-end mt-4'>
+              <textarea
+                  ref={textareaRef}
+                  className="min-h-[40px] py-4 w-full resize-none pr-4 focus-within:outline-none sm:text-sm bg-transparent text-black"
+                  style={{
+                    resize: 'none',
+                    // bottom: '0px',
+                    bottom: `${textareaRef?.current?.scrollHeight}px`,
+                    maxHeight: '400px',
+                    overflow: `${
+                      textareaRef.current && textareaRef.current.scrollHeight > 400
+                        ? 'auto'
+                        : 'hidden'
+                    }`,
+                  }}
+                  value={content}
+                  rows={1}
+                  onCompositionStart={() => setIsTyping(true)}
+                  onCompositionEnd={() => setIsTyping(false)}
+                  onChange={handleChange}
+                  onKeyDown={handleKeyDown}
+                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button onClick={handleSend} size="icon" className='mb-2'>
+                      <Image
+                        src="/send.svg"
+                        alt="sendMSG"
+                        width={40}
+                        height={40}
+                      />
+                      <span className="sr-only">Send message</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>How can I help you?</TooltipContent>
+                </Tooltip>
             </div>
-          )}
-
-          {isModalVisible && (
-            <VariableModal
-              prompt={prompts[activePromptIndex]}
-              variables={variables}
-              onSubmit={handleSubmit}
-              onClose={() => setIsModalVisible(false)}
-            />
-          )}
+      
+            <div className="w-full bg-black" style={{ height: '1px' }}></div>
+            <div className="flex justify-start max-w-full py-4 overflow-x-auto gap-3">
+              <div className="flex gap-1 items-center">
+                <Image src={'/intent.png'} alt="intent" width={24} height={24} />
+              </div>
+              {exampleMessages.map((example, index) => (
+                <div
+                  key={example.heading}
+                  className={`h-8 flex items-center gap-2 px-4 py-1 text-black rounded-2xl bg-[#E6E6E6] cursor-pointers`}
+                  onClick={() => {
+                    setContent(example.message)
+                  }}
+                >
+                  <div className="text-md font-semibold text-nowrap cursor-pointer">
+                    {example.heading}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div> 
+            </div>
+          </div>
         </div>
-      </div> */}
-      </div>
-    )}
-  </div>
+      )}
+    </div>
   )
 };

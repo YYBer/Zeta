@@ -9,6 +9,9 @@ export const useWalletStore = create((set) => ({
   wallet: undefined,
   signedAccountId: '',
   setWallet: (wallet) => set({ wallet }),
-  setSignedAccountId: (signedAccountId) => set({ signedAccountId })
+  setSignedAccountId: (signedAccountId) => {
+    console.log('useWalletStore', signedAccountId);
+    set({ signedAccountId })
+  }
 }));
  

@@ -6,9 +6,7 @@ import { cache, useEffect } from 'react'
 import Image from 'next/image'
 import { start } from 'repl'
 import { CiSettings } from 'react-icons/ci'
-import LoginWallet from './login-wallet'
-// import { useWalletSelector } from './contexts/WalletSelectorContext'
-
+// import LoginWallet from './login-wallet'
 interface SidebarListProps {
   userId?: string
   children?: React.ReactNode
@@ -20,8 +18,6 @@ const loadChats = cache(async (userId?: string) => {
 
 export async function SidebarList({ userId }: SidebarListProps) {
   const chats = (await loadChats(userId)) || []
-  // const { accounts } = useWalletSelector()
-  // console.log(accounts)
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -40,7 +36,7 @@ export async function SidebarList({ userId }: SidebarListProps) {
         {/* <button className="h-10 w-full justify-center bg-sky-500 text-white px-4 shadow-none rounded-3xl border-none transition-colors hover:bg-red-500/40 dark:bg-zinc-900 dark:hover:bg-zinc-300/10">
           Sign in
         </button> */}
-        <LoginWallet />
+        {/* <LoginWallet /> */}
         {/* <div className="flex items-center p-4 truncate gap-3">
           <Image src="/user.png" width={35} height={35} alt="user" />{' '}
           <p>{userId}</p>
