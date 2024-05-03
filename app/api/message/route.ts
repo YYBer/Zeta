@@ -38,6 +38,21 @@ function mapStoredMessagesToChatMessages(messages: Message[]): BaseMessage[] {
   })
 }
 
+function extractContentFromDictionary(dictionary: any): string[] {
+  const contentArray: string[] = [];
+  const messageArray = dictionary.messages.slice(-5, -1)
+  console.log(messageArray)
+  for (let i = 0; i < messageArray.length; i++){
+    const messages = messageArray[i].content
+    if (i % 2 == 0) {
+      contentArray.push(`HumanMessage : ${messages}`)
+    } else {
+      contentArray.push(`AIMessage : ${messages}`)
+    } 
+  }
+  return contentArray;
+}
+
 export async function POST(req: Request) {
   const body = await req.json()
   const messages: Message[] = body.messages
@@ -54,6 +69,12 @@ export async function POST(req: Request) {
     recipient: z.string().describe("The recipient's wallet id"),
   });
 
+  const swapSchema = z.object({
+    tokenIn: z.string().describe("The token symbol you want to be swapped"),
+    tokenOut: z.string().describe("The token symbol you want to receive"),
+    amount: z.number().positive().describe("The token amount to be swapped"),
+  });
+
   const encoder = new TextEncoder()
   const stream = new TransformStream()
   const writer = stream.writable.getWriter()
@@ -61,7 +82,7 @@ export async function POST(req: Request) {
   let string = ''
   
   const chat = new ChatOpenAI({
-    model: "gpt-3.5-turbo",
+    model: "gpt-3.5-turbo-0125",
     streaming: true,
     //maxRetries: 1,
     temperature: 0,
@@ -86,14 +107,9 @@ export async function POST(req: Request) {
   const lcChatMessageHistory = new ChatMessageHistory(
     mapStoredMessagesToChatMessages(messages)
   )
-  const memory = new BufferMemory({
-    chatHistory: lcChatMessageHistory,
-    returnMessages: true,
-    outputKey: 'output',
-    inputKey: 'input',
-    memoryKey: 'history'
-  })
-
+  
+  const array = extractContentFromDictionary(lcChatMessageHistory)
+  
   const functionCallingModel = chat.bind({
     functions: [
       {
@@ -101,15 +117,11 @@ export async function POST(req: Request) {
         description: "Transfer tokens or NEAR to another wallet",
         parameters: zodToJsonSchema(transferSchema),
       },
-      // {
-      //   name: "swap",
-      //   description: "Swap tokens through a DEX (e.g. ref.finance) ",
-      //   parameters: {
-      //     tokenIn: z.string().describe("The token to be swapped"),
-      //     tokenOut: z.string().describe("The token to be received"),
-      //     amountIn: z.number().positive().describe("The amount to be swapped"),
-      //   },
-      // }
+      {
+        name: "swap",
+        description: "Swap tokens",
+        parameters: zodToJsonSchema(swapSchema),
+      }
     ],
   });
   const instruction =
@@ -123,6 +135,7 @@ export async function POST(req: Request) {
     ],
     inputVariables: ["inputText"],
   });
+
   const chain = Chatprompt.pipe(functionCallingModel);
   const response = await chain.invoke({
     inputText: inputText,
