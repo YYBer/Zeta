@@ -9,7 +9,7 @@ import { deployContract } from 'near-api-js/lib/transaction';
 const { utils, keyStores, connect, Contract } = nearAPI;
 type ContractType = InstanceType<typeof Contract>;
 import { PiSpinnerGapBold } from "react-icons/pi";
-
+import { useTransferTokenStore } from '@/lib/store/store'
 
 interface NEP141_Contract extends ContractType {
   ft_balance_of: (args: { account_id: string }) => Promise<string>;
@@ -50,13 +50,7 @@ export interface Payload {
  
 export function TransferToken({ payload }: { payload: Payload }) {
   const { selector, modal, accounts } = useWalletSelector();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [confirmTransfer, setConfirmTransfer] = useState(false);
-  const [cancelled, setCancelled] = useState(false);
-
-  console.log('payload', payload)
+  const { setSuccess, setError, confirmTransfer, setConfirmTransfer, loading, setLoading, cancelled, setCancelled } = useTransferTokenStore()
 
   useEffect(() => {
     if (payload && selector && modal && accounts.length > 0 && confirmTransfer) {
@@ -78,7 +72,7 @@ export function TransferToken({ payload }: { payload: Payload }) {
     setLoading(true);
     setError(null);
     setSuccess(false);
-    console.log(JSON.stringify(payload));
+    // console.log(JSON.stringify(payload));
     try {
       const wallet = await selector.wallet();
       const accountId = accounts.find((account) => account.active)?.accountId;
@@ -123,11 +117,11 @@ export function TransferToken({ payload }: { payload: Payload }) {
       const metadata = await contract.ft_metadata();
       const decimals = metadata.decimals;
       const unit_convert = 10**decimals
-      console.log(`Decimals of ${symbol} contract: ${unit_convert}`);
+      // console.log(`Decimals of ${symbol} contract: ${unit_convert}`);
     
       // get storage balance of receiver first
       const storage_balance_of_receiver = await contract.storage_balance_of({ account_id: receiver_id });
-      console.log(`Storage Balance of ${receiver_id} in ${symbol} contract: ${storage_balance_of_receiver}`);        
+      // console.log(`Storage Balance of ${receiver_id} in ${symbol} contract: ${storage_balance_of_receiver}`);        
 
       // get storage balance bounds
       const bounds = await contract.storage_balance_bounds({ account_id: receiver_id });
@@ -225,6 +219,7 @@ export function TransferToken({ payload }: { payload: Payload }) {
     } catch (error) {
       // @ts-ignore
       setError(error.message);
+      setCancelled(true);
       console.error(
         `Failed to transfer ${payload.amount.toString()} ${payload.symbol} to ${
           payload.receiverId
@@ -240,12 +235,11 @@ export function TransferToken({ payload }: { payload: Payload }) {
     <div className='text-black'>
       {loading && 
         <div className='flex flex-col gap-2'>
-          <div className='flex gap-2 items-center text-[#0EA5E9]'><PiSpinnerGapBold className='spinner'/><div>Simulating the transfer</div></div>
-          <div className='mb-2'>We will simulate whether the transaction is successful. This is a simulated transaction, not an actual one.</div>
+          <div className='flex gap-2 items-center text-[#0EA5E9]'><PiSpinnerGapBold className='spinner'/><div>Transfer processing</div></div>
+          <div className='mb-2'>It will only take a monent.</div>
         </div>
       }
       {/* {error && <p className="text-red-500">Error: {error}</p>} */}
-      {success && <p className="text-green-500">Token transfer successful!</p>}
       {cancelled && <p className="text-red-500">Transaction Cancelled</p>}
 
       {!confirmTransfer && !cancelled && (

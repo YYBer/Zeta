@@ -43,7 +43,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { Wallet } from '@/lib/wallets/near-wallet'
 import { NetworkId, HelloNearContract } from '@/config'
 import { WalletSelectorContextProvider } from '@/components/contexts/WalletSelectorContext'
-import { useInputJSONStore } from '@/lib/store/store'
+import { useInputJSONStore, useTransferTokenStore } from '@/lib/store/store'
 interface HomeProps {
   // serverSideApiKeyIsSet: boolean;
   serverSidePluginKeysSet: boolean
@@ -61,7 +61,7 @@ const Home: React.FC<HomeProps> = ({
 
   const [apiKey, setApiKey] = useState<string>('')
   const [pluginKeys, setPluginKeys] = useState<PluginKey[]>([])
-  const [loading, setLoading] = useState<boolean>(false)
+  const [messageLoading, setMessageLoading] = useState<boolean>(false)
   const [lightMode, setLightMode] = useState<'dark' | 'light'>('dark')
   const [messageIsStreaming, setMessageIsStreaming] = useState<boolean>(false)
 
@@ -81,7 +81,7 @@ const Home: React.FC<HomeProps> = ({
   const [prompts, setPrompts] = useState<Prompt[]>([])
   const [showPromptbar, setShowPromptbar] = useState<boolean>(true)
   const { setInputJSON } = useInputJSONStore()
-
+  const { setSuccess, setError, setConfirmTransfer, setLoading, setCancelled, setMessageCount } = useTransferTokenStore()
 
 
   // REFS ----------------------------------------------
@@ -96,6 +96,13 @@ const Home: React.FC<HomeProps> = ({
     deleteCount = 0,
     plugin: Plugin | null = null
   ) => {
+
+    //reset transfer statement
+    setSuccess(false)
+    setError(false)
+    setConfirmTransfer(false)
+    setCancelled(false)
+    setLoading(false)
 
     if (selectedConversation) {
       let updatedConversation: Conversation
@@ -118,7 +125,7 @@ const Home: React.FC<HomeProps> = ({
       }
 
       setSelectedConversation(updatedConversation)
-      setLoading(true)
+      setMessageLoading(true)
       setMessageIsStreaming(true)
 
       const chatBody: ChatBody = {
@@ -156,10 +163,8 @@ const Home: React.FC<HomeProps> = ({
         signal: controller.signal
       })
 
-      console.log('response', response)
-
       if (!response.ok) {
-        setLoading(false)
+        setMessageLoading(false)
         setMessageIsStreaming(false)
         toast.error(response.statusText)
         return
@@ -168,7 +173,7 @@ const Home: React.FC<HomeProps> = ({
       const data = response.body
 
       if (!data) {
-        setLoading(false)
+        setMessageLoading(false)
         setMessageIsStreaming(false)
         return
       }
@@ -185,7 +190,7 @@ const Home: React.FC<HomeProps> = ({
           }
         }
 
-        setLoading(false)
+        setMessageLoading(false)
 
         const reader = data.getReader()
         const decoder = new TextDecoder()
@@ -203,7 +208,7 @@ const Home: React.FC<HomeProps> = ({
           done = doneReading
           const chunkValue = decoder.decode(value)
 
-          console.log('chunkValue', chunkValue)
+          // console.log('chunkValue', chunkValue)
 
           if(chunkValue.includes("{")) {
             setInputJSON(chunkValue)
@@ -249,6 +254,8 @@ const Home: React.FC<HomeProps> = ({
 
         saveConversation(updatedConversation)
 
+        setMessageCount(updatedConversation.messages.length - 1)
+
         const updatedConversations: Conversation[] = conversations.map(
           conversation => {
             if (conversation.id === selectedConversation.id) {
@@ -262,8 +269,6 @@ const Home: React.FC<HomeProps> = ({
         if (updatedConversations.length === 0) {
           updatedConversations.push(updatedConversation)
         }
-
-        console.log('updateConversations', updatedConversations)
 
         setConversations(updatedConversations)
         saveConversations(updatedConversations)
@@ -302,7 +307,7 @@ const Home: React.FC<HomeProps> = ({
         setConversations(updatedConversations)
         saveConversations(updatedConversations)
 
-        setLoading(false)
+        setMessageLoading(false)
         setMessageIsStreaming(false)
       }
     }
@@ -525,7 +530,7 @@ const Home: React.FC<HomeProps> = ({
     saveConversation(newConversation)
     saveConversations(updatedConversations)
 
-    setLoading(false)
+    setMessageLoading(false)
   }
 
   const handleDeleteConversation = (conversation: Conversation) => {
@@ -808,7 +813,7 @@ const Home: React.FC<HomeProps> = ({
                   defaultModelId={defaultModelId}
                   modelError={modelError}
                   models={models}
-                  loading={loading}
+                  loading={messageLoading}
                   prompts={prompts}
                   onSend={handleSend}
                   onUpdateConversation={handleUpdateConversation}

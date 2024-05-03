@@ -14,12 +14,19 @@ import { PiArrowBendUpRight } from "react-icons/pi";
 import { PiNoteFill } from "react-icons/pi";
 import { TransferToken, Payload } from '@/components/Wallet/TransferTokenClient';
 import { useWalletSelector } from '@/components/contexts/WalletSelectorContext';
-import { useWalletInfoStore } from '@/lib/store/store'
+import { useWalletInfoStore, useTransferTokenStore } from '@/lib/store/store'
+import { FaCheck } from "react-icons/fa";
+import { FaCheckCircle } from "react-icons/fa";
+import moment from 'moment';
+import { PiArrowSquareOutBold } from "react-icons/pi";
+
 interface Props {
   message: Message;
   messageIndex: number;
   onEditMessage: (message: Message, messageIndex: number) => void;
 }
+
+
 
 const MockPayload: Payload = {
   userId: '9b5adfd2530b9c2657b088cfc8755e3c25a6cef7fb9b44c659d12b2bd30a3f62',
@@ -41,8 +48,10 @@ export const ChatMessage: FC<Props> = memo(
     const [isWalletConnected, setIsWalletConnected] = useState(false);
     const [showTransfer, setShowTransfer] = useState(true);
     const [transferObject , setTransferObject] = useState()
-    const { modal, accounts, selector } = useWalletSelector();
     const { walletInfo } = useWalletInfoStore() 
+    const { success, error, setSuccess, setError, confirmTransfer, messageCount } = useTransferTokenStore()
+    const [time, setTime] = useState<String>()
+    const { accounts } = useWalletSelector();
 
     const toggleEditing = () => {
       setIsEditing(!isEditing);
@@ -109,6 +118,11 @@ export const ChatMessage: FC<Props> = memo(
         setTransferObject(jsonObject)
         }
     }, [inputJSON])
+
+    useEffect(() => {
+      const nowTime = moment().format('YYYY-MM-DD H:mm:ss');
+      setTime(String(nowTime))
+    }, [success])
     
 
     return (
@@ -263,7 +277,7 @@ export const ChatMessage: FC<Props> = memo(
                   {message.content}
                 </MemoizedReactMarkdown> 
 
-                {message.content.includes("{") ? (
+                {messageIndex == messageCount && message.content.includes("{") ? (
                   <div className='flex flex-col bg-[#E5E7EB] rounded-xl justify-center items-center'>
                     <div className="flex w-10/12 mx-auto">
                       <Image
@@ -287,7 +301,7 @@ export const ChatMessage: FC<Props> = memo(
                         </div>
                         <div className='flex flex-col justify-end'>
                           <div className='flex items-center gap-2 text-base'><PiNoteFill /> Transfer note</div>
-                          <div>Lorem ipsum dolor sit amet consectetur adipisicing elit.</div>
+                          <div>-</div>
                         </div>
                       </div>
                     </div>
@@ -312,16 +326,57 @@ export const ChatMessage: FC<Props> = memo(
                           <div className='flex items-center gap-2 text-base'><IoWalletSharp /> Wallet</div>
                           <div className='text-lg font-bold'>{transferObject?.recipient}</div>
                         </div>
+                        {
+                          confirmTransfer && (
+                            <div className='flex gap-2 text-[#0EA5E9] items-center'>
+                              <FaCheck className='w-5'/>
+                            <div className='text-lg font-bold'>Checked</div>
+                        </div>
+                          )
+                        }
+                        
                       </div>
                     </div>
                     </div>
-                    <div className='flex flex-col mb-4 w-10/12 border-2 bg-[#F0F9FF] px-4 rounded-xl'>
-                      <button className='flex justify-start my-2' onClick={handleTransferClick} disabled={!isWalletConnected} >
-                      Please confirm the action.
-                        <div></div>
-                      </button>
-                      {showTransfer && <TransferToken payload={MockPayload} />}
+                    {
+                      success &&  <div className="flex w-10/12 mx-auto mb-5">
+                      
+                      <div className="flex w-full flex-col">
+                        <div className='flex flex-col gap-2'>
+                          <div className='flex items-center gap-2 text-[#10B981] h-8'>
+                            <div><FaCheckCircle className='w-6 h-6'/></div>
+                            <p className='text-xl flex'>Successful</p>
+                          </div>
+                          
+                        <div className='flex gap-2'><div className='w-6 h-6'/>{time}</div>
+                        <div className='flex gap-2'><div className='w-6 h-6'/><a target="_blank" className='flex items-center gap-2 h-8' href={`https://nearblocks.io/address/${accounts[0].accountId}`}><p className='underline'>Transfer information</p><PiArrowSquareOutBold className='w-4 h-4'/></a></div>
+                        
+                      </div>
                     </div>
+                    </div>
+
+                    //   <div className='flex flex-col'>
+                    //   <div className='flex flex-col'>
+                    //     <div className='flex items-center gap-2 text-[#10B981] h-8'>
+                    //       <FaCheckCircle className='w-6 h-6'/> <p className='text-xl'>Successful</p> 
+                    //     </div>
+                    //     <div className='flex gap-2'><div className='w-6 h-6'></div>{time}</div>
+                    //     <a className='flex items-center gap-2 h-8' href="https://nearblocks.io/address/9b5adfd2530b9c2657b088cfc8755e3c25a6cef7fb9b44c659d12b2bd30a3f62"><p className='underline'>Transfer information</p><PiArrowSquareOutBold className='w-4 h-4'/></a>
+                    //   </div>
+                    // </div>
+                    }
+                    {
+                      !success && (
+                      <div className='flex flex-col mb-4 w-10/12 border-2 bg-[#F0F9FF] px-4 rounded-xl'>
+                        <button className='flex justify-start my-2' onClick={handleTransferClick} disabled={!isWalletConnected} >
+                          Please confirm the action.
+                          <div></div>
+                        </button>
+                        {showTransfer && <TransferToken payload={MockPayload} />}
+                      </div>
+                      )
+                    }
+                    
                   </div>
                  
                 ) : (

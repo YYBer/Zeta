@@ -3,11 +3,11 @@ import { OpenAIModel } from '@/types/openai';
 import { Plugin } from '@/types/plugin';
 import { Prompt } from '@/types/prompt';
 import {
-  IconBolt,
-  IconBrandGoogle,
+  // IconBolt,
+  // IconBrandGoogle,
   IconPlayerStop,
   IconRepeat,
-  IconSend,
+  // IconSend,
 } from '@tabler/icons-react';
 import { useTranslation } from 'next-i18next';
 import {
@@ -19,9 +19,9 @@ import {
   useRef,
   useState,
 } from 'react';
-import { PluginSelect } from '../../components/Chat/PluginSelect';
-import { PromptList } from './PromptList';
-import { VariableModal } from './VariableModal';
+// import { PluginSelect } from '../../components/Chat/PluginSelect';
+// import { PromptList } from './PromptList';
+// import { VariableModal } from './VariableModal';
 import Image from 'next/image'
 import {
   Tooltip,
@@ -40,7 +40,6 @@ interface Props {
   stopConversationRef: MutableRefObject<boolean>;
   textareaRef: MutableRefObject<HTMLTextAreaElement | null>;
 }
-
 
 export const ChatInput: FC<Props> = ({
   messageIsStreaming,
@@ -63,21 +62,19 @@ export const ChatInput: FC<Props> = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [showPluginSelect, setShowPluginSelect] = useState(false);
   const [plugin, setPlugin] = useState<Plugin | null>(null);
-  // const [initState, setInitState] = useState(false) 
-
 
   const exampleMessages = [
     {
       heading: 'Transfer',
-      message: `I want to transfer 0.01 near to bugee.testnet`
+      message: `I want to transfer 0.01 USDC to c7413c9c61fd11557efbfae8a063daebfa5774432aca543833d05bcd7050d9e6`
     },
     {
       heading: 'Check Balance',
-      message: 'What is the price of $NEAR right now?'
+      message: 'What is the price of NEAR right now?'
     },
     {
       heading: 'Exchange NEAR',
-      message: `I would like to buy 42 $NEAR`
+      message: `I would like to swap 0.01 NEAR to USDC`
     },
     {
       heading: 'Create wallet',
@@ -85,7 +82,7 @@ export const ChatInput: FC<Props> = ({
     },
     {
       heading: 'Buy NEAR',
-      message: `I would like to buy 12 $NEAR`
+      message: `I would like to buy 0.01 NEAR`
     },
   ]
 
@@ -123,7 +120,7 @@ export const ChatInput: FC<Props> = ({
       return;
     }
 
-    // setInitState(false)
+    
 
     onSend({ role: 'user', content }, plugin);
     setContent('');
