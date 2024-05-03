@@ -18,6 +18,7 @@ import {
   SystemMessagePromptTemplate,
   ChatPromptTemplate,
   HumanMessagePromptTemplate,
+  AIMessagePromptTemplate
 } from "@langchain/core/prompts";
 import { Message } from '@/types/chat'
 
@@ -41,7 +42,7 @@ function mapStoredMessagesToChatMessages(messages: Message[]): BaseMessage[] {
 function extractContentFromDictionary(dictionary: any): string[] {
   const contentArray: string[] = [];
   const messageArray = dictionary.messages.slice(-5, -1)
-  console.log(messageArray)
+
   for (let i = 0; i < messageArray.length; i++){
     const messages = messageArray[i].content
     if (i % 2 == 0) {
@@ -109,7 +110,8 @@ export async function POST(req: Request) {
   )
   
   const array = extractContentFromDictionary(lcChatMessageHistory)
-  
+  console.log(array)
+  console.log(typeof array[3])
   const functionCallingModel = chat.bind({
     functions: [
       {
@@ -125,16 +127,21 @@ export async function POST(req: Request) {
     ],
   });
   const instruction =
-  "You are a crypto wallet assistant, and also an intent resolver. Please analyze my intention and if there is a function that can fulfill my intention, invoke it. If the parameters required to invoke the function are incomplete, ask me to provide the missing information. Please do not make assumptions.";
-  const Chatprompt = new ChatPromptTemplate({
-    promptMessages: [
+  "You are a crypto wallet assistant, and also an intent resolver. Please analyze my intention from my current inputText, if there is a function that can fulfill my intention, invoke it. If current input text only contain a token symbol or an address. Please check past history to see what user wants and if there have other information to invoke the function. If the parameters required to invoke the function are incomplete, ask me to provide the missing information. Please do not make assumptions.";
+  const pastInfor = `${array[0]}\n${array[1]}\n${array[2]}\n${array[3]}`.replace(/[{}"]/g, '');
+  console.log(pastInfor)
+  const Chatprompt = ChatPromptTemplate.fromMessages([
+   
       SystemMessagePromptTemplate.fromTemplate(
         `${instruction}`
       ),
+      // HumanMessagePromptTemplate.fromTemplate(`${array[0]}`),
+      // AIMessagePromptTemplate.fromTemplate(`${array[1]}`),
+      // HumanMessagePromptTemplate.fromTemplate(`${array[2]}`),
+      // AIMessagePromptTemplate.fromTemplate(`${array[3]}`),
+      pastInfor,
       HumanMessagePromptTemplate.fromTemplate("{inputText}"),
-    ],
-    inputVariables: ["inputText"],
-  });
+    ]);
 
   const chain = Chatprompt.pipe(functionCallingModel);
   const response = await chain.invoke({
