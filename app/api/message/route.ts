@@ -76,6 +76,11 @@ export async function POST(req: Request) {
     amount: z.number().positive().describe("The token amount to be swapped"),
   });
 
+  const checkSchema  = z.object({
+    token: z.string().describe("The token you want to check balance or current price")
+  });
+  
+
   const stream = new TransformStream()
   const writer = stream.writable.getWriter()
   
@@ -121,28 +126,42 @@ export async function POST(req: Request) {
         name: "swap",
         description: "Swap tokens",
         parameters: zodToJsonSchema(swapSchema),
+      },
+      {
+        name: "check",
+        description: "Check token price or balance",
+        parameters: zodToJsonSchema(checkSchema),
       }
     ],
   });
   const instruction =
   `You are a crypto wallet assistant, and also an intent resolver. 
-  Please analyze my intention from my current inputText, if there is a function that can fulfill my intention, invoke it. 
-  If current input text only contain a token symbol or an address or amounts. 
-  Please check past history to see what user wants and if there have other information to invoke the function. If the parameters required to invoke the function are incomplete, ask me to provide the missing information. Please do not make assumptions.`;
+  Please analyze my intention from my current inputText, if there is a function that can fulfill my intention, invoke it.
+  Here are some important examples :
+
+  #HumanInput : I want to swap 1 ETH to NEAR 
+  #AI : Call swap function
+
+  #HumanInput : I want to transfer 10 NEAR to Allen
+  #AI : Call transfer function
+
+  #HumanInput : I want to transfer some NEAR to Allen
+  #AI : Ask Human to provide the amount of NEAR
+
+  #HumanInput : I want to transfer USDC to Allen
+  #AI : Ask Human to provide the amount of USDC
+
+  Below is history conversation. If current input text cannot call a function or only contain a token symbol or an address or amounts. 
+  Please check past history to see what user wants. Please focus on what the user currently wants and do not extract data from the dictionary of successful transactions and history before this successful transactions, for example: 'tokenIn: ETH, tokenOut: USDC, amount: 1'
+  And if there have other information to invoke the function. invoke it. If the parameters required to invoke the function are incomplete, ask user to provide the missing information. Please confirm that these parameters have indeed been show in the conversation. Do not make any assumptions.
+  `;
   
-  const examples = `Here are some examples : 
-  1. HumanInput : I want to swap 1 ETH to NEAR. AI : Call swap function
-  2. HumanInput : I want to transfer 10 NEAR to aaa. AI : Call transfer function
-  3. HumanInput : I want to transfer some NEAR to aaa. AI : Ask Human to provide the amount of NEA
-  Below is history conversation. Utilize it if current inputText cannot call a function.
-  `
 
   const Chatprompt = ChatPromptTemplate.fromMessages([
    
       SystemMessagePromptTemplate.fromTemplate(
         `${instruction}`
       ),
-      examples,
       HumanMessagePromptTemplate.fromTemplate(`${array[0]}`),
       AIMessagePromptTemplate.fromTemplate(`${array[1]}`),
       HumanMessagePromptTemplate.fromTemplate(`${array[2]}`),
@@ -192,19 +211,11 @@ export async function POST(req: Request) {
   if (response.response_metadata.finish_reason === "function_call") {
     const parser = new JsonOutputFunctionsParser();
     const transferDetail = await parser.invoke(response)
-    
+
     return new NextResponse(JSON.stringify(transferDetail), {
       headers: {
         'Content-Type': 'application/json'
       }
     });
   }
-  // const chain = new ConversationChain({
-  //   memory: memory,
-  //   llm: chat,
-  //   prompt: chatPrompt
-  // })
-  // chain.call({
-  //   input: prompt
-  // })
 }
