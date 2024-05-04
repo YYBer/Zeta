@@ -44,11 +44,11 @@ function extractContentFromDictionary(dictionary: any): string[] {
   const messageArray = dictionary.messages.slice(-5, -1)
 
   for (let i = 0; i < messageArray.length; i++){
-    const messages = messageArray[i].content
+    const messages = messageArray[i].content.replace(/[{}"]/g, ' ')
     if (i % 2 == 0) {
-      contentArray.push(`HumanMessage : ${messages}`)
+      contentArray.push(`${messages}`)
     } else {
-      contentArray.push(`AIMessage : ${messages}`)
+      contentArray.push(`${messages}`)
     } 
   }
   return contentArray;
@@ -76,11 +76,8 @@ export async function POST(req: Request) {
     amount: z.number().positive().describe("The token amount to be swapped"),
   });
 
-  const encoder = new TextEncoder()
   const stream = new TransformStream()
   const writer = stream.writable.getWriter()
-  let counter = 0
-  let string = ''
   
   const chat = new ChatOpenAI({
     model: "gpt-3.5-turbo-0125",
@@ -112,6 +109,7 @@ export async function POST(req: Request) {
   const array = extractContentFromDictionary(lcChatMessageHistory)
   console.log(array)
   console.log(typeof array[3])
+
   const functionCallingModel = chat.bind({
     functions: [
       {
@@ -127,29 +125,39 @@ export async function POST(req: Request) {
     ],
   });
   const instruction =
-  "You are a crypto wallet assistant, and also an intent resolver. Please analyze my intention from my current inputText, if there is a function that can fulfill my intention, invoke it. If current input text only contain a token symbol or an address. Please check past history to see what user wants and if there have other information to invoke the function. If the parameters required to invoke the function are incomplete, ask me to provide the missing information. Please do not make assumptions.";
-  const pastInfor = `${array[0]}\n${array[1]}\n${array[2]}\n${array[3]}`.replace(/[{}"]/g, '');
-  console.log(pastInfor)
+  `You are a crypto wallet assistant, and also an intent resolver. 
+  Please analyze my intention from my current inputText, if there is a function that can fulfill my intention, invoke it. 
+  If current input text only contain a token symbol or an address or amounts. 
+  Please check past history to see what user wants and if there have other information to invoke the function. If the parameters required to invoke the function are incomplete, ask me to provide the missing information. Please do not make assumptions.`;
+  
+  const examples = `Here are some examples : 
+  1. HumanInput : I want to swap 1 ETH to NEAR. AI : Call swap function
+  2. HumanInput : I want to transfer 10 NEAR to aaa. AI : Call transfer function
+  3. HumanInput : I want to transfer some NEAR to aaa. AI : Ask Human to provide the amount of NEA
+  Below is history conversation. Utilize it if current inputText cannot call a function.
+  `
+
   const Chatprompt = ChatPromptTemplate.fromMessages([
    
       SystemMessagePromptTemplate.fromTemplate(
         `${instruction}`
       ),
-      // HumanMessagePromptTemplate.fromTemplate(`${array[0]}`),
-      // AIMessagePromptTemplate.fromTemplate(`${array[1]}`),
-      // HumanMessagePromptTemplate.fromTemplate(`${array[2]}`),
-      // AIMessagePromptTemplate.fromTemplate(`${array[3]}`),
-      pastInfor,
+      examples,
+      HumanMessagePromptTemplate.fromTemplate(`${array[0]}`),
+      AIMessagePromptTemplate.fromTemplate(`${array[1]}`),
+      HumanMessagePromptTemplate.fromTemplate(`${array[2]}`),
+      AIMessagePromptTemplate.fromTemplate(`${array[3]}`),
       HumanMessagePromptTemplate.fromTemplate("{inputText}"),
     ]);
 
   const chain = Chatprompt.pipe(functionCallingModel);
+  
+
   const response = await chain.invoke({
     inputText: inputText,
   });
   
-  console.log("content", response.content);
-  console.log("type", typeof response.content)
+  
   //const output_str :string = response.content
 
   if (response.response_metadata.finish_reason === "stop") {
