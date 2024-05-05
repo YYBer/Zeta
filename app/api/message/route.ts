@@ -1,19 +1,9 @@
-//import { CallbackManager } from '@langchain/core/callbacks/base'
-import { BufferMemory, ChatMessageHistory } from 'langchain/memory'
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { DynamicStructuredTool } from "@langchain/core/tools";
 import { ChatOpenAI } from "@langchain/openai";
-import { convertToOpenAITool } from "@langchain/core/utils/function_calling";
 import { JsonOutputFunctionsParser } from "@langchain/core/output_parsers/openai_functions";
-import {
-  AIMessage,
-  BaseMessage,
-  HumanMessage,
-  SystemMessage
-} from 'langchain/schema'
 import { NextResponse } from 'next/server'
-import { ConversationChain } from 'langchain/chains'
 import {
   SystemMessagePromptTemplate,
   ChatPromptTemplate,
@@ -24,15 +14,13 @@ import { Message } from '@/types/chat'
 
 export const runtime = 'edge'
 
-function mapStoredMessagesToChatMessages(messages: Message[]): BaseMessage[] {
+function extractMessagesFromChatHistory(messages: Message[]): any[] {
   return messages.map(message => {
     switch (message.role) {
       case 'user':
-        return new HumanMessage(message.content.toString())
+        return HumanMessagePromptTemplate.fromTemplate(message.content.replace(/[{}"]/g, ' '))
       case 'assistant':
-        return new AIMessage(message.content.toString())
-      // case 'system':
-      // return new SystemMessage(message.content.toString())
+        return AIMessagePromptTemplate.fromTemplate(message.content.replace(/[{}"]/g, ' '))
       default:
         throw new Error('Role must be defined for generic messages')
     }
@@ -43,15 +31,15 @@ function extractContentFromDictionary(dictionary: any): string[] {
   const contentArray: string[] = [];
   const messageArray = dictionary.messages.slice(-5, -1)
 
-  for (let i = 0; i < messageArray.length; i++){
-    const messages = messageArray[i].content.replace(/[{}"]/g, ' ')
-    if (i % 2 == 0) {
-      contentArray.push(`${messages}`)
-    } else {
-      contentArray.push(`${messages}`)
-    } 
-  }
-  return contentArray;
+  // for (let i = 0; i < messageArray.length; i++){
+  //   const messages = messageArray[i].content.replace(/[{}"]/g, ' ')
+  //   if (i % 2 == 0) {
+  //     contentArray.push(`${messages}`)
+  //   } else {
+  //     contentArray.push(`${messages}`)
+  //   } 
+  // }
+  return messageArray;
 }
 
 export async function POST(req: Request) {
@@ -59,23 +47,26 @@ export async function POST(req: Request) {
   const messages: Message[] = body.messages
   const bodyprompt: string = body.prompt
 
-  
+
   const inputText = messages[messages.length - 1].content;
   console.log("text", inputText)
   
 
   const transferSchema = z.object({
     token: z.string().describe("The token symbol to be transferred"),
-    amount: z.number().positive().describe("The amount to be transferred"),
+    amount: z.number().positive().nullable().describe("The amount to be transferred"),
     recipient: z.string().describe("The recipient's wallet id"),
   });
 
   const swapSchema = z.object({
-    tokenIn: z.string().describe("The token symbol you want to be swapped"),
+    tokenIn: z.string().describe("The token symbol you want to swap"),
     tokenOut: z.string().describe("The token symbol you want to receive"),
-    amount: z.number().positive().describe("The token amount to be swapped"),
+    amountIn: z.number().positive().nullable().describe("The amount of tokens you want to use to swap for token you want"),
+    amountOut: z.number().positive().nullable().describe("The amount of tokens you want to receive after the swap"),
+    slippageTolerance: z.number().nullable().describe("The acceptable slippage tolerance for the swap, should be between 0.0001 and 0.01"),
+    fee: z.number().nullable().describe("The fee amount for the swap, fixed at 100"),
   });
-
+  
   const checkSchema  = z.object({
     token: z.string().describe("The token you want to check balance or current price")
   });
@@ -107,13 +98,10 @@ export async function POST(req: Request) {
     //   }
     // })
   })
-  const lcChatMessageHistory = new ChatMessageHistory(
-    mapStoredMessagesToChatMessages(messages)
-  )
+  const MessageHistory = extractMessagesFromChatHistory(messages.slice(-5, -1))
+  console.log("History", MessageHistory)
   
-  const array = extractContentFromDictionary(lcChatMessageHistory)
-  console.log(array)
-  console.log(typeof array[3])
+  //const array = Dictionary(lcChatMessageHistory)
 
   const functionCallingModel = chat.bind({
     functions: [
@@ -124,7 +112,7 @@ export async function POST(req: Request) {
       },
       {
         name: "swap",
-        description: "Swap tokens",
+        description: "Swap one token to another token",
         parameters: zodToJsonSchema(swapSchema),
       },
       {
@@ -139,16 +127,16 @@ export async function POST(req: Request) {
   Please analyze my intention from my current inputText, if there is a function that can fulfill my intention, invoke it.
   Here are some important examples :
 
-  #HumanInput : I want to swap 1 ETH to NEAR 
+  #Human : I want to swap 1 ETH to NEAR 
   #AI : Call swap function
 
-  #HumanInput : I want to transfer 10 NEAR to Allen
+  #Human : I want to transfer 10 NEAR to Allen
   #AI : Call transfer function
 
-  #HumanInput : I want to transfer some NEAR to Allen
+  #Human : I want to transfer some NEAR to Allen
   #AI : Ask Human to provide the amount of NEAR
 
-  #HumanInput : I want to transfer USDC to Allen
+  #Human : I want to transfer USDC to Allen
   #AI : Ask Human to provide the amount of USDC
 
   Below is history conversation. If current input text cannot call a function or only contain a token symbol or an address or amounts. 
@@ -162,10 +150,10 @@ export async function POST(req: Request) {
       SystemMessagePromptTemplate.fromTemplate(
         `${instruction}`
       ),
-      HumanMessagePromptTemplate.fromTemplate(`${array[0]}`),
-      AIMessagePromptTemplate.fromTemplate(`${array[1]}`),
-      HumanMessagePromptTemplate.fromTemplate(`${array[2]}`),
-      AIMessagePromptTemplate.fromTemplate(`${array[3]}`),
+      MessageHistory[0],
+      MessageHistory[1],
+      MessageHistory[2],
+      MessageHistory[3],
       HumanMessagePromptTemplate.fromTemplate("{inputText}"),
     ]);
 
