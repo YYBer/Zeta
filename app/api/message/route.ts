@@ -129,7 +129,7 @@ export async function POST(req: Request) {
   Here are some important examples :
 
   #Human : I want to swap 1 ETH to NEAR 
-  #AI : Call swap function
+  #AI : Call swap function 
 
   #Human : I want to transfer 10 NEAR to Allen
   #AI : Call transfer function
@@ -181,7 +181,7 @@ export async function POST(req: Request) {
     const parser = new JsonOutputFunctionsParser();
     const transferDetail = await parser.invoke(response);
     
-    if (Object.keys(transferDetail).length === 1){
+    if (Object.keys(transferDetail).length === 1){ // for check function
       const ticker : string = transferDetail.token;
       try {
         const data = await fetchCoinData(ticker);
@@ -200,14 +200,26 @@ export async function POST(req: Request) {
       } catch (error) {
             console.error(error);
       }
-      
-
-    } // check function
+    }
     
-    return new NextResponse(JSON.stringify(transferDetail), {
-      headers: {
-        'Content-Type': 'application/json'
+    if (transferDetail.amountIn === null && transferDetail.amountOut === null) {
+      const replyMessage: string = `Could you please specify the amounts you'd like to swap from ${transferDetail.tokenIn} to ${transferDetail.tokenOut}?`;
+      const stream = createStreamFromText(replyMessage);
+        
+        return new NextResponse(stream, {
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Transfer-Encoding': 'chunked'
+          }
+        })
       }
-    });
+    
+      
+    return new NextResponse(JSON.stringify(transferDetail), {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+    }
   }
-}
+
