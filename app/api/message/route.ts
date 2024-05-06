@@ -4,6 +4,7 @@ import { DynamicStructuredTool } from "@langchain/core/tools";
 import { ChatOpenAI } from "@langchain/openai";
 import { JsonOutputFunctionsParser } from "@langchain/core/output_parsers/openai_functions";
 import { NextResponse } from 'next/server'
+import { fetchCoinData } from './price.ts';
 import {
   SystemMessagePromptTemplate,
   ChatPromptTemplate,
@@ -27,19 +28,22 @@ function extractMessagesFromChatHistory(messages: Message[]): any[] {
   })
 }
 
-function extractContentFromDictionary(dictionary: any): string[] {
-  const contentArray: string[] = [];
-  const messageArray = dictionary.messages.slice(-5, -1)
-
-  // for (let i = 0; i < messageArray.length; i++){
-  //   const messages = messageArray[i].content.replace(/[{}"]/g, ' ')
-  //   if (i % 2 == 0) {
-  //     contentArray.push(`${messages}`)
-  //   } else {
-  //     contentArray.push(`${messages}`)
-  //   } 
-  // }
-  return messageArray;
+function createStreamFromText(input: string): ReadableStream<string> {
+  return new ReadableStream({
+      start(controller) {
+          let index = 0;
+          const textArray = input.split(' ');
+          const timer = setInterval(() => {
+              if (index < textArray.length) {
+                  controller.enqueue(`${textArray[index]} `);
+                  index++;
+              } else {
+                  clearInterval(timer);
+                  controller.close();
+              }
+          }, 100);
+      }
+  });
 }
 
 export async function POST(req: Request) {
@@ -98,11 +102,8 @@ export async function POST(req: Request) {
     //   }
     // })
   })
-  const MessageHistory = extractMessagesFromChatHistory(messages.slice(-5, -1))
-  console.log("History", MessageHistory)
+  const MessageHistory = extractMessagesFromChatHistory(messages.slice(-5, -1));
   
-  //const array = Dictionary(lcChatMessageHistory)
-
   const functionCallingModel = chat.bind({
     functions: [
       {
@@ -163,31 +164,11 @@ export async function POST(req: Request) {
   const response = await chain.invoke({
     inputText: inputText,
   });
-  
-  
-  //const output_str :string = response.content
 
   if (response.response_metadata.finish_reason === "stop") {
     // text output
-    console.log("aaaa")
-   
-    const stream = new ReadableStream({
-      start(controller) {
-        
-        let index = 0;
-        const textArray = response.content.split(' ');
-        const timer = setInterval(() => {
-          if (index < textArray.length) {
-            controller.enqueue(`${textArray[index]} `);
-            index++;
-          } else {
-            
-            clearInterval(timer);
-            controller.close();
-          }
-        }, 100);
-      }
-    });
+    console.log("aaaa");
+    const stream = createStreamFromText(response.content);
 
     return new NextResponse(stream, {
       headers: {
@@ -198,8 +179,31 @@ export async function POST(req: Request) {
   }
   if (response.response_metadata.finish_reason === "function_call") {
     const parser = new JsonOutputFunctionsParser();
-    const transferDetail = await parser.invoke(response)
+    const transferDetail = await parser.invoke(response);
+    
+    if (Object.keys(transferDetail).length === 1){
+      const ticker : string = transferDetail.token;
+      try {
+        const data = await fetchCoinData(ticker);
+        const tokenName = Object.keys(data)[0];
+        const tokenPrice = data[tokenName].usd
+        const replyMessage: string = `The current price of ${tokenName} is ${tokenPrice}.`
+        const stream = createStreamFromText(replyMessage);
+        
+        return new NextResponse(stream, {
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Transfer-Encoding': 'chunked'
+          }
+        })
 
+      } catch (error) {
+            console.error(error);
+      }
+      
+
+    } // check function
+    
     return new NextResponse(JSON.stringify(transferDetail), {
       headers: {
         'Content-Type': 'application/json'
