@@ -12,7 +12,7 @@ import { useInputJSONStore } from '@/lib/store/store'
 import { IoWalletSharp } from "react-icons/io5";
 import { PiArrowBendUpRight } from "react-icons/pi";
 import { PiNoteFill } from "react-icons/pi";
-import { TransferToken, Payload } from '@/components/Wallet/TransferTokenClient';
+import { TransferToken } from '@/components/Wallet/TransferTokenClient';
 import { useWalletSelector } from '@/components/contexts/WalletSelectorContext';
 import { useWalletInfoStore, useTransferTokenStore } from '@/lib/store/store'
 import { FaCheck } from "react-icons/fa";
@@ -22,6 +22,9 @@ import { PiArrowSquareOutBold } from "react-icons/pi";
 import { FaRegTimesCircle } from "react-icons/fa";
 import { SiNear } from "react-icons/si";
 import { FaArrowCircleDown } from "react-icons/fa";
+import { getBalance } from '@/components/Wallet/getBalanceClient';
+import { PerformSwap } from '@/components/Wallet/SwapClient';
+import { THIRTY_TGAS, connectionConfig, TOKEN_LIST, SwapPayload, MockTransferPayload, MockSwapPayload } from '@/components/Wallet/constant'
 
 interface Props {
   message: Message;
@@ -31,12 +34,12 @@ interface Props {
 
 
 
-const MockPayload: Payload = {
-  userId: '9b5adfd2530b9c2657b088cfc8755e3c25a6cef7fb9b44c659d12b2bd30a3f62',
-  receiverId: 'c7413c9c61fd11557efbfae8a063daebfa5774432aca543833d05bcd7050d9e6',
-  amount: '0.01',
-  symbol: 'USDC'
-};
+// const MockPayload: Payload = {
+//   userId: '9b5adfd2530b9c2657b088cfc8755e3c25a6cef7fb9b44c659d12b2bd30a3f62',
+//   receiverId: 'c7413c9c61fd11557efbfae8a063daebfa5774432aca543833d05bcd7050d9e6',
+//   amount: '0.01',
+//   symbol: 'USDC'
+// };
  
 
 export const ChatMessage: FC<Props> = memo(
@@ -48,13 +51,16 @@ export const ChatMessage: FC<Props> = memo(
     const [messagedCopied, setMessageCopied] = useState(false);
     const { inputJSON } = useInputJSONStore()
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const [isWalletConnected, setIsWalletConnected] = useState(false);
+    const [isWalletConnected, setIsWalletConnected] = useState(true);
     const [showTransfer, setShowTransfer] = useState(true);
     const [transferObject , setTransferObject] = useState()
     const { walletInfo } = useWalletInfoStore() 
     const { success, error, setSuccess, setError, confirmTransfer, messageCount } = useTransferTokenStore()
     const [time, setTime] = useState<String>()
     const { accounts } = useWalletSelector();
+    const [balance, setBalance] = useState('');
+    const [accountId, setAccountId] = useState('');
+    const [tokenSymbol, setTokenSymbol] = useState('');
 
     const toggleEditing = () => {
       setIsEditing(!isEditing);
@@ -126,6 +132,25 @@ export const ChatMessage: FC<Props> = memo(
       const nowTime = moment().format('YYYY-MM-DD H:mm:ss');
       setTime(String(nowTime))
     }, [success])
+
+    useEffect(() => {
+      if (accountId !== '' && tokenSymbol !== '') {
+        getBalance(accountId, tokenSymbol).then(setBalance).catch(e => {
+          setError(`Failed to fetch balance: ${e.message}`);
+          console.error(e);
+        });
+      }
+    }, [accountId, tokenSymbol]); // 依赖项包括 accountId 和 tokenSymbol
+
+    const [showSwap, setShowSwap] = useState(false);  // New state to control swap widget visibility
+
+    const handleSwapClick = () => {  // New function to handle Swap button click
+      if (isWalletConnected) {
+        setShowSwap(true);  // Show the swap widget if the wallet is connected
+      } else {
+        alert("Please connect your wallet first!");
+      }
+    };
     
     return (
       <div
@@ -279,6 +304,11 @@ export const ChatMessage: FC<Props> = memo(
                   {message.content}
                 </MemoizedReactMarkdown> 
 
+                <button onClick={handleSwapClick}>
+                  Swap
+                </button>
+                {showSwap && <PerformSwap payload={MockSwapPayload} />}
+
                 {messageIndex == messageCount && message.content.includes("{") ? (
                   <div className='flex flex-col bg-[#E5E7EB] rounded-xl justify-center items-center'>
                     <div className="flex w-10/12 mx-auto">
@@ -380,7 +410,7 @@ export const ChatMessage: FC<Props> = memo(
                           Please confirm the action.
                           <div></div>
                         </button>
-                        {showTransfer && <TransferToken payload={MockPayload} />}
+                        {showTransfer && <TransferToken payload={MockTransferPayload} />}
                       </div>
                       )
                     }
@@ -392,7 +422,7 @@ export const ChatMessage: FC<Props> = memo(
                           <input type="text" className='bg-transparent w-3/4 h-10 text-5xl outline-none' placeholder='0'/>
                           <div className='flex items-center gap-2 text-2xl'><SiNear /><span className='font-semibold'>NEAR</span></div>
                         </div>
-                        <div className='flex flex-row-reverse'>Balance: 0.1</div>
+                        <div className='flex flex-row-reverse'><p>Balance: {balance ? balance : 0}</p></div>
                       </div>
                       <div className='relative h-4 w-full'>
                           <FaArrowCircleDown className='absolute left-1/2 top-1/2 w-5 h-5 -translate-x-2.5'/>

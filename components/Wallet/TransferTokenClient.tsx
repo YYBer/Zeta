@@ -10,6 +10,7 @@ const { utils, keyStores, connect, Contract } = nearAPI;
 type ContractType = InstanceType<typeof Contract>;
 import { PiSpinnerGapBold } from "react-icons/pi";
 import { useTransferTokenStore } from '@/lib/store/store'
+import { THIRTY_TGAS, connectionConfig, TOKEN_LIST, TransferPayload } from './constant'
 
 interface NEP141_Contract extends ContractType {
   ft_balance_of: (args: { account_id: string }) => Promise<string>;
@@ -26,29 +27,15 @@ interface NEP141_Contract extends ContractType {
   }>;
 }
 
-const THIRTY_TGAS = '30000000000000';
 
-// testnet tokenlist
-// const TOKEN_LIST: { [key: string]: string } = {
-//   NEAR: 'NEAR',
-//   USDC: 'usdc.fakes.testnet'
-//   // Add other token symbols and their contract IDs
-// };
-
-// // mainnet tokenlist
-const TOKEN_LIST: { [key: string]: string } = {
-  // NEAR: 'NEAR', neeed to used wrapper contract
-  USDC: '17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1'
-};
-
-export interface Payload {
-  userId: string;
-  receiverId: string;
-  amount: string;
-  symbol: string;
-}
+// export interface TransferPayload {
+//   userId: string;
+//   receiverId: string;
+//   amount: string;
+//   symbol: string;
+// }
  
-export function TransferToken({ payload }: { payload: Payload }) {
+export function TransferToken({ payload }: { payload: TransferPayload }) {
   const { selector, modal, accounts } = useWalletSelector();
   const { setSuccess, setError, confirmTransfer, setConfirmTransfer, loading, setLoading, cancelled, setCancelled } = useTransferTokenStore()
 
@@ -68,7 +55,7 @@ export function TransferToken({ payload }: { payload: Payload }) {
     setCancelled(true);
   }
 
-  async function transferToken(payload: Payload) {
+  async function transferToken(payload: TransferPayload) {
     setLoading(true);
     setError(null);
     setSuccess(false);
@@ -95,15 +82,15 @@ export function TransferToken({ payload }: { payload: Payload }) {
       //   explorerUrl: "https://testnet.nearblocks.io",
       // };
 
-      // // mainnet config
-      const connectionConfig = {
-        networkId: "mainnet",
-        keyStore: new keyStores.BrowserLocalStorageKeyStore(),
-        nodeUrl: "https://rpc.mainnet.near.org",
-        walletUrl: "https://wallet.mainnet.near.org",
-        helperUrl: "https://helper.mainnet.near.org",
-        explorerUrl: "https://nearblocks.io",
-      };
+      // // // mainnet config
+      // const connectionConfig = {
+      //   networkId: "mainnet",
+      //   keyStore: new keyStores.BrowserLocalStorageKeyStore(),
+      //   nodeUrl: "https://rpc.mainnet.near.org",
+      //   walletUrl: "https://wallet.mainnet.near.org",
+      //   helperUrl: "https://helper.mainnet.near.org",
+      //   explorerUrl: "https://nearblocks.io",
+      // };
 
       const nearConnection = await connect(connectionConfig);
       const receiver_account = await nearConnection.account(user_id);
