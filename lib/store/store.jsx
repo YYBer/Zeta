@@ -2,7 +2,11 @@ import { create } from 'zustand';
 
 export const useInputJSONStore = create((set) => ({
   inputJSON: '',
-  setInputJSON: (newPrompt) => set({ inputJSON: newPrompt }), 
+  transferObject: {},
+  swapObject: {},
+  setInputJSON: (newPrompt) => set({ inputJSON: newPrompt }),
+  setTransferObject: (transferObject) => set({ transferObject }), 
+  setSwapObject : (swapObject) => set({ swapObject }), 
 }));
 
 export const useWalletInfoStore = create((set) => ({
@@ -27,7 +31,7 @@ export const useTransferTokenStore = create((set) => ({
   setCancelled : (isCancel) => set({ cancelled : isCancel }),
   setMessageCount: (messageCount) => set({ messageCount }),
 }));
- 
+  
 // export const useWalletStore = create((set) => ({
 //   wallet: undefined,
 //   signedAccountId: '',

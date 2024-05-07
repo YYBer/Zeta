@@ -80,7 +80,7 @@ const Home: React.FC<HomeProps> = ({
 
   const [prompts, setPrompts] = useState<Prompt[]>([])
   const [showPromptbar, setShowPromptbar] = useState<boolean>(true)
-  const { setInputJSON } = useInputJSONStore()
+  const { setInputJSON,  setTransferObject, setSwapObject } = useInputJSONStore()
   const { setSuccess, setError, setConfirmTransfer, setLoading, setCancelled, setMessageCount } = useTransferTokenStore()
 
 
@@ -212,8 +212,16 @@ const Home: React.FC<HomeProps> = ({
           console.log('chunkValue', chunkValue)
 
           if(chunkValue.includes("{")) {
+            if(chunkValue.length > 0){
+              const unescapedString = chunkValue.replace(/\\/g, '');
+    
+              // Parse the string into an object
+              const jsonObject = JSON.parse(unescapedString);
+              console.log('jsonObject', jsonObject)
+              if(jsonObject.functionType == 'transfer') setTransferObject(jsonObject)
+              if(jsonObject.functionType == 'swap') setSwapObject(jsonObject)
+            }
             setInputJSON(chunkValue)
-            console.log('save')
           }
           text += chunkValue
 
@@ -397,31 +405,31 @@ const Home: React.FC<HomeProps> = ({
     }
   }
 
-  const handleClearPluginKey = (pluginKey: PluginKey) => {
-    const updatedPluginKeys = pluginKeys.filter(
-      key => key.pluginId !== pluginKey.pluginId
-    )
+  // const handleClearPluginKey = (pluginKey: PluginKey) => {
+  //   const updatedPluginKeys = pluginKeys.filter(
+  //     key => key.pluginId !== pluginKey.pluginId
+  //   )
 
-    if (updatedPluginKeys.length === 0) {
-      setPluginKeys([])
-      localStorage.removeItem('pluginKeys')
-      return
-    }
+  //   if (updatedPluginKeys.length === 0) {
+  //     setPluginKeys([])
+  //     localStorage.removeItem('pluginKeys')
+  //     return
+  //   }
 
-    setPluginKeys(updatedPluginKeys)
+  //   setPluginKeys(updatedPluginKeys)
 
-    localStorage.setItem('pluginKeys', JSON.stringify(updatedPluginKeys))
-  }
+  //   localStorage.setItem('pluginKeys', JSON.stringify(updatedPluginKeys))
+  // }
 
   const handleToggleChatbar = () => {
     setShowSidebar(!showSidebar)
     localStorage.setItem('showChatbar', JSON.stringify(!showSidebar))
   }
 
-  const handleTogglePromptbar = () => {
-    setShowPromptbar(!showPromptbar)
-    localStorage.setItem('showPromptbar', JSON.stringify(!showPromptbar))
-  }
+  // const handleTogglePromptbar = () => {
+  //   setShowPromptbar(!showPromptbar)
+  //   localStorage.setItem('showPromptbar', JSON.stringify(!showPromptbar))
+  // }
 
   // const handleExportData = () => {
   //   exportData()
@@ -456,53 +464,53 @@ const Home: React.FC<HomeProps> = ({
   //   saveFolders(updatedFolders)
   // }
 
-  const handleDeleteFolder = (folderId: string) => {
-    const updatedFolders = folders.filter(f => f.id !== folderId)
-    setFolders(updatedFolders)
-    saveFolders(updatedFolders)
+  // const handleDeleteFolder = (folderId: string) => {
+  //   const updatedFolders = folders.filter(f => f.id !== folderId)
+  //   setFolders(updatedFolders)
+  //   saveFolders(updatedFolders)
 
-    const updatedConversations: Conversation[] = conversations.map(c => {
-      if (c.folderId === folderId) {
-        return {
-          ...c,
-          folderId: null
-        }
-      }
+  //   const updatedConversations: Conversation[] = conversations.map(c => {
+  //     if (c.folderId === folderId) {
+  //       return {
+  //         ...c,
+  //         folderId: null
+  //       }
+  //     }
 
-      return c
-    })
-    setConversations(updatedConversations)
-    saveConversations(updatedConversations)
+  //     return c
+  //   })
+  //   setConversations(updatedConversations)
+  //   saveConversations(updatedConversations)
 
-    const updatedPrompts: Prompt[] = prompts.map(p => {
-      if (p.folderId === folderId) {
-        return {
-          ...p,
-          folderId: null
-        }
-      }
+  //   const updatedPrompts: Prompt[] = prompts.map(p => {
+  //     if (p.folderId === folderId) {
+  //       return {
+  //         ...p,
+  //         folderId: null
+  //       }
+  //     }
 
-      return p
-    })
-    setPrompts(updatedPrompts)
-    savePrompts(updatedPrompts)
-  }
+  //     return p
+  //   })
+  //   setPrompts(updatedPrompts)
+  //   savePrompts(updatedPrompts)
+  // }
 
-  const handleUpdateFolder = (folderId: string, name: string) => {
-    const updatedFolders = folders.map(f => {
-      if (f.id === folderId) {
-        return {
-          ...f,
-          name
-        }
-      }
+  // const handleUpdateFolder = (folderId: string, name: string) => {
+  //   const updatedFolders = folders.map(f => {
+  //     if (f.id === folderId) {
+  //       return {
+  //         ...f,
+  //         name
+  //       }
+  //     }
 
-      return f
-    })
+  //     return f
+  //   })
 
-    setFolders(updatedFolders)
-    saveFolders(updatedFolders)
-  }
+  //   setFolders(updatedFolders)
+  //   saveFolders(updatedFolders)
+  // }
 
   // CONVERSATION OPERATIONS  --------------------------------------------
 

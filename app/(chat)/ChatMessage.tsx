@@ -25,22 +25,11 @@ import { FaArrowCircleDown } from "react-icons/fa";
 import { getBalance } from '@/components/Wallet/getBalanceClient';
 import { PerformSwap } from '@/components/Wallet/SwapClient';
 import { THIRTY_TGAS, connectionConfig, TOKEN_LIST, SwapPayload, MockTransferPayload, MockSwapPayload } from '@/components/Wallet/constant'
-
 interface Props {
   message: Message;
   messageIndex: number;
   onEditMessage: (message: Message, messageIndex: number) => void;
 }
-
-
-
-// const MockPayload: Payload = {
-//   userId: '9b5adfd2530b9c2657b088cfc8755e3c25a6cef7fb9b44c659d12b2bd30a3f62',
-//   receiverId: 'c7413c9c61fd11557efbfae8a063daebfa5774432aca543833d05bcd7050d9e6',
-//   amount: '0.01',
-//   symbol: 'USDC'
-// };
- 
 
 export const ChatMessage: FC<Props> = memo(
   ({ message, messageIndex, onEditMessage }) => {
@@ -49,11 +38,12 @@ export const ChatMessage: FC<Props> = memo(
     const [isTyping, setIsTyping] = useState<boolean>(false);
     const [messageContent, setMessageContent] = useState(message.content);
     const [messagedCopied, setMessageCopied] = useState(false);
-    const { inputJSON } = useInputJSONStore()
+    const { inputJSON, transferObject,  swapObject} = useInputJSONStore()
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isWalletConnected, setIsWalletConnected] = useState(true);
     const [showTransfer, setShowTransfer] = useState(true);
-    const [transferObject , setTransferObject] = useState()
+    // const [transferObject , setTransferObject] = useState()
+    // const [swapObject , setSwapObject] = useState()
     const { walletInfo } = useWalletInfoStore() 
     const { success, error, setSuccess, setError, confirmTransfer, messageCount } = useTransferTokenStore()
     const [time, setTime] = useState<String>()
@@ -61,6 +51,10 @@ export const ChatMessage: FC<Props> = memo(
     const [balance, setBalance] = useState('');
     const [accountId, setAccountId] = useState('');
     const [tokenSymbol, setTokenSymbol] = useState('');
+    const [functionTypes, setFunctionTypes] = useState({
+      swap: false,
+      transfer: false,
+    });
 
     const toggleEditing = () => {
       setIsEditing(!isEditing);
@@ -116,17 +110,20 @@ export const ChatMessage: FC<Props> = memo(
         alert("Please connect your wallet first!");
       }
     };
-
-    useEffect(() => {
-        if(inputJSON.length > 0){
-        // Remove backslashes to unescape the string
-        const unescapedString = inputJSON.replace(/\\/g, '');
+ 
+    // useEffect(() => {
+    //   console.log(inputJSON)
+    //     if(inputJSON.length > 0){
+    //     // Remove backslashes to unescape the string
+    //     const unescapedString = inputJSON.replace(/\\/g, '');
     
-        // Parse the string into an object
-        const jsonObject = JSON.parse(unescapedString);
-        setTransferObject(jsonObject)
-        }
-    }, [inputJSON])
+    //     // Parse the string into an object
+    //     const jsonObject = JSON.parse(unescapedString);
+    //     // console.log('jsonObject', jsonObject)
+    //     if(jsonObject.functionType == 'transfer') setTransferObject(jsonObject)
+    //     if(jsonObject.functionType == 'swap') setSwapObject(jsonObject)
+    //     }
+    // }, [inputJSON])
 
     useEffect(() => {
       const nowTime = moment().format('YYYY-MM-DD H:mm:ss');
@@ -151,7 +148,29 @@ export const ChatMessage: FC<Props> = memo(
         alert("Please connect your wallet first!");
       }
     };
-    
+
+    useEffect(() => {
+      try{
+        if(message.role === 'assistant' && message.content.includes("swap")){
+          setFunctionTypes(prevState => ({
+            ...prevState,
+            transfer: false,
+            swap: true
+          }));
+        }else if(message.role === 'assistant' && message.content.includes("transfer")){
+          setFunctionTypes(prevState => ({
+            ...prevState,
+            transfer: true,
+            swap: false
+          }));
+        }
+      }catch(error){
+        console.error('Invalid JSON string', error)
+      }
+    }, [message.content && messageIndex == messageCount])
+
+    // console.log(swapObject)
+
     return (
       <div
         className='group px-4 bg-white text-gray-800'
@@ -159,13 +178,15 @@ export const ChatMessage: FC<Props> = memo(
       >
         <div className="relative m-auto flex gap-4 p-4 text-base md:max-w-2xl md:gap-6 md:py-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
           <div className="min-w-[40px] flex justify-start items-start text-left font-bold">
-            {message.role === 'assistant' ? <Image
-                  className="float-right"
-                  src='/brand-logo.svg'
-                  alt='brand-logo'
-                  width={30}
-                  height={30}
-                /> : <IconUser size={30}/>}
+            {message.role === 'assistant' ? 
+              <Image
+                className="float-right"
+                src='/brand-logo.svg'
+                alt='brand-logo'
+                width={30}
+                height={30}
+              /> : <IconUser size={30}/>
+            }
           </div>
 
           <div className="prose mt-[-2px] w-full">
@@ -304,12 +325,9 @@ export const ChatMessage: FC<Props> = memo(
                   {message.content}
                 </MemoizedReactMarkdown> 
 
-                <button onClick={handleSwapClick}>
-                  Swap
-                </button>
-                {showSwap && <PerformSwap payload={MockSwapPayload} />}
+                
 
-                {messageIndex == messageCount && message.content.includes("{") ? (
+                {messageIndex == messageCount && functionTypes.transfer ? (
                   <div className='flex flex-col bg-[#E5E7EB] rounded-xl justify-center items-center'>
                     <div className="flex w-10/12 mx-auto">
                       <Image
@@ -414,33 +432,43 @@ export const ChatMessage: FC<Props> = memo(
                       </div>
                       )
                     }
-
-                    <div className='flex flex-col w-[80%] mx-auto my-5'>
-                      <div className='flex flex-col'>
-                        <span>You pay</span>
-                        <div className='flex w-full justify-between mt-2'>
-                          <input type="text" className='bg-transparent w-3/4 h-10 text-5xl outline-none' placeholder='0'/>
-                          <div className='flex items-center gap-2 text-2xl'><SiNear /><span className='font-semibold'>NEAR</span></div>
-                        </div>
-                        <div className='flex flex-row-reverse'><p>Balance: {balance ? balance : 0}</p></div>
-                      </div>
-                      <div className='relative h-4 w-full'>
-                          <FaArrowCircleDown className='absolute left-1/2 top-1/2 w-5 h-5 -translate-x-2.5'/>
-                      </div>
-                      <div className='flex flex-col mt-4'>
-                        <span>You receive</span>
-                        <div className='flex w-full justify-between mt-2'>
-                          <input type="text" className='bg-transparent w-3/4 h-10 text-5xl outline-none' placeholder='0'/>
-                          <div className='flex items-center gap-2 text-2xl'><SiNear /><span className='font-semibold'>USDC</span></div>
-                        </div>
-                        <div className='flex flex-row-reverse'>Balance: 0.1</div>
-                      </div>
-                    </div>
-                    
                   </div>
                  
                 ) : (
-                  <></>
+                  <>
+                  {
+                      functionTypes.swap && (
+                        <>
+                        <div className='flex flex-col w-[80%] mx-auto my-5 bg-[E5E7EB] rounded-xl'>
+                        <div className='flex flex-col'>
+                          <span>You pay</span>
+                          <div className='flex w-full justify-between mt-2'>
+                            {/* <input type="text" className='bg-transparent w-3/4 h-10 text-5xl outline-none' placeholder='0'/> */}
+                            <div className='bg-transparent w-3/4 h-10 text-5xl outline-none'>{swapObject?.amountIn ? swapObject?.amountIn : 0}</div>
+                            <div className='flex items-center gap-2 text-2xl'><SiNear /><span className='font-semibold'>{swapObject?.tokenIn ? swapObject?.tokenIn : 'ETH'}</span></div>
+                          </div>
+                          <div className='flex flex-row-reverse'><p>Balance: 0</p></div>
+                        </div>
+                        <div className='relative h-4 w-full'>
+                            <FaArrowCircleDown className='absolute left-1/2 top-1/2 w-5 h-5 -translate-x-2.5'/>
+                        </div>
+                        <div className='flex flex-col mt-4'>
+                          <span>You receive</span>
+                          <div className='flex w-full justify-between mt-2'>
+                          <div className='bg-transparent w-3/4 h-10 text-5xl outline-none'>{swapObject?.amountOut ? swapObject?.amountOut : 0}</div>
+                            <div className='flex items-center gap-2 text-2xl'><SiNear /><span className='font-semibold'>{swapObject?.tokenOut ? swapObject?.tokenOut : 'USDT'}</span></div>
+                          </div>
+                          <div className='flex flex-row-reverse'>Balance: {swapObject?.amountOut ? swapObject?.amountOut : 0}</div>
+                        </div>
+                        </div>
+                        <button className='border-2 border-black' onClick={handleSwapClick}>
+                          Swap
+                        </button>
+                        {showSwap && <PerformSwap payload={MockSwapPayload} />}
+                        </>
+                      )
+                    }
+                    </>
                 )}
               </>
             )}
