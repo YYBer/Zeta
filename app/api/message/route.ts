@@ -4,6 +4,7 @@ import { DynamicStructuredTool } from "@langchain/core/tools";
 import { ChatOpenAI } from "@langchain/openai";
 import { JsonOutputFunctionsParser } from "@langchain/core/output_parsers/openai_functions";
 import { NextResponse } from 'next/server'
+import { HumanMessage, AIMessage, ToolMessage } from "@langchain/core/messages";
 import { fetchCoinData } from './price.ts';
 import {
   SystemMessagePromptTemplate,
@@ -19,9 +20,9 @@ function extractMessagesFromChatHistory(messages: Message[]): any[] {
   return messages.map(message => {
     switch (message.role) {
       case 'user':
-        return HumanMessagePromptTemplate.fromTemplate(message.content.replace(/[{}"]/g, ' '))
+        return new HumanMessage(message.content.replace(/[{}"]/g, ' '))
       case 'assistant':
-        return AIMessagePromptTemplate.fromTemplate(message.content.replace(/[{}"]/g, ' '))
+        return new AIMessage(message.content.replace(/[{}"]/g, ' '))
       default:
         throw new Error('Role must be defined for generic messages')
     }
@@ -50,6 +51,7 @@ export async function POST(req: Request) {
   const body = await req.json()
   const messages: Message[] = body.messages
   const bodyprompt: string = body.prompt
+  const address: string = body.address
 
 
   const inputText = messages[messages.length - 1].content;
@@ -67,8 +69,8 @@ export async function POST(req: Request) {
     functionType:  z.string().describe("The function type : swap, can only be 'swap'"),
     tokenIn: z.string().describe("The token symbol you want to swap"),
     tokenOut: z.string().describe("The token symbol you want to receive"),
-    amountIn: z.number().positive().nullable().describe("The amount of tokens you want to use to swap for token you want"),
-    amountOut: z.number().positive().nullable().describe("The amount of tokens you want to receive after the swap"),
+    amountIn: z.number().positive().describe("The amount of tokens you want to use to swap for token you want"),
+    //amountOut: z.number().positive().nullable().describe("The amount of tokens you want to receive after the swap"),
     slippageTolerance: z.number().nullable().describe("The acceptable slippage tolerance for the swap, should be between 0.0001 and 0.01"),
     fee: z.number().nullable().describe("The fee amount for the swap, fixed at 100"),
   });
@@ -104,8 +106,9 @@ export async function POST(req: Request) {
     //   }
     // })
   })
-  const MessageHistory = extractMessagesFromChatHistory(messages.slice(-5, -1));
   
+  const MessageHistory = extractMessagesFromChatHistory(messages.slice(-5, -1));
+
   const functionCallingModel = chat.bind({
     functions: [
       {
@@ -133,8 +136,8 @@ export async function POST(req: Request) {
   #Human : I want to swap 1 ETH to NEAR 
   #AI : Call swap function
 
-  #Human : I want to get 10 ETH by swapping NEAR
-  #AI : Call swap function
+  #Human : I want to transfer 0.01 USDC to Allen
+  #AI : Call transfer function
 
   #Human : I want to transfer some NEAR to Allen
   #AI : Please provide the amount of NEAR you want to swap.
@@ -154,19 +157,21 @@ export async function POST(req: Request) {
       SystemMessagePromptTemplate.fromTemplate(
         `${instruction}`
       ),
-      MessageHistory[0],
-      MessageHistory[1],
-      MessageHistory[2],
-      MessageHistory[3],
+      MessageHistory[0].content,
+      MessageHistory[1].content,
+      MessageHistory[2].content,
+      MessageHistory[3].content,
       HumanMessagePromptTemplate.fromTemplate("{inputText}"),
     ]);
 
   const chain = Chatprompt.pipe(functionCallingModel);
   
-
+  
   const response = await chain.invoke({
     inputText: inputText,
   });
+
+  console.log("output", response.content)
 
   if (response.response_metadata.finish_reason === "stop") {
     // text output
@@ -205,17 +210,17 @@ export async function POST(req: Request) {
       }
     }
     
-    if (transferDetail.amountIn === null && transferDetail.amountOut === null) {
-      const replyMessage: string = `Could you please specify the amounts you'd like to swap from ${transferDetail.tokenIn} to ${transferDetail.tokenOut}?`;
-      const stream = createStreamFromText(replyMessage);
+    // if (transferDetail.amountIn === null && transferDetail.amountOut === null) {
+    //   const replyMessage: string = `Could you please specify the amounts you'd like to swap from ${transferDetail.tokenIn} to ${transferDetail.tokenOut}?`;
+    //   const stream = createStreamFromText(replyMessage);
         
-        return new NextResponse(stream, {
-          headers: {
-            'Content-Type': 'text/event-stream',
-            'Transfer-Encoding': 'chunked'
-          }
-        })
-      }
+    //     return new NextResponse(stream, {
+    //       headers: {
+    //         'Content-Type': 'text/event-stream',
+    //         'Transfer-Encoding': 'chunked'
+    //       }
+    //     })
+    //   }
     
       
     return new NextResponse(JSON.stringify(transferDetail), {
