@@ -214,8 +214,10 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
         AccountId: accountId,
       })
       console.log(JSON.stringify(swapTx, null, 2))
-      const receiverId = swapTx[0].receiverId;
-      const functionCall = swapTx[0].functionCalls[0];
+      const i = swapTx.length;
+      console.log("swapTx length: ", i)
+      const receiverId = swapTx[i-1].receiverId;
+      const functionCall = swapTx[i-1].functionCalls[0];
       const methodName = functionCall.methodName;
       const args = functionCall.args;
       const gas = functionCall.gas;
@@ -223,6 +225,7 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
 
       // Check if functionCall has all necessary properties
       if (receiverId && methodName && args && gas && amount) {
+        console.log("get all functionCall")
         // Create the function call action
         const swapToken: FunctionCallAction = {
           type: 'FunctionCall',
@@ -245,7 +248,6 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
 
       if (tx.length > 0) {
           await wallet.signAndSendTransactions({ transactions: tx });
-          console.log("here!")
       }      
       setSuccess(true);
       // TODO: implement the result of the swap
