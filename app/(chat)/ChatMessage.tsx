@@ -19,6 +19,9 @@ import { FaCheck } from "react-icons/fa";
 import { FaCheckCircle } from "react-icons/fa";
 import moment from 'moment';
 import { PiArrowSquareOutBold } from "react-icons/pi";
+import { FaRegTimesCircle } from "react-icons/fa";
+import { SiNear } from "react-icons/si";
+import { FaArrowCircleDown } from "react-icons/fa";
 
 interface Props {
   message: Message;
@@ -124,7 +127,6 @@ export const ChatMessage: FC<Props> = memo(
       setTime(String(nowTime))
     }, [success])
     
-
     return (
       <div
         className='group px-4 bg-white text-gray-800'
@@ -142,7 +144,7 @@ export const ChatMessage: FC<Props> = memo(
           </div>
 
           <div className="prose mt-[-2px] w-full">
-          {message.role === 'assistant' ? <p className='text-lg font-semibold'>Sender</p> : <p className='text-lg font-semibold'>User</p>}           
+          {message.role === 'assistant' ? <p className='text-lg font-semibold mb-2'>Sender</p> : <p className='text-lg font-semibold mb-2'>User</p>}           
            {message.role === 'user' ? (
               <div className="flex w-full">
                 {isEditing ? (
@@ -354,19 +356,25 @@ export const ChatMessage: FC<Props> = memo(
                       </div>
                     </div>
                     </div>
-
-                    //   <div className='flex flex-col'>
-                    //   <div className='flex flex-col'>
-                    //     <div className='flex items-center gap-2 text-[#10B981] h-8'>
-                    //       <FaCheckCircle className='w-6 h-6'/> <p className='text-xl'>Successful</p> 
-                    //     </div>
-                    //     <div className='flex gap-2'><div className='w-6 h-6'></div>{time}</div>
-                    //     <a className='flex items-center gap-2 h-8' href="https://nearblocks.io/address/9b5adfd2530b9c2657b088cfc8755e3c25a6cef7fb9b44c659d12b2bd30a3f62"><p className='underline'>Transfer information</p><PiArrowSquareOutBold className='w-4 h-4'/></a>
-                    //   </div>
-                    // </div>
                     }
+                    
                     {
-                      !success && (
+                      error &&  <div className="flex w-10/12 mx-auto mb-5">
+                      
+                      <div className="flex w-full flex-col">
+                        <div className='flex flex-col gap-2'>
+                          <div className='flex items-center gap-2 text-[#F43F5E] h-8'>
+                            <div><FaRegTimesCircle className='w-6 h-6'/></div>
+                            <p className='text-xl flex'>Error</p>
+                          </div>
+                          <div className='flex gap-2'><div className='w-6 h-6'/>{time}</div>
+                      </div>
+                    </div>
+                    </div>
+                    }
+
+                    {
+                      (!success && !error) && (
                       <div className='flex flex-col mb-4 w-10/12 border-2 bg-[#F0F9FF] px-4 rounded-xl'>
                         <button className='flex justify-start my-2' onClick={handleTransferClick} disabled={!isWalletConnected} >
                           Please confirm the action.
@@ -376,6 +384,28 @@ export const ChatMessage: FC<Props> = memo(
                       </div>
                       )
                     }
+
+                    <div className='flex flex-col w-[80%] mx-auto my-5'>
+                      <div className='flex flex-col'>
+                        <span>You pay</span>
+                        <div className='flex w-full justify-between mt-2'>
+                          <input type="text" className='bg-transparent w-3/4 h-10 text-5xl outline-none' placeholder='0'/>
+                          <div className='flex items-center gap-2 text-2xl'><SiNear /><span className='font-semibold'>NEAR</span></div>
+                        </div>
+                        <div className='flex flex-row-reverse'>Balance: 0.1</div>
+                      </div>
+                      <div className='relative h-4 w-full'>
+                          <FaArrowCircleDown className='absolute left-1/2 top-1/2 w-5 h-5 -translate-x-2.5'/>
+                      </div>
+                      <div className='flex flex-col mt-4'>
+                        <span>You receive</span>
+                        <div className='flex w-full justify-between mt-2'>
+                          <input type="text" className='bg-transparent w-3/4 h-10 text-5xl outline-none' placeholder='0'/>
+                          <div className='flex items-center gap-2 text-2xl'><SiNear /><span className='font-semibold'>USDC</span></div>
+                        </div>
+                        <div className='flex flex-row-reverse'>Balance: 0.1</div>
+                      </div>
+                    </div>
                     
                   </div>
                  

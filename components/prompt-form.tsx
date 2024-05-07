@@ -56,7 +56,6 @@ export function PromptForm() {
   ]
  
   React.useEffect(() => {
-    console.log('inputRef.current', inputRef.current)
     if (inputRef.current) {
       inputRef.current.focus()
     }

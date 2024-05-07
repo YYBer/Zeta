@@ -1,10 +1,6 @@
 import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai';
 import { OPENAI_API_HOST } from '@/utils/app/const';
 
-export const config = {
-  runtime: 'edge',
-};
-
 export async function POST(req: Request): Promise<Response> {
     try {
       const { key } = (await req.json()) as { key: string };

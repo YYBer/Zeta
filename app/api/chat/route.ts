@@ -6,11 +6,6 @@ import { Tiktoken, init } from '@dqbd/tiktoken/lite/init';
 import * as wasm from '../../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm';
 // import wasm from '../../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?module';
 
-
-export const config = {
-  runtime: 'edge',
-};
-
 export async function POST(req: Request) {
   try {
     const { model, messages, key, prompt } = (await req.json()) as ChatBody;

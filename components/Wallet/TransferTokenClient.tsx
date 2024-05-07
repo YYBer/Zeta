@@ -240,7 +240,7 @@ export function TransferToken({ payload }: { payload: Payload }) {
         </div>
       }
       {/* {error && <p className="text-red-500">Error: {error}</p>} */}
-      {cancelled && <p className="text-red-500">Transaction Cancelled</p>}
+      {/* {cancelled && <p className="text-red-500">Transaction Cancelled</p>} */}
 
       {!confirmTransfer && !cancelled && (
         <div className="flex space-x-4 my-2">
