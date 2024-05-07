@@ -158,7 +158,8 @@ const Home: React.FC<HomeProps> = ({
         method: 'POST',
         body: JSON.stringify({
           messages: updatedConversation.messages,
-          prompt: updatedConversation.prompt
+          prompt: updatedConversation.prompt,
+          address: 'bungeetest.testnet', //test only
         }),
         signal: controller.signal
       })
@@ -208,7 +209,7 @@ const Home: React.FC<HomeProps> = ({
           done = doneReading
           const chunkValue = decoder.decode(value)
 
-          // console.log('chunkValue', chunkValue)
+          console.log('chunkValue', chunkValue)
 
           if(chunkValue.includes("{")) {
             setInputJSON(chunkValue)
