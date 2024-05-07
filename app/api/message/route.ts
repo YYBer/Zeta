@@ -57,12 +57,14 @@ export async function POST(req: Request) {
   
 
   const transferSchema = z.object({
+    functionType:  z.string().describe("The function type : transfer, can only be 'transfer'"),
     token: z.string().describe("The token symbol to be transferred"),
     amount: z.number().positive().nullable().describe("The amount to be transferred"),
     recipient: z.string().describe("The recipient's wallet id"),
   });
 
   const swapSchema = z.object({
+    functionType:  z.string().describe("The function type : swap, can only be 'swap'"),
     tokenIn: z.string().describe("The token symbol you want to swap"),
     tokenOut: z.string().describe("The token symbol you want to receive"),
     amountIn: z.number().positive().nullable().describe("The amount of tokens you want to use to swap for token you want"),
@@ -129,19 +131,20 @@ export async function POST(req: Request) {
   Here are some important examples :
 
   #Human : I want to swap 1 ETH to NEAR 
-  #AI : Call swap function 
+  #AI : Call swap function
 
-  #Human : I want to transfer 10 NEAR to Allen
-  #AI : Call transfer function
+  #Human : I want to get 10 ETH by swapping NEAR
+  #AI : Call swap function
 
   #Human : I want to transfer some NEAR to Allen
-  #AI : Ask Human to provide the amount of NEAR
+  #AI : Please provide the amount of NEAR you want to swap.
 
   #Human : I want to transfer USDC to Allen
   #AI : Ask Human to provide the amount of USDC
 
-  Below is history conversation. If current input text cannot call a function or only contain a token symbol or an address or amounts. 
-  Please check past history to see what user wants. Please focus on what the user currently wants and do not extract data from the dictionary of successful transactions and history before this successful transactions, for example: 'tokenIn: ETH, tokenOut: USDC, amount: 1'
+  Below is history conversation. 
+  If current input text cannot call a function or only contain a token symbol or an address or amounts. Please check past history to see what user wants. 
+  Please focus on what the user currently wants and do not extract data from the dictionary of successful transactions and history before this successful transactions. Just don't extract any information from json format data.
   And if there have other information to invoke the function. invoke it. If the parameters required to invoke the function are incomplete, ask user to provide the missing information. Please confirm that these parameters have indeed been show in the conversation. Do not make any assumptions.
   `;
   
@@ -187,7 +190,7 @@ export async function POST(req: Request) {
         const data = await fetchCoinData(ticker);
         const tokenName = Object.keys(data)[0];
         const tokenPrice = data[tokenName].usd
-        const replyMessage: string = `The current price of ${tokenName} is ${tokenPrice}.`
+        const replyMessage: string = `The current price of ${tokenName} is ${tokenPrice} USD.`
         const stream = createStreamFromText(replyMessage);
         
         return new NextResponse(stream, {
