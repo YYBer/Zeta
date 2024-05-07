@@ -75,6 +75,7 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
       const tokenInBalance = getBalance(accountId, payload.tokenIn)
       if(parseFloat(await tokenInBalance) < parseFloat(payload.amountIn)){
         throw new Error('Insufficient balance');
+        console.log("Insufficient balance")
       }
 
       const tokenIn = payload.tokenIn;
