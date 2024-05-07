@@ -5,6 +5,15 @@ const { utils, keyStores, connect, Contract } = nearAPI;
 type ContractType = InstanceType<typeof Contract>;
 interface NEP141_Contract extends ContractType {
   ft_balance_of: (args: { account_id: string }) => Promise<string>;
+  ft_metadata: () => Promise<{
+    spec: string;
+    name: string;
+    symbol: string;
+    icon: string;
+    reference: null | string;
+    reference_hash: null | string;
+    decimals: number;
+  }>;
 }
 
 const THIRTY_TGAS = '30000000000000';
@@ -42,14 +51,22 @@ export async function getBalance(accountId: string, symbol: string): Promise<str
     
     // 創建代幣合約實例
     const contract = new Contract(account, tokenContractId, {
-      viewMethods: ['ft_balance_of'],
+      viewMethods: ['ft_balance_of', 'ft_metadata'],
       changeMethods: [],
     }) as unknown as NEP141_Contract;
 
     // 調用合約的 ft_balance_of 方法
     const balance = await contract.ft_balance_of({ account_id: accountId });
+
+    const metadata = await contract.ft_metadata();
+    const decimals = metadata.decimals;
+    const unit_convert = 10**decimals
+    // Failed to fetch balance: The number 522.704967 cannot be converted to a BigInt because it is not an integer
+    // const parseBalance = BigInt(Math.round(parseFloat(balance) / unit_convert)).toString()
+    const parseBalance = (parseFloat(balance) / unit_convert).toString()
+    
     console.log(`Balance of ${symbol} in ${accountId}: ${balance}`);
-    return balance; // 返回餘額
+    return parseBalance; // 返回餘額
   } catch (error) {
     console.error(`Failed to fetch balance of ${symbol} for ${accountId}:`, error);
     throw error;

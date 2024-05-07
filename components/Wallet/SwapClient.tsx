@@ -9,7 +9,7 @@ import {
 } from '@ref-finance/ref-sdk'
 import * as nearAPI from "near-api-js";
 import { THIRTY_TGAS, connectionConfig, TOKEN_LIST, SwapPayload, MockSwapPayload, connectionTestConfig, TOKEN_TEST_LIST } from './constant'
-
+import { getBalance } from './getBalanceClient'
 const { utils, keyStores, connect, Contract } = nearAPI;
 
 type ContractType = InstanceType<typeof Contract>;
@@ -71,6 +71,11 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
         throw new Error('No active account found');
       }
       console.log(`Account ID: ${accountId}`);
+
+      const tokenInBalance = getBalance(accountId, payload.tokenIn)
+      if(parseFloat(await tokenInBalance) < parseFloat(payload.amountIn)){
+        throw new Error('Insufficient balance');
+      }
 
       const tokenIn = payload.tokenIn;
       const tokenOut = payload.tokenOut;
