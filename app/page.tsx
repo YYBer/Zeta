@@ -10,9 +10,9 @@ import { ErrorMessage } from '@/types/error'
 import { Folder, FolderType } from '@/types/folder'
 import {
   OpenAIModel,
-  OpenAIModelID,
-  OpenAIModels,
-  fallbackModelID
+  // OpenAIModelID,
+  // OpenAIModels,
+  // fallbackModelID
 } from '@/types/openai'
 import { Plugin, PluginKey } from '@/types/plugin'
 import { Prompt } from '@/types/prompt'
@@ -46,14 +46,16 @@ import { WalletSelectorContextProvider } from '@/components/contexts/WalletSelec
 import { useInputJSONStore, useTransferTokenStore } from '@/lib/store/store'
 import { FC } from 'react';
 
+// export type OpenAIModelID = string;
 interface HomeProps {
-  modelId: OpenAIModelID
+  modelId: string
 }
- 
-// const Home: FC<HomeProps> 
-const Home: FC<HomeProps> = ({
-  modelId
-}: HomeProps) => {
+// GPT_3_5
+// const Home: FC<HomeProps> = ({
+//   modelId
+// }: HomeProps) => {
+
+const Home: FC = ({}) => {
   const { t } = useTranslation('chat')
 
   // STATE ----------------------------------------------
@@ -81,7 +83,7 @@ const Home: FC<HomeProps> = ({
   // const [showPromptbar, setShowPromptbar] = useState<boolean>(true)
   const { setInputJSON,  setTransferObject, setSwapObject } = useInputJSONStore()
   const { setSuccess, setError, setConfirmTransfer, setLoading, setCancelled, setMessageCount } = useTransferTokenStore()
-
+  const modelId:string = 'GPT_3_5';
 
   // REFS ----------------------------------------------
 
@@ -818,7 +820,7 @@ const Home: FC<HomeProps> = ({
                   messageIsStreaming={messageIsStreaming}
                   apiKey={apiKey}
                   serverSideApiKeyIsSet={serverSideApiKeyIsSet}
-                  defaultModelId={modelId}
+                  modelId={modelId}
                   modelError={modelError}
                   models={models}
                   loading={messageLoading}

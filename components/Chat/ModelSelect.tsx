@@ -6,14 +6,14 @@ import { FC } from 'react';
 interface Props {
   model: OpenAIModel;
   models: OpenAIModel[];
-  defaultModelId: OpenAIModelID;
+  modelId: string;
   onModelChange: (model: OpenAIModel) => void;
 }
 
 export const ModelSelect: FC<Props> = ({
   model,
   models,
-  defaultModelId,
+  modelId,
   onModelChange,
 }) => {
   const { t } = useTranslation('chat');
@@ -27,7 +27,7 @@ export const ModelSelect: FC<Props> = ({
         <select
           className="w-full bg-transparent p-2"
           aria-label={t('Select a model') || 'Select a model'}
-          value={model?.id || defaultModelId}
+          value={model?.id || modelId}
           onChange={(e) => {
             onModelChange(
               models.find(
@@ -42,7 +42,7 @@ export const ModelSelect: FC<Props> = ({
               value={model.id}
               className="dark:bg-[#343541] dark:text-white"
             >
-              {model.id === defaultModelId
+              {model.id === modelId
                 ? `Default (${model.name})`
                 : model.name}
             </option>

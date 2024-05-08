@@ -29,7 +29,7 @@ interface Props {
   models: OpenAIModel[];
   apiKey: string;
   serverSideApiKeyIsSet: boolean;
-  defaultModelId: OpenAIModelID;
+  modelId: string;
   messageIsStreaming: boolean;
   modelError: ErrorMessage | null;
   loading: boolean;
@@ -53,7 +53,7 @@ export const Chat: FC<Props> = memo(
     models,
     apiKey,
     serverSideApiKeyIsSet,
-    defaultModelId,
+    modelId,
     messageIsStreaming,
     modelError,
     loading,
@@ -189,7 +189,7 @@ export const Chat: FC<Props> = memo(
                         <ModelSelect
                           model={conversation.model}
                           models={models}
-                          defaultModelId={defaultModelId}
+                          modelId={modelId}
                           onModelChange={(model) =>
                             onUpdateConversation(conversation, {
                               key: 'model',
