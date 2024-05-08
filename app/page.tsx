@@ -47,12 +47,12 @@ import { useInputJSONStore, useTransferTokenStore } from '@/lib/store/store'
 import { FC } from 'react';
 
 interface HomeProps {
-  defaultModelId: OpenAIModelID
+  modelId: OpenAIModelID
 }
  
 // const Home: FC<HomeProps> 
 const Home: FC<HomeProps> = ({
-  defaultModelId
+  modelId
 }: HomeProps) => {
   const { t } = useTranslation('chat')
 
@@ -818,7 +818,7 @@ const Home: FC<HomeProps> = ({
                   messageIsStreaming={messageIsStreaming}
                   apiKey={apiKey}
                   serverSideApiKeyIsSet={serverSideApiKeyIsSet}
-                  defaultModelId={defaultModelId}
+                  defaultModelId={modelId}
                   modelError={modelError}
                   models={models}
                   loading={messageLoading}
