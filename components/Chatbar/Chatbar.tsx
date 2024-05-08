@@ -22,8 +22,8 @@ interface Props {
   // pluginKeys: PluginKey[];
   folders: Folder[];
   // onCreateFolder: (name: string) => void;
-  // onDeleteFolder: (folderId: string) => void;
-  // onUpdateFolder: (folderId: string, name: string) => void;
+  onDeleteFolder: (folderId: string) => void;
+  onUpdateFolder: (folderId: string, name: string) => void;
   onNewConversation: () => void;
   // onToggleLightMode: (mode: 'light' | 'dark') => void;
   onSelectConversation: (conversation: Conversation) => void;
@@ -51,8 +51,8 @@ export const Chatbar: FC<Props> = ({
   // pluginKeys,
   folders,
   // onCreateFolder,
-  // onDeleteFolder,
-  // onUpdateFolder,
+  onDeleteFolder,
+  onUpdateFolder,
   onNewConversation,
   // onToggleLightMode,
   onSelectConversation,
@@ -146,9 +146,9 @@ export const Chatbar: FC<Props> = ({
     setIsWalletConnected(true);
   };
 
-  useEffect(() => {
-    console.log('Wallet connected: ', isWalletConnected);
-  }, [isWalletConnected]);
+  // useEffect(() => {
+  //   console.log('Wallet connected: ', isWalletConnected);
+  // }, [isWalletConnected]);
 
   const handleTransferClick = () => {
     if (isWalletConnected) {
@@ -157,12 +157,6 @@ export const Chatbar: FC<Props> = ({
       alert("Please connect your wallet first!");
     }
   };
-
-  // getbalance
-  const [accountId, setAccountId] = useState('');
-  const [tokenSymbol, setTokenSymbol] = useState('');
-  const [balance, setBalance] = useState('');
-  const [error, setError] = useState('');
 
   return (
     <div
@@ -175,6 +169,7 @@ export const Chatbar: FC<Props> = ({
             onNewConversation();
             setSearchTerm('');
           }}
+          title="newChat"
         >
           <IconPlus size={18} />
           {t('New chat')}

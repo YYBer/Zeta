@@ -24,7 +24,7 @@ export const PluginSelect: FC<Props> = ({ plugin, onPluginChange }) => {
         <select
           ref={selectRef}
           className="w-full cursor-pointer bg-transparent p-2"
-          placeholder={t('Select a plugin') || ''}
+          aria-label={t('Select a plugin') || 'Select a plugin'}
           value={plugin?.id || ''}
           onChange={(e) => {
             onPluginChange(

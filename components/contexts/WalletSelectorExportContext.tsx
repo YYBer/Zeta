@@ -99,8 +99,8 @@ export const ExportAccountSelectorContextProvider: React.FC<{
 
     // this is added for debugging purpose only
     // for more information (https://github.com/near/wallet-selector/pull/764#issuecomment-1498073367)
-    window.importSelector = _selector;
-    window.exportModal = _modal;
+    // window.importSelector = _selector;
+    // window.exportModal = _modal;
 
     setSelector(_selector);
     setModal(_modal);

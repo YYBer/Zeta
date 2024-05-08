@@ -5,7 +5,7 @@ import { ChatOpenAI } from "@langchain/openai";
 import { JsonOutputFunctionsParser } from "@langchain/core/output_parsers/openai_functions";
 import { NextResponse } from 'next/server'
 import { HumanMessage, AIMessage, ToolMessage } from "@langchain/core/messages";
-import { fetchCoinData } from './price.ts';
+import { fetchCoinData } from './price';
 import {
   SystemMessagePromptTemplate,
   ChatPromptTemplate,
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
   const bodyprompt: string = body.prompt
   const address: string = body.address
 
-
+  console.log('messages', messages)
   const inputText = messages[messages.length - 1].content;
   console.log("text", inputText)
   
@@ -108,6 +108,7 @@ export async function POST(req: Request) {
   })
   
   const MessageHistory = extractMessagesFromChatHistory(messages.slice(-5, -1));
+  console.log('MessageHistory', MessageHistory)
 
   const functionCallingModel = chat.bind({
     functions: [
@@ -157,10 +158,10 @@ export async function POST(req: Request) {
       SystemMessagePromptTemplate.fromTemplate(
         `${instruction}`
       ),
-      MessageHistory[0].content,
-      MessageHistory[1].content,
-      MessageHistory[2].content,
-      MessageHistory[3].content,
+      MessageHistory[0]?.content,
+      MessageHistory[1]?.content,
+      MessageHistory[2]?.content,
+      MessageHistory[3]?.content,
       HumanMessagePromptTemplate.fromTemplate("{inputText}"),
     ]);
 
@@ -176,7 +177,7 @@ export async function POST(req: Request) {
   if (response.response_metadata.finish_reason === "stop") {
     // text output
     console.log("aaaa");
-    const stream = createStreamFromText(response.content);
+    const stream = createStreamFromText(String(response.content));
 
     return new NextResponse(stream, {
       headers: {

@@ -66,7 +66,7 @@ export const Chat: FC<Props> = memo(
     const { t } = useTranslation('chat');
     const [currentMessage, setCurrentMessage] = useState<Message>();
     const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true);
-    const [showSettings, setShowSettings] = useState<boolean>(false);
+    // const [showSettings, setShowSettings] = useState<boolean>(false);
     const [showScrollDownButton, setShowScrollDownButton] =
       useState<boolean>(false);
 
@@ -74,12 +74,12 @@ export const Chat: FC<Props> = memo(
     const chatContainerRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    const scrollToBottom = useCallback(() => {
-      if (autoScrollEnabled) {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-        textareaRef.current?.focus();
-      }
-    }, [autoScrollEnabled]);
+    // const scrollToBottom = useCallback(() => {
+    //   if (autoScrollEnabled) {
+    //     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    //     textareaRef.current?.focus();
+    //   }
+    // }, [autoScrollEnabled]);
 
     const handleScroll = () => {
       if (chatContainerRef.current) {
@@ -104,15 +104,15 @@ export const Chat: FC<Props> = memo(
       });
     };
 
-    const handleSettings = () => {
-      setShowSettings(!showSettings);
-    };
+    // const handleSettings = () => {
+    //   setShowSettings(!showSettings);
+    // };
 
-    const onClearAll = () => {
-      if (confirm(t<string>('Are you sure you want to clear all messages?'))) {
-        onUpdateConversation(conversation, { key: 'messages', value: [] });
-      }
-    };
+    // const onClearAll = () => {
+    //   if (confirm(t<string>('Are you sure you want to clear all messages?'))) {
+    //     onUpdateConversation(conversation, { key: 'messages', value: [] });
+    //   }
+    // };
 
     const scrollDown = () => {
       if (autoScrollEnabled) {
@@ -291,6 +291,7 @@ export const Chat: FC<Props> = memo(
             <button
               className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-300 text-gray-800 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-neutral-200"
               onClick={handleScrollDown}
+              title="handleScroll"
             >
               <IconArrowDown size={18} />
             </button>

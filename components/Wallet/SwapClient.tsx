@@ -216,7 +216,7 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
         tokenA: tokenInMetadata,
         tokenB: tokenOutMetadata,
         amountA: amountIn,
-        slippageTolerance: payload.slippagetolerance,
+        slippageTolerance: payload.slippageTolerance,
         AccountId: accountId,
       })
       console.log(JSON.stringify(swapTx, null, 2))

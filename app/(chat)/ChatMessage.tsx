@@ -2,7 +2,7 @@ import { Message } from '@/types/chat';
 import { IconCheck, IconCopy, IconEdit, IconUser, IconRobot } from '@tabler/icons-react';
 import { useTranslation } from 'next-i18next';
 import { FC, memo, useEffect, useRef, useState } from 'react';
-import rehypeMathjax from 'rehype-mathjax';
+// import rehypeMathjax from 'rehype-mathjax';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import { CodeBlock } from '@/components/Markdown/CodeBlock';
@@ -24,12 +24,19 @@ import { SiNear } from "react-icons/si";
 import { FaArrowCircleDown } from "react-icons/fa";
 import { getBalance } from '@/components/Wallet/getBalanceClient';
 import { PerformSwap } from '@/components/Wallet/SwapClient';
-import { THIRTY_TGAS, connectionConfig, TOKEN_LIST, SwapPayload, MockTransferPayload, MockSwapPayload } from '@/components/Wallet/constant'
+import { MockTransferPayload, MockSwapPayload } from '@/components/Wallet/constant'
 interface Props {
   message: Message;
   messageIndex: number;
   onEditMessage: (message: Message, messageIndex: number) => void;
 }
+
+// async function importMathjax() {
+//   const rehypeMathjax = await import("rehype-mathjax");
+//   // Use the imported module (`rehypeMathjax`) here
+// }
+
+// importMathjax();
 
 export const ChatMessage: FC<Props> = memo(
   ({ message, messageIndex, onEditMessage }) => {
@@ -38,12 +45,10 @@ export const ChatMessage: FC<Props> = memo(
     const [isTyping, setIsTyping] = useState<boolean>(false);
     const [messageContent, setMessageContent] = useState(message.content);
     const [messagedCopied, setMessageCopied] = useState(false);
-    const { inputJSON, transferObject,  swapObject} = useInputJSONStore()
+    const { transferObject,  swapObject} = useInputJSONStore()
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isWalletConnected, setIsWalletConnected] = useState(true);
     const [showTransfer, setShowTransfer] = useState(true);
-    // const [transferObject , setTransferObject] = useState()
-    // const [swapObject , setSwapObject] = useState()
     const { walletInfo } = useWalletInfoStore() 
     const { success, error, setSuccess, setError, confirmTransfer, messageCount } = useTransferTokenStore()
     const [time, setTime] = useState<String>()
@@ -55,6 +60,7 @@ export const ChatMessage: FC<Props> = memo(
       swap: false,
       transfer: false,
     });
+    const [showSwap, setShowSwap] = useState(false);  // New state to control swap widget visibility
 
     const toggleEditing = () => {
       setIsEditing(!isEditing);
@@ -139,8 +145,6 @@ export const ChatMessage: FC<Props> = memo(
       }
     }, [accountId, tokenSymbol]); // 依赖项包括 accountId 和 tokenSymbol
 
-    const [showSwap, setShowSwap] = useState(false);  // New state to control swap widget visibility
-
     const handleSwapClick = () => {  // New function to handle Swap button click
       if (isWalletConnected) {
         setShowSwap(true);  // Show the swap widget if the wallet is connected
@@ -195,9 +199,11 @@ export const ChatMessage: FC<Props> = memo(
               <div className="flex w-full">
                 {isEditing ? (
                   <div className="flex w-full flex-col">
+                    <label htmlFor="messageTextarea">Message Content:</label>
                     <textarea
+                      id="messageTextarea"
                       ref={textareaRef} 
-                      className="w-full resize-none whitespace-pre-wrap border-none dark:bg-[#343541]"
+                      className="w-full resize-none whitespace-pre-wrap border-none "
                       value={messageContent}
                       onChange={handleInputChange}
                       onKeyDown={handlePressEnter}
@@ -238,7 +244,7 @@ export const ChatMessage: FC<Props> = memo(
                   </div>
                 )}
 
-                {(window.innerWidth < 640 || !isEditing) && (
+                {(typeof window !== undefined && window.innerWidth < 640 || !isEditing) && (
                   <button
                     className={`absolute translate-x-[1000px] text-gray-500 hover:text-gray-700 focus:translate-x-0 group-hover:translate-x-0 dark:text-gray-400 dark:hover:text-gray-300 ${
                       window.innerWidth < 640
@@ -281,7 +287,7 @@ export const ChatMessage: FC<Props> = memo(
                 <MemoizedReactMarkdown
                   className="prose"
                   remarkPlugins={[remarkGfm, remarkMath]}
-                  rehypePlugins={[rehypeMathjax]}
+                  // rehypePlugins={[rehypeMathjax]}
                   components={{
                     code({ node, inline, className, children, ...props }) {
                       const match = /language-(\w+)/.exec(className || '');
@@ -437,7 +443,7 @@ export const ChatMessage: FC<Props> = memo(
                 ) : (
                   <>
                   {
-                      functionTypes.swap && (
+                      messageIndex == messageCount && functionTypes.swap && (
                         <>
                         <div className='flex flex-col w-[80%] mx-auto my-5 bg-[E5E7EB] rounded-xl'>
                         <div className='flex flex-col'>

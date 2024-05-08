@@ -60,8 +60,8 @@ export const WalletSelectorContextProvider: React.FC<{
 
     // this is added for debugging purpose only
     // for more information (https://github.com/near/wallet-selector/pull/764#issuecomment-1498073367)
-    window.selector = _selector;
-    window.modal = _modal;
+    // window.selector = _selector;
+    // window.modal = _modal;
 
     setSelector(_selector);
     setModal(_modal);

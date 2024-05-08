@@ -2,6 +2,13 @@ import * as nearAPI from "near-api-js";
 
 const { keyStores } = nearAPI;
 
+let keyStore;
+if (typeof window !== 'undefined') {
+  keyStore = new keyStores.BrowserLocalStorageKeyStore();
+} else {
+  // Handle non-browser environment, perhaps by using a different key store or logging an error.
+  console.error("Cannot create BrowserLocalStorageKeyStore: window is not defined");
+}
 
 export interface TransferPayload {
   userId: string;
@@ -14,22 +21,30 @@ export interface SwapPayload {
   tokenIn: string;
   tokenOut: string;
   amountIn: string;
-  slippagetolerance: number;
+  slippageTolerance: number;
 }
 
+// mainnet config
+export const connectionConfig = {
+  networkId: "mainnet",
+  keyStore,
+  nodeUrl: "https://rpc.mainnet.near.org",
+  walletUrl: "https://wallet.mainnet.near.org",
+  helperUrl: "https://helper.mainnet.near.org",
+  explorerUrl: "https://nearblocks.io",
+};
 
- // // mainnet config
- export const connectionConfig = {
-    networkId: "mainnet",
-    keyStore: new keyStores.BrowserLocalStorageKeyStore(),
-    nodeUrl: "https://rpc.mainnet.near.org",
-    walletUrl: "https://wallet.mainnet.near.org",
-    helperUrl: "https://helper.mainnet.near.org",
-    explorerUrl: "https://nearblocks.io",
-  };
+// testnet connection config
+export const connectionTestConfig = {
+  networkId: "testnet",
+  keyStore,
+  nodeUrl: "https://rpc.testnet.near.org",
+  walletUrl: "https://testnet.mynearwallet.com/",
+  helperUrl: "https://helper.testnet.near.org",
+  explorerUrl: "https://testnet.nearblocks.io",
+};
 
-  // mainnet tokenlist
-  export const TOKEN_LIST: { [key: string]: string } = {
+export const TOKEN_LIST: { [key: string]: string } = {
   ETH: 'aurora',
   wNEAR: 'wrap.near',
   AURORA: 'aaaaaa20d9e0e2461697782ef11675f668207961.factory.bridge.near',
@@ -39,17 +54,6 @@ export interface SwapPayload {
   REF:'token.v2.ref-finance.near'
 };
 
-// testnet connection config
-export const connectionTestConfig = {
-  networkId: "testnet",
-  keyStore: new keyStores.BrowserLocalStorageKeyStore(),
-  nodeUrl: "https://rpc.testnet.near.org",
-  walletUrl: "https://testnet.mynearwallet.com/",
-  helperUrl: "https://helper.testnet.near.org",
-  explorerUrl: "https://testnet.nearblocks.io",
-};
-
-// testnet tokenlist
 export const TOKEN_TEST_LIST: { [key: string]: string } = {
   wNEAR: 'wrap.testnet',
   ETH: 'eth.fakes.testnet',
@@ -73,5 +77,5 @@ export const MockSwapPayload: SwapPayload = {
   tokenIn: "USDC", // symbol
   tokenOut: "ETH", // symbol
   amountIn: "0.1",
-  slippagetolerance: 0.01
-}
+  slippageTolerance: 0.01
+};

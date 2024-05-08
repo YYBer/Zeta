@@ -175,7 +175,8 @@ export const SystemPrompt: FC<Props> = ({
     const handleOutsideClick = (e: MouseEvent) => {
       if (
         promptListRef.current &&
-        !promptListRef.current.contains(e.target as Node)
+        !promptListRef.current.contains(e.target as Node) && 
+        typeof window !== undefined
       ) {
         setShowPromptList(false);
       }

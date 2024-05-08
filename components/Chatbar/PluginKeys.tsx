@@ -29,22 +29,24 @@ export const PluginKeys: FC<Props> = ({
   };
 
   useEffect(() => {
-    const handleMouseDown = (e: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        window.addEventListener('mouseup', handleMouseUp);
-      }
-    };
+    if(typeof window !== undefined){
+      const handleMouseDown = (e: MouseEvent) => {
+        if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+          window.addEventListener('mouseup', handleMouseUp);
+        }
+      };
 
-    const handleMouseUp = (e: MouseEvent) => {
-      window.removeEventListener('mouseup', handleMouseUp);
-      setIsChanging(false);
-    };
+      const handleMouseUp = (e: MouseEvent) => {
+        window.removeEventListener('mouseup', handleMouseUp);
+        setIsChanging(false);
+      };
 
-    window.addEventListener('mousedown', handleMouseDown);
+      window.addEventListener('mousedown', handleMouseDown);
 
-    return () => {
-      window.removeEventListener('mousedown', handleMouseDown);
-    };
+      return () => {
+        window.removeEventListener('mousedown', handleMouseDown);
+      };
+    }
   }, []);
 
   return (
@@ -84,7 +86,9 @@ export const PluginKeys: FC<Props> = ({
                   <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
                     Google API Key
                   </div>
+                  <label htmlFor="googleApiKeyInput">Google API Key:</label>
                   <input
+                    id="googleApiKeyInput"
                     className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
                     type="password"
                     value={
@@ -143,7 +147,9 @@ export const PluginKeys: FC<Props> = ({
                   <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
                     Google CSE ID
                   </div>
+                  <label htmlFor="googleCSEId">Google CSE ID:</label>
                   <input
+                    id="googleCSEId"
                     className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
                     type="password"
                     value={

@@ -6,7 +6,7 @@ import { Navbar } from '@/components/Mobile/Navbar'
 import { ChatBody, Conversation, Message } from '@/types/chat'
 import { KeyValuePair } from '@/types/data'
 import { ErrorMessage } from '@/types/error'
-import { LatestExportFormat, SupportedExportFormats } from '@/types/export'
+// import { LatestExportFormat, SupportedExportFormats } from '@/types/export'
 import { Folder, FolderType } from '@/types/folder'
 import {
   OpenAIModel,
@@ -32,29 +32,28 @@ import { exportData, importData } from '@/utils/app/importExport'
 import { savePrompts } from '@/utils/app/prompts'
 // import { ChevronLeft, ChevronRight } from '@tabler/icons-react';
 import { IoIosArrowForward, IoIosArrowBack } from 'react-icons/io'
-import { GetServerSideProps } from 'next'
+// import { GetServerSideProps } from 'next'
 import { useTranslation } from 'next-i18next'
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
+// import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import Head from 'next/head'
 import { env } from 'process'
 import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import { v4 as uuidv4 } from 'uuid'
-import { Wallet } from '@/lib/wallets/near-wallet'
-import { NetworkId, HelloNearContract } from '@/config'
+// import { Wallet } from '@/lib/wallets/near-wallet'
+// import { NetworkId, HelloNearContract } from '@/config'
 import { WalletSelectorContextProvider } from '@/components/contexts/WalletSelectorContext'
 import { useInputJSONStore, useTransferTokenStore } from '@/lib/store/store'
+import { FC } from 'react';
+
 interface HomeProps {
-  // serverSideApiKeyIsSet: boolean;
-  serverSidePluginKeysSet: boolean
   defaultModelId: OpenAIModelID
 }
-
-const Home: React.FC<HomeProps> = ({
-  // serverSideApiKeyIsSet,
-  serverSidePluginKeysSet,
+ 
+// const Home: FC<HomeProps> 
+const Home: FC<HomeProps> = ({
   defaultModelId
-}) => {
+}: HomeProps) => {
   const { t } = useTranslation('chat')
 
   // STATE ----------------------------------------------
@@ -79,7 +78,7 @@ const Home: React.FC<HomeProps> = ({
   const [showSidebar, setShowSidebar] = useState<boolean>(true)
 
   const [prompts, setPrompts] = useState<Prompt[]>([])
-  const [showPromptbar, setShowPromptbar] = useState<boolean>(true)
+  // const [showPromptbar, setShowPromptbar] = useState<boolean>(true)
   const { setInputJSON,  setTransferObject, setSwapObject } = useInputJSONStore()
   const { setSuccess, setError, setConfirmTransfer, setLoading, setCancelled, setMessageCount } = useTransferTokenStore()
 
@@ -143,12 +142,12 @@ const Home: React.FC<HomeProps> = ({
       } else {
         body = JSON.stringify({
           ...chatBody,
-          googleAPIKey: pluginKeys
-            .find(key => key.pluginId === 'google-search')
-            ?.requiredKeys.find(key => key.key === 'GOOGLE_API_KEY')?.value,
-          googleCSEId: pluginKeys
-            .find(key => key.pluginId === 'google-search')
-            ?.requiredKeys.find(key => key.key === 'GOOGLE_CSE_ID')?.value
+          // googleAPIKey: pluginKeys
+          //   .find(key => key.pluginId === 'google-search')
+          //   ?.requiredKeys.find(key => key.key === 'GOOGLE_API_KEY')?.value,
+          // googleCSEId: pluginKeys
+          //   .find(key => key.pluginId === 'google-search')
+          //   ?.requiredKeys.find(key => key.key === 'GOOGLE_CSE_ID')?.value
         })
       }
 
@@ -209,7 +208,7 @@ const Home: React.FC<HomeProps> = ({
           done = doneReading
           const chunkValue = decoder.decode(value)
 
-          console.log('chunkValue', chunkValue)
+          // console.log('chunkValue', chunkValue)
 
           if(chunkValue.includes("{")) {
             if(chunkValue.length > 0){
@@ -382,28 +381,28 @@ const Home: React.FC<HomeProps> = ({
   //   localStorage.setItem('apiKey', apiKey);
   // };
 
-  const handlePluginKeyChange = (pluginKey: PluginKey) => {
-    if (pluginKeys.some(key => key.pluginId === pluginKey.pluginId)) {
-      const updatedPluginKeys = pluginKeys.map(key => {
-        if (key.pluginId === pluginKey.pluginId) {
-          return pluginKey
-        }
+  // const handlePluginKeyChange = (pluginKey: PluginKey) => {
+  //   if (pluginKeys.some(key => key.pluginId === pluginKey.pluginId)) {
+  //     const updatedPluginKeys = pluginKeys.map(key => {
+  //       if (key.pluginId === pluginKey.pluginId) {
+  //         return pluginKey
+  //       }
 
-        return key
-      })
+  //       return key
+  //     })
 
-      setPluginKeys(updatedPluginKeys)
+  //     setPluginKeys(updatedPluginKeys)
 
-      localStorage.setItem('pluginKeys', JSON.stringify(updatedPluginKeys))
-    } else {
-      setPluginKeys([...pluginKeys, pluginKey])
+  //     localStorage.setItem('pluginKeys', JSON.stringify(updatedPluginKeys))
+  //   } else {
+  //     setPluginKeys([...pluginKeys, pluginKey])
 
-      localStorage.setItem(
-        'pluginKeys',
-        JSON.stringify([...pluginKeys, pluginKey])
-      )
-    }
-  }
+  //     localStorage.setItem(
+  //       'pluginKeys',
+  //       JSON.stringify([...pluginKeys, pluginKey])
+  //     )
+  //   }
+  // }
 
   // const handleClearPluginKey = (pluginKey: PluginKey) => {
   //   const updatedPluginKeys = pluginKeys.filter(
@@ -464,53 +463,53 @@ const Home: React.FC<HomeProps> = ({
   //   saveFolders(updatedFolders)
   // }
 
-  // const handleDeleteFolder = (folderId: string) => {
-  //   const updatedFolders = folders.filter(f => f.id !== folderId)
-  //   setFolders(updatedFolders)
-  //   saveFolders(updatedFolders)
+  const handleDeleteFolder = (folderId: string) => {
+    const updatedFolders = folders.filter(f => f.id !== folderId)
+    setFolders(updatedFolders)
+    saveFolders(updatedFolders)
 
-  //   const updatedConversations: Conversation[] = conversations.map(c => {
-  //     if (c.folderId === folderId) {
-  //       return {
-  //         ...c,
-  //         folderId: null
-  //       }
-  //     }
+    const updatedConversations: Conversation[] = conversations.map(c => {
+      if (c.folderId === folderId) {
+        return {
+          ...c,
+          folderId: null
+        }
+      }
 
-  //     return c
-  //   })
-  //   setConversations(updatedConversations)
-  //   saveConversations(updatedConversations)
+      return c
+    })
+    setConversations(updatedConversations)
+    saveConversations(updatedConversations)
 
-  //   const updatedPrompts: Prompt[] = prompts.map(p => {
-  //     if (p.folderId === folderId) {
-  //       return {
-  //         ...p,
-  //         folderId: null
-  //       }
-  //     }
+    const updatedPrompts: Prompt[] = prompts.map(p => {
+      if (p.folderId === folderId) {
+        return {
+          ...p,
+          folderId: null
+        }
+      }
 
-  //     return p
-  //   })
-  //   setPrompts(updatedPrompts)
-  //   savePrompts(updatedPrompts)
-  // }
+      return p
+    })
+    setPrompts(updatedPrompts)
+    savePrompts(updatedPrompts)
+  }
 
-  // const handleUpdateFolder = (folderId: string, name: string) => {
-  //   const updatedFolders = folders.map(f => {
-  //     if (f.id === folderId) {
-  //       return {
-  //         ...f,
-  //         name
-  //       }
-  //     }
+  const handleUpdateFolder = (folderId: string, name: string) => {
+    const updatedFolders = folders.map(f => {
+      if (f.id === folderId) {
+        return {
+          ...f,
+          name
+        }
+      }
 
-  //     return f
-  //   })
+      return f
+    })
 
-  //   setFolders(updatedFolders)
-  //   saveFolders(updatedFolders)
-  // }
+    setFolders(updatedFolders)
+    saveFolders(updatedFolders)
+  }
 
   // CONVERSATION OPERATIONS  --------------------------------------------
 
@@ -651,7 +650,7 @@ const Home: React.FC<HomeProps> = ({
   }, [currentMessage])
 
   useEffect(() => {
-    if (window.innerWidth < 640) {
+    if (typeof window !== undefined && window.innerWidth < 640) {
       setShowSidebar(false)
     }
   }, [selectedConversation])
@@ -681,7 +680,7 @@ const Home: React.FC<HomeProps> = ({
       // fetchModels(apiKey)
     }
 
-    if (window.innerWidth < 640) {
+    if (typeof window !== undefined && window.innerWidth < 640) {
       setShowSidebar(false)
     }
 
@@ -771,8 +770,8 @@ const Home: React.FC<HomeProps> = ({
                     folders={folders.filter(folder => folder.type === 'chat')}
                     // onToggleLightMode={handleLightMode}
                     // onCreateFolder={name => handleCreateFolder(name, 'chat')}
-                    // onDeleteFolder={handleDeleteFolder}
-                    // onUpdateFolder={handleUpdateFolder}
+                    onDeleteFolder={handleDeleteFolder}
+                    onUpdateFolder={handleUpdateFolder}
                     onNewConversation={handleNewConversation}
                     onSelectConversation={handleSelectConversation}
                     onDeleteConversation={handleDeleteConversation}

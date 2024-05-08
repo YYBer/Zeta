@@ -25,22 +25,24 @@ export const PromptModal: FC<Props> = ({ prompt, onClose, onUpdatePrompt }) => {
   };
 
   useEffect(() => {
-    const handleMouseDown = (e: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        window.addEventListener('mouseup', handleMouseUp);
-      }
-    };
+    if(typeof window !== undefined){
+      const handleMouseDown = (e: MouseEvent) => {
+        if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+          window.addEventListener('mouseup', handleMouseUp);
+        }
+      };
 
-    const handleMouseUp = (e: MouseEvent) => {
-      window.removeEventListener('mouseup', handleMouseUp);
-      onClose();
-    };
+      const handleMouseUp = (e: MouseEvent) => {
+        window.removeEventListener('mouseup', handleMouseUp);
+        onClose();
+      };
 
-    window.addEventListener('mousedown', handleMouseDown);
+      window.addEventListener('mousedown', handleMouseDown);
 
-    return () => {
-      window.removeEventListener('mousedown', handleMouseDown);
-    };
+      return () => {
+        window.removeEventListener('mousedown', handleMouseDown);
+      };
+    }
   }, [onClose]);
 
   useEffect(() => {

@@ -109,7 +109,7 @@ export const ChatInput: FC<Props> = ({
   const exampleMessages = [
     {
       heading: 'Transfer',
-      message: `<p>I want to transfer <span style="color: #0040ff">0.01</span> <span style="color: #0040ff">USDC</span> to <span style="color: #0040ff">9b5adfd2530b9c2657b088cfc8755e3c25a6cef7fb9b44c659d12b2bd30a3f62</span></p>`
+      message: `<p>Please transfer <span style="color: #0040ff; font-weight: bold;">0.01</span> <span style="color: #0040ff; font-weight: bold;">USDC</span> to <span style="color: #0040ff; font-weight: bold;">9b5adfd2530b9c2657b088cfc8755e3c25a6cef7fb9b44c659d12b2bd30a3f62</span></p>`
     },
     {
       heading: 'Check Balance',

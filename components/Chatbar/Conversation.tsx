@@ -70,7 +70,9 @@ export const ConversationComponent: FC<Props> = ({
       {isRenaming && selectedConversation.id === conversation.id ? (
         <div className="flex w-full items-center gap-3 bg-[#343541]/90 p-3 rounded-lg">
           <IconMessage size={18} />
+          <label htmlFor="renameInput" className="sr-only">Enter new name:</label>
           <input
+            id="renameInput"
             className="mr-12 flex-1 overflow-hidden overflow-ellipsis border-neutral-400 bg-transparent text-left text-[12.5px] leading-3 text-white outline-none focus:border-neutral-100"
             type="text"
             value={renameValue}

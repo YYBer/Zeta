@@ -57,7 +57,7 @@ export const VariableModal: FC<Props> = ({
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node) && typeof window !== undefined) {
         onClose();
       }
     };

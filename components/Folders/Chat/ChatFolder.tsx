@@ -109,8 +109,9 @@ export const ChatFolder: FC<Props> = ({
             ) : (
               <IconCaretRight size={18} />
             )}
-
+            <label htmlFor="renameInput">Enter New Name:</label>
             <input
+              id="renameInput"
               className="mr-12 flex-1 overflow-hidden overflow-ellipsis border-neutral-400 bg-transparent text-left text-[12.5px] leading-3 text-white outline-none focus:border-neutral-100"
               type="text"
               value={renameValue}
@@ -144,6 +145,7 @@ export const ChatFolder: FC<Props> = ({
           <div className="absolute right-1 z-10 flex text-gray-300">
             <button
               className="min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100"
+              title='IsDeleting'
               onClick={(e) => {
                 e.stopPropagation();
 
@@ -160,6 +162,7 @@ export const ChatFolder: FC<Props> = ({
               <IconCheck size={18} />
             </button>
             <button
+              title='IsDeleting'
               className="min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100"
               onClick={(e) => {
                 e.stopPropagation();
@@ -175,6 +178,7 @@ export const ChatFolder: FC<Props> = ({
         {!isDeleting && !isRenaming && (
           <div className="absolute right-1 z-10 flex text-gray-300">
             <button
+              title='RenameValue'
               className="min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100"
               onClick={(e) => {
                 e.stopPropagation();
@@ -185,6 +189,7 @@ export const ChatFolder: FC<Props> = ({
               <IconPencil size={18} />
             </button>
             <button
+              title='IsDeleting'
               className="min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100"
               onClick={(e) => {
                 e.stopPropagation();
