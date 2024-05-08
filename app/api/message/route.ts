@@ -5,7 +5,8 @@ import { ChatOpenAI } from "@langchain/openai";
 import { JsonOutputFunctionsParser } from "@langchain/core/output_parsers/openai_functions";
 import { NextResponse } from 'next/server'
 import { HumanMessage, AIMessage, ToolMessage } from "@langchain/core/messages";
-import { fetchCoinData } from './price';
+import { fetchCoinData } from './price.ts';
+import { getBalance } from './balance.ts'
 import {
   SystemMessagePromptTemplate,
   ChatPromptTemplate,
@@ -53,10 +54,12 @@ export async function POST(req: Request) {
   const bodyprompt: string = body.prompt
   const address: string = body.address
 
-  console.log('messages', messages)
+
   const inputText = messages[messages.length - 1].content;
-  console.log("text", inputText)
-  
+  console.log("text", inputText);
+  console.log("address", address);
+  const checkBalance = getBalance(address, "USDC");
+  console.log("getBalance", checkBalance)
 
   const transferSchema = z.object({
     functionType:  z.string().describe("The function type : transfer, can only be 'transfer'"),
@@ -108,7 +111,6 @@ export async function POST(req: Request) {
   })
   
   const MessageHistory = extractMessagesFromChatHistory(messages.slice(-5, -1));
-  console.log('MessageHistory', MessageHistory)
 
   const functionCallingModel = chat.bind({
     functions: [
@@ -151,19 +153,18 @@ export async function POST(req: Request) {
   Please focus on what the user currently wants and do not extract data from the dictionary of successful transactions and history before this successful transactions. Just don't extract any information from json format data.
   And if there have other information to invoke the function. invoke it. If the parameters required to invoke the function are incomplete, ask user to provide the missing information. Please confirm that these parameters have indeed been show in the conversation. Do not make any assumptions.
   `;
-  
 
-  const Chatprompt = ChatPromptTemplate.fromMessages([
-   
-      SystemMessagePromptTemplate.fromTemplate(
-        `${instruction}`
-      ),
-      MessageHistory[0]?.content,
-      MessageHistory[1]?.content,
-      MessageHistory[2]?.content,
-      MessageHistory[3]?.content,
-      HumanMessagePromptTemplate.fromTemplate("{inputText}"),
-    ]);
+  const chatpromptContents = [];
+
+  chatpromptContents.push(SystemMessagePromptTemplate.fromTemplate(`${instruction}`));
+
+  for (let i = 0; i < Math.min(MessageHistory.length, 4); i++) {
+      chatpromptContents.push(MessageHistory[i].content);
+  }
+  chatpromptContents.push(HumanMessagePromptTemplate.fromTemplate("{inputText}"));
+
+
+  const Chatprompt = ChatPromptTemplate.fromMessages(chatpromptContents);
 
   const chain = Chatprompt.pipe(functionCallingModel);
   
@@ -177,7 +178,7 @@ export async function POST(req: Request) {
   if (response.response_metadata.finish_reason === "stop") {
     // text output
     console.log("aaaa");
-    const stream = createStreamFromText(String(response.content));
+    const stream = createStreamFromText(response.content);
 
     return new NextResponse(stream, {
       headers: {
