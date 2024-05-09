@@ -9,7 +9,7 @@ import { ErrorMessage } from '@/types/error'
 // import { LatestExportFormat, SupportedExportFormats } from '@/types/export'
 import { Folder, FolderType } from '@/types/folder'
 import {
-  OpenAIModel,
+  OpenAIModel
   // OpenAIModelID,
   // OpenAIModels,
   // fallbackModelID
@@ -44,7 +44,7 @@ import { v4 as uuidv4 } from 'uuid'
 // import { NetworkId, HelloNearContract } from '@/config'
 import { WalletSelectorContextProvider } from '@/components/contexts/WalletSelectorContext'
 import { useInputJSONStore, useTransferTokenStore } from '@/lib/store/store'
-import { FC } from 'react';
+import { FC } from 'react'
 
 // export type OpenAIModelID = string;
 interface HomeProps {
@@ -81,9 +81,16 @@ const Home: FC = ({}) => {
 
   const [prompts, setPrompts] = useState<Prompt[]>([])
   // const [showPromptbar, setShowPromptbar] = useState<boolean>(true)
-  const { setInputJSON,  setTransferObject, setSwapObject } = useInputJSONStore()
-  const { setSuccess, setError, setConfirmTransfer, setLoading, setCancelled, setMessageCount } = useTransferTokenStore()
-  const modelId:string = 'GPT_3_5';
+  const { setInputJSON, setTransferObject, setSwapObject } = useInputJSONStore()
+  const {
+    setSuccess,
+    setError,
+    setConfirmTransfer,
+    setLoading,
+    setCancelled,
+    setMessageCount
+  } = useTransferTokenStore()
+  const modelId: string = 'GPT_3_5'
 
   // REFS ----------------------------------------------
 
@@ -97,7 +104,6 @@ const Home: FC = ({}) => {
     deleteCount = 0,
     plugin: Plugin | null = null
   ) => {
-
     //reset transfer statement
     setSuccess(false)
     setError(false)
@@ -143,7 +149,7 @@ const Home: FC = ({}) => {
         body = JSON.stringify(chatBody)
       } else {
         body = JSON.stringify({
-          ...chatBody,
+          ...chatBody
           // googleAPIKey: pluginKeys
           //   .find(key => key.pluginId === 'google-search')
           //   ?.requiredKeys.find(key => key.key === 'GOOGLE_API_KEY')?.value,
@@ -160,7 +166,7 @@ const Home: FC = ({}) => {
         body: JSON.stringify({
           messages: updatedConversation.messages,
           prompt: updatedConversation.prompt,
-          address: 'bungeetest.testnet', //test only
+          address: 'bungeetest.testnet' //test only
         }),
         signal: controller.signal
       })
@@ -212,15 +218,18 @@ const Home: FC = ({}) => {
 
           // console.log('chunkValue', chunkValue)
 
-          if(chunkValue.includes("{")) {
-            if(chunkValue.length > 0){
-              const unescapedString = chunkValue.replace(/\\/g, '');
-    
+          if (chunkValue.includes('{')) {
+            if (chunkValue.length > 0) {
+              console.log('chunkValue', chunkValue)
+              const unescapedString = chunkValue.replace(/\\/g, '')
+
+              console.log('unescapedString', unescapedString)
               // Parse the string into an object
-              const jsonObject = JSON.parse(unescapedString);
+              const jsonObject = JSON.parse(unescapedString)
               console.log('jsonObject', jsonObject)
-              if(jsonObject.functionType == 'transfer') setTransferObject(jsonObject)
-              if(jsonObject.functionType == 'swap') setSwapObject(jsonObject)
+              if (jsonObject.functionType == 'transfer')
+                setTransferObject(jsonObject)
+              if (jsonObject.functionType == 'swap') setSwapObject(jsonObject)
             }
             setInputJSON(chunkValue)
           }
@@ -795,9 +804,9 @@ const Home: FC = ({}) => {
                   <button
                     className="fixed bottom-[50%] left-[270px] text-black z-50 h-7 w-7 hover:text-gray-400"
                     onClick={handleToggleChatbar}
-                    title="Toggle ChatBar" 
+                    title="Toggle ChatBar"
                   >
-                    <IoIosArrowBack className='w-[24px] h-[24px]'/>
+                    <IoIosArrowBack className="w-[24px] h-[24px]" />
                   </button>
                   {/* <div
                     onClick={handleToggleChatbar}
@@ -808,9 +817,9 @@ const Home: FC = ({}) => {
                 <button
                   className="fixed bottom-[50%] left-4 z-50 h-7 w-7 text-black hover:text-gray-400"
                   onClick={handleToggleChatbar}
-                  title="Toggle ChatBar" 
+                  title="Toggle ChatBar"
                 >
-                  <IoIosArrowForward className='w-[24px] h-[24px]' />
+                  <IoIosArrowForward className="w-[24px] h-[24px]" />
                 </button>
               )}
 

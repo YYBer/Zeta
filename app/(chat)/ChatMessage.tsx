@@ -1,34 +1,56 @@
-import { Message } from '@/types/chat';
-import { IconCheck, IconCopy, IconEdit, IconUser, IconRobot } from '@tabler/icons-react';
-import { useTranslation } from 'next-i18next';
-import { FC, memo, useEffect, useRef, useState } from 'react';
+import { Message } from '@/types/chat'
+import {
+  IconCheck,
+  IconCopy,
+  IconEdit,
+  IconUser,
+  IconRobot
+} from '@tabler/icons-react'
+import { useTranslation } from 'next-i18next'
+import { FC, memo, useEffect, useRef, useState } from 'react'
 // import rehypeMathjax from 'rehype-mathjax';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import { CodeBlock } from '@/components/Markdown/CodeBlock';
-import { MemoizedReactMarkdown } from '@/components/Markdown/MemoizedReactMarkdown';
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import { CodeBlock } from '@/components/Markdown/CodeBlock'
+import { MemoizedReactMarkdown } from '@/components/Markdown/MemoizedReactMarkdown'
 import Image from 'next/image'
 import { useInputJSONStore } from '@/lib/store/store'
-import { IoWalletSharp } from "react-icons/io5";
-import { PiArrowBendUpRight } from "react-icons/pi";
-import { PiNoteFill } from "react-icons/pi";
-import { TransferToken } from '@/components/Wallet/TransferTokenClient';
-import { useWalletSelector } from '@/components/contexts/WalletSelectorContext';
+import { IoWalletSharp } from 'react-icons/io5'
+import { PiArrowBendUpRight } from 'react-icons/pi'
+import { PiNoteFill } from 'react-icons/pi'
+import { TransferToken } from '@/components/Wallet/TransferTokenClient'
+import { useWalletSelector } from '@/components/contexts/WalletSelectorContext'
 import { useWalletInfoStore, useTransferTokenStore } from '@/lib/store/store'
-import { FaCheck } from "react-icons/fa";
-import { FaCheckCircle } from "react-icons/fa";
-import moment from 'moment';
-import { PiArrowSquareOutBold } from "react-icons/pi";
-import { FaRegTimesCircle } from "react-icons/fa";
-import { SiNear } from "react-icons/si";
-import { FaArrowCircleDown } from "react-icons/fa";
-import { getBalance } from '@/components/Wallet/getBalanceClient';
-import { PerformSwap } from '@/components/Wallet/SwapClient';
-import { MockTransferPayload, MockSwapPayload } from '@/components/Wallet/constant'
+import { FaCheck } from 'react-icons/fa'
+import { FaCheckCircle } from 'react-icons/fa'
+import moment from 'moment'
+import { PiArrowSquareOutBold } from 'react-icons/pi'
+import { FaRegTimesCircle } from 'react-icons/fa'
+import { SiNear } from 'react-icons/si'
+import { FaArrowCircleDown } from 'react-icons/fa'
+import { getBalance } from '@/components/Wallet/getBalanceClient'
+import { PerformSwap } from '@/components/Wallet/SwapClient'
+import {
+  MockTransferPayload,
+  MockSwapPayload
+} from '@/components/Wallet/constant'
+import { IoIosArrowDown } from 'react-icons/io'
+import { IoIosArrowBack } from 'react-icons/io'
+import { IoIosArrowRoundDown } from 'react-icons/io'
+import { IoIosCheckmarkCircleOutline } from 'react-icons/io'
+import { GrShare } from 'react-icons/gr'
+import { IoWarningOutline } from 'react-icons/io5'
+import { PiWarningCircleLight } from 'react-icons/pi'
+import { PiChecksBold } from 'react-icons/pi'
+import { PiSpinnerGapBold } from 'react-icons/pi'
+import Link from 'next/link'
+import { PiSwap } from 'react-icons/pi'
+import { RiArrowGoForwardFill } from 'react-icons/ri'
+
 interface Props {
-  message: Message;
-  messageIndex: number;
-  onEditMessage: (message: Message, messageIndex: number) => void;
+  message: Message
+  messageIndex: number
+  onEditMessage: (message: Message, messageIndex: number) => void
 }
 
 // async function importMathjax() {
@@ -40,89 +62,98 @@ interface Props {
 
 export const ChatMessage: FC<Props> = memo(
   ({ message, messageIndex, onEditMessage }) => {
-    const { t } = useTranslation('chat');
-    const [isEditing, setIsEditing] = useState<boolean>(false);
-    const [isTyping, setIsTyping] = useState<boolean>(false);
-    const [messageContent, setMessageContent] = useState(message.content);
-    const [messagedCopied, setMessageCopied] = useState(false);
-    const { transferObject,  swapObject} = useInputJSONStore()
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const [isWalletConnected, setIsWalletConnected] = useState(true);
-    const [showTransfer, setShowTransfer] = useState(true);
-    const { walletInfo } = useWalletInfoStore() 
-    const { success, error, setSuccess, setError, confirmTransfer, messageCount } = useTransferTokenStore()
+    const { t } = useTranslation('chat')
+    const [isEditing, setIsEditing] = useState<boolean>(false)
+    const [isTyping, setIsTyping] = useState<boolean>(false)
+    const [messageContent, setMessageContent] = useState(message.content)
+    const [messagedCopied, setMessageCopied] = useState(false)
+    const { transferObject, swapObject } = useInputJSONStore()
+    const textareaRef = useRef<HTMLTextAreaElement>(null)
+    const [isWalletConnected, setIsWalletConnected] = useState(true)
+    const [showTransfer, setShowTransfer] = useState(false)
+    const { walletInfo } = useWalletInfoStore()
+    const {
+      success,
+      error,
+      setSuccess,
+      setError,
+      cancelled,
+      confirmTransfer,
+      messageCount
+    } = useTransferTokenStore()
     const [time, setTime] = useState<String>()
-    const { accounts } = useWalletSelector();
-    const [balance, setBalance] = useState('');
-    const [accountId, setAccountId] = useState('');
-    const [tokenSymbol, setTokenSymbol] = useState('');
+    const { accounts } = useWalletSelector()
+    const [balance, setBalance] = useState('')
+    const [accountId, setAccountId] = useState('')
+    const [tokenSymbol, setTokenSymbol] = useState('')
     const [functionTypes, setFunctionTypes] = useState({
       swap: false,
-      transfer: false,
-    });
-    const [showSwap, setShowSwap] = useState(false);  // New state to control swap widget visibility
+      transfer: false
+    })
+    const [showSwap, setShowSwap] = useState(false) // New state to control swap widget visibility
+    const [shouldRenderDiv, setShouldRenderDiv] = useState(true)
+    const [showDropdown, setShowDropdown] = useState(false)
 
     const toggleEditing = () => {
-      setIsEditing(!isEditing);
-    };
+      setIsEditing(!isEditing)
+    }
 
     const handleInputChange = (
-      event: React.ChangeEvent<HTMLTextAreaElement>,
+      event: React.ChangeEvent<HTMLTextAreaElement>
     ) => {
-      setMessageContent(event.target.value);
+      setMessageContent(event.target.value)
       if (textareaRef.current) {
-        textareaRef.current.style.height = 'inherit';
-        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+        textareaRef.current.style.height = 'inherit'
+        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
       }
-    };
+    }
 
     const handleEditMessage = () => {
       if (message.content != messageContent) {
-        onEditMessage({ ...message, content: messageContent }, messageIndex);
+        onEditMessage({ ...message, content: messageContent }, messageIndex)
       }
-      setIsEditing(false);
-    };
+      setIsEditing(false)
+    }
 
     const handlePressEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === 'Enter' && !isTyping && !e.shiftKey) {
-        e.preventDefault();
-        handleEditMessage();
+        e.preventDefault()
+        handleEditMessage()
       }
-    };
+    }
 
     const copyOnClick = () => {
-      if (!navigator.clipboard) return;
+      if (!navigator.clipboard) return
 
       navigator.clipboard.writeText(message.content).then(() => {
-        setMessageCopied(true);
+        setMessageCopied(true)
         setTimeout(() => {
-          setMessageCopied(false);
-        }, 2000);
-      });
-    };
+          setMessageCopied(false)
+        }, 2000)
+      })
+    }
 
     useEffect(() => {
       if (textareaRef.current) {
-        textareaRef.current.style.height = 'inherit';
-        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+        textareaRef.current.style.height = 'inherit'
+        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
       }
-    }, [isEditing]);
-
+    }, [isEditing])
 
     const handleTransferClick = () => {
       if (isWalletConnected) {
-        setShowTransfer(true);
+        setShowTransfer(true)
       } else {
-        alert("Please connect your wallet first!");
+        alert('Please connect your wallet first!')
       }
-    };
- 
+    }
+
     // useEffect(() => {
     //   console.log(inputJSON)
     //     if(inputJSON.length > 0){
     //     // Remove backslashes to unescape the string
     //     const unescapedString = inputJSON.replace(/\\/g, '');
-    
+
     //     // Parse the string into an object
     //     const jsonObject = JSON.parse(unescapedString);
     //     // console.log('jsonObject', jsonObject)
@@ -132,77 +163,91 @@ export const ChatMessage: FC<Props> = memo(
     // }, [inputJSON])
 
     useEffect(() => {
-      const nowTime = moment().format('YYYY-MM-DD H:mm:ss');
+      const nowTime = moment().format('YYYY-MM-DD H:mm:ss')
       setTime(String(nowTime))
     }, [success])
 
     useEffect(() => {
       if (accountId !== '' && tokenSymbol !== '') {
-        getBalance(accountId, tokenSymbol).then(setBalance).catch(e => {
-          setError(`Failed to fetch balance: ${e.message}`);
-          console.error(e);
-        });
+        getBalance(accountId, tokenSymbol)
+          .then(setBalance)
+          .catch(e => {
+            setError(`Failed to fetch balance: ${e.message}`)
+            console.error(e)
+          })
       }
-    }, [accountId, tokenSymbol]); // 依赖项包括 accountId 和 tokenSymbol
+    }, [accountId, tokenSymbol]) // 依赖项包括 accountId 和 tokenSymbol
 
-    const handleSwapClick = () => {  // New function to handle Swap button click
+    const handleSwapClick = () => {
+      // New function to handle Swap button click
       if (isWalletConnected) {
-        setShowSwap(true);  // Show the swap widget if the wallet is connected
+        setShowSwap(true) // Show the swap widget if the wallet is connected
       } else {
-        alert("Please connect your wallet first!");
+        alert('Please connect your wallet first!')
       }
-    };
+    }
 
     useEffect(() => {
-      try{
-        if(message.role === 'assistant' && message.content.includes("swap")){
+      try {
+        if (message.role === 'assistant' && message.content.includes('swap')) {
           setFunctionTypes(prevState => ({
             ...prevState,
             transfer: false,
             swap: true
-          }));
-        }else if(message.role === 'assistant' && message.content.includes("transfer")){
+          }))
+        } else if (
+          message.role === 'assistant' &&
+          message.content.includes('transfer')
+        ) {
           setFunctionTypes(prevState => ({
             ...prevState,
             transfer: true,
             swap: false
-          }));
+          }))
         }
-      }catch(error){
+      } catch (error) {
         console.error('Invalid JSON string', error)
       }
     }, [message.content && messageIndex == messageCount])
 
-    // console.log(swapObject)
+    useEffect(() => {
+      setShouldRenderDiv(!success && !error && !cancelled)
+    }, [success, error, cancelled])
 
     return (
       <div
-        className='group px-4 bg-white text-gray-800'
+        className="group px-4 bg-white text-gray-800"
         style={{ overflowWrap: 'anywhere' }}
       >
         <div className="relative m-auto flex gap-4 p-4 text-base md:max-w-2xl md:gap-6 md:py-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
           <div className="min-w-[40px] flex justify-start items-start text-left font-bold">
-            {message.role === 'assistant' ? 
+            {message.role === 'assistant' ? (
               <Image
                 className="float-right"
-                src='/brand-logo.svg'
-                alt='brand-logo'
+                src="/brand-logo.svg"
+                alt="brand-logo"
                 width={30}
                 height={30}
-              /> : <IconUser size={30}/>
-            }
+              />
+            ) : (
+              <IconUser size={30} />
+            )}
           </div>
 
           <div className="prose mt-[-2px] w-full">
-          {message.role === 'assistant' ? <p className='text-lg font-semibold mb-2'>Sender</p> : <p className='text-lg font-semibold mb-2'>User</p>}           
-           {message.role === 'user' ? (
+            {message.role === 'assistant' ? (
+              <p className="text-lg font-semibold mb-2">Sender</p>
+            ) : (
+              <p className="text-lg font-semibold mb-2">User</p>
+            )}
+            {message.role === 'user' ? (
               <div className="flex w-full">
                 {isEditing ? (
                   <div className="flex w-full flex-col">
                     <label htmlFor="messageTextarea">Message Content:</label>
                     <textarea
                       id="messageTextarea"
-                      ref={textareaRef} 
+                      ref={textareaRef}
                       className="w-full resize-none whitespace-pre-wrap border-none "
                       value={messageContent}
                       onChange={handleInputChange}
@@ -215,13 +260,13 @@ export const ChatMessage: FC<Props> = memo(
                         lineHeight: 'inherit',
                         padding: '0',
                         margin: '0',
-                        overflow: 'hidden',
+                        overflow: 'hidden'
                       }}
                     />
 
                     <div className="mt-10 flex justify-center space-x-4">
                       <button
-                        className="h-[40px] rounded-md bg-blue-500 px-4 py-1 text-sm font-medium text-white enabled:hover:bg-blue-600 disabled:opacity-50"
+                        className="h-[40px] rounded-md bg-[#38BDF8] px-4 py-1 text-sm font-medium text-white enabled:hover:bg-[#0EA5E9] disabled:opacity-50"
                         onClick={handleEditMessage}
                         disabled={messageContent.trim().length <= 0}
                       >
@@ -230,8 +275,8 @@ export const ChatMessage: FC<Props> = memo(
                       <button
                         className="h-[40px] rounded-md border border-neutral-300 px-4 py-1 text-sm font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
                         onClick={() => {
-                          setMessageContent(message.content);
-                          setIsEditing(false);
+                          setMessageContent(message.content)
+                          setIsEditing(false)
                         }}
                       >
                         {t('Cancel')}
@@ -244,7 +289,8 @@ export const ChatMessage: FC<Props> = memo(
                   </div>
                 )}
 
-                {(typeof window !== undefined && window.innerWidth < 640 || !isEditing) && (
+                {((typeof window !== undefined && window.innerWidth < 640) ||
+                  !isEditing) && (
                   <button
                     className={`absolute translate-x-[1000px] text-gray-500 hover:text-gray-700 focus:translate-x-0 group-hover:translate-x-0 dark:text-gray-400 dark:hover:text-gray-300 ${
                       window.innerWidth < 640
@@ -253,7 +299,7 @@ export const ChatMessage: FC<Props> = memo(
                     }
                     `}
                     onClick={toggleEditing}
-                    title='toggleEdit'
+                    title="toggleEdit"
                   >
                     <IconEdit size={20} />
                   </button>
@@ -290,7 +336,7 @@ export const ChatMessage: FC<Props> = memo(
                   // rehypePlugins={[rehypeMathjax]}
                   components={{
                     code({ node, inline, className, children, ...props }) {
-                      const match = /language-(\w+)/.exec(className || '');
+                      const match = /language-(\w+)/.exec(className || '')
 
                       return !inline && match ? (
                         <CodeBlock
@@ -303,185 +349,433 @@ export const ChatMessage: FC<Props> = memo(
                         <code className={className} {...props}>
                           {children}
                         </code>
-                      );
+                      )
                     },
                     table({ children }) {
                       return (
                         <table className="border-collapse border border-black py-1 px-3 dark:border-white">
                           {children}
                         </table>
-                      );
+                      )
                     },
                     th({ children }) {
                       return (
                         <th className="break-words border border-black bg-gray-500 py-1 px-3 text-white dark:border-white">
                           {children}
                         </th>
-                      );
+                      )
                     },
                     td({ children }) {
                       return (
                         <td className="break-words border border-black py-1 px-3 dark:border-white">
                           {children}
                         </td>
-                      );
-                    },
+                      )
+                    }
                   }}
                 >
                   {message.content}
-                </MemoizedReactMarkdown> 
-
-                
+                </MemoizedReactMarkdown>
 
                 {messageIndex == messageCount && functionTypes.transfer ? (
-                  <div className='flex flex-col bg-[#E5E7EB] rounded-xl justify-center items-center'>
-                    <div className="flex w-10/12 mx-auto">
-                      <Image
-                        src='/chartFlowLine.svg'
-                        alt='chartFlowLine'
-                        width={15}
-                        height={10}
-                        className="mr-5"
-                        // className="w-2 h-10"
-                      />
-                      <div className="flex w-full flex-col ">
-                      <div className='flex flex-col gap-2 mt-8'>
-                        <div>Transfer from:</div>
-                        <div className='flex flex-col justify-end'>
-                          <div className='flex items-center gap-2 text-base'><IoWalletSharp /> Wallet</div>
-                          <div className='text-lg font-bold'>{walletInfo}</div>
+                  <>
+                    {shouldRenderDiv && (
+                      <div className="flex flex-col border-2 border-[#38BDF8] rounded-xl p-4">
+                        <div className="flex flex-row-reverse items-center gap-2">
+                          <div>TRANSFER</div>
+                          <RiArrowGoForwardFill />{' '}
                         </div>
-                        <div className='flex flex-col justify-end'>
-                          <div className='flex items-center gap-2 text-base'><PiArrowBendUpRight /> Transfer amount</div>
-                          <div className='text-lg font-bold text-[#10B981]'>{`${transferObject?.amount} ${transferObject?.token}`}</div>
-                        </div>
-                        <div className='flex flex-col justify-end'>
-                          <div className='flex items-center gap-2 text-base'><PiNoteFill /> Transfer note</div>
-                          <div>-</div>
-                        </div>
-                      </div>
-                    </div>
-                    </div>
-
-                    <div className="flex w-10/12 mx-auto">
-                      <div>
-                      <Image
-                        src='/chartFlowLine.svg'
-                        alt='chartFlowLine'
-                        width={10}
-                        height={5}
-                        className="mr-5"
-                        // className="w-2 h-10"
-                      />
-                      </div>
-                      
-                      <div className="flex w-full flex-col mt-8">
-                      <div className='flex flex-col gap-2'>
-                        <div>Transfer To:</div>
-                        <div className='flex flex-col justify-end'>
-                          <div className='flex items-center gap-2 text-base'><IoWalletSharp /> Wallet</div>
-                          <div className='text-lg font-bold'>{transferObject?.recipient}</div>
-                        </div>
-                        {
-                          confirmTransfer && (
-                            <div className='flex gap-2 text-[#0EA5E9] items-center'>
-                              <FaCheck className='w-5'/>
-                            <div className='text-lg font-bold'>Checked</div>
-                        </div>
-                          )
-                        }
-                        
-                      </div>
-                    </div>
-                    </div>
-                    {
-                      success &&  <div className="flex w-10/12 mx-auto mb-5">
-                      
-                      <div className="flex w-full flex-col">
-                        <div className='flex flex-col gap-2'>
-                          <div className='flex items-center gap-2 text-[#10B981] h-8'>
-                            <div><FaCheckCircle className='w-6 h-6'/></div>
-                            <p className='text-xl flex'>Successful</p>
+                        <h3 className="my-2">Transfer Summary</h3>
+                        <div className="flex flex-col border border-[#D1D5DB] p-4">
+                          <div className="flex w-full flex-col ">
+                            <div className="font-bold">From</div>
+                            {/* <div className="text-xl">Stella</div> */}
+                            <div className="flex gap-2 items-center text-[#9CA8B4]">
+                              <IoWalletSharp />
+                              {accounts[0].accountId.slice(0, 6) +
+                                '...' +
+                                accounts[0].accountId.slice(-6)}
+                            </div>
                           </div>
-                          
-                        <div className='flex gap-2'><div className='w-6 h-6'/>{time}</div>
-                        <div className='flex gap-2'><div className='w-6 h-6'/><a target="_blank" className='flex items-center gap-2 h-8' href={`https://nearblocks.io/address/${accounts[0].accountId}`}><p className='underline'>Transfer information</p><PiArrowSquareOutBold className='w-4 h-4'/></a></div>
-                        
-                      </div>
-                    </div>
-                    </div>
-                    }
-                    
-                    {
-                      error &&  <div className="flex w-10/12 mx-auto mb-5">
-                      
-                      <div className="flex w-full flex-col">
-                        <div className='flex flex-col gap-2'>
-                          <div className='flex items-center gap-2 text-[#F43F5E] h-8'>
-                            <div><FaRegTimesCircle className='w-6 h-6'/></div>
-                            <p className='text-xl flex'>Error</p>
+                          <IoIosArrowRoundDown className="size-10 text-[#38BDF8]" />
+                          <div className="flex w-full flex-col ">
+                            <div className="font-bold">To</div>
+                            {/* <div className="text-xl">Stella</div> */}
+                            <div className="flex gap-2 items-center text-[#9CA8B4]">
+                              <IoWalletSharp />
+                              {transferObject.recipient.slice(0, 6) +
+                                '...' +
+                                transferObject.recipient.slice(-6)}
+                            </div>
                           </div>
-                          <div className='flex gap-2'><div className='w-6 h-6'/>{time}</div>
+                          <div className="flex justify-center mb-3 mt-2">
+                            <div className="border w-full"></div>
+                          </div>
+                          <div className="flex w-full flex-col gap-2">
+                            <div className="text-base font-bold">Amount</div>
+                            <div className="flex items-center gap-2">
+                              <SiNear className="size-5" />
+                              <p className="p-0 m-0 text-2xl font-bold">{`${transferObject?.amount} ${transferObject?.token}`}</p>
+                            </div>
+                          </div>
+                          <div className="flex flex-col justify-end mt-4">
+                            <div className="flex items-center gap-2 text-base font-bold">
+                              Note
+                            </div>
+                            <div>-</div>
+                          </div>
+                          <div className="flex justify-center mb-3 mt-2">
+                            <div className="border w-full"></div>
+                          </div>
+                          <div className="flex justify-between text-[#9CA8B4]">
+                            <div>Network Fee</div>
+                            <div>0.899316 NEAR</div>
+                          </div>
+                        </div>
+                        <div className="flex flex-row-reverse gap-2 text-[#0EA5E9] items-center font-bold">
+                          <PiChecksBold />
+                          Checked
+                        </div>
+                        <TransferToken payload={MockTransferPayload} />
                       </div>
-                    </div>
-                    </div>
-                    }
+                    )}
+                    {success && (
+                      <div className="flex flex-col border-2 w-full border-[#10B981] items-center rounded-xl py-8">
+                        <div className="flex flex-col items-center text-[#10B981]">
+                          <IoIosCheckmarkCircleOutline className="size-10" />
+                          <p className="font-extrabold m-0 text-xl">
+                            Transaction Successful
+                          </p>
+                          <p className="text-[#9CA8B4] m-0">{time}</p>
+                        </div>
+                        <div className="flex flex-col border border-[#D1D5DB] w-[90%] p-4 mt-6">
+                          <div className="flex items-center gap-2">
+                            <div className="text-xl font-bold">
+                              {transferObject.recipient.slice(0, 6) +
+                                '...' +
+                                transferObject.recipient.slice(-6)}
+                            </div>
+                            <div>receive</div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Image
+                              src={`/cryptoIcon/${transferObject.token.toLowerCase()}.svg`}
+                              alt="Icon"
+                              width={30}
+                              height={30}
+                              className="my-4"
+                            />
+                            <p className="p-0 m-0 text-2xl font-bold">
+                              {transferObject.amount} {transferObject.token}
+                            </p>
+                          </div>
+                          <div>
+                            Lorem ipsum dolor sit, amet consectetur adipisicing
+                            elit. Doloribus iusto nulla quae minus distinctio
+                            temporibus quidem impedit voluptatem harum sapiente
+                            pariatur veniam architecto, consequatur nemo magni,
+                            ratione facere voluptatibus voluptatum?
+                          </div>
+                        </div>
+                        <div className="flex justify-center mb-3 mt-2">
+                          <div className="border w-10/12"></div>
+                        </div>
 
-                    {
-                      (!success && !error) && (
-                      <div className='flex flex-col mb-4 w-10/12 border-2 bg-[#F0F9FF] px-4 rounded-xl'>
-                        <button className='flex justify-start my-2' onClick={handleTransferClick} disabled={!isWalletConnected} >
-                          Please confirm the action.
-                          <div></div>
-                        </button>
-                        {showTransfer && <TransferToken payload={MockTransferPayload} />}
+                        <div className="flex justify-center w-full">
+                          {accounts && (
+                            <Link
+                              href={`https://nearblocks.io/address/${accounts[0].accountId}`}
+                              className="border border-[#D1D5DB] text-[#9CA8B4] w-[90%] flex gap-2 items-center justify-center py-1"
+                            >
+                              View Transaction Detail
+                              <GrShare className="size-4" />
+                            </Link>
+                          )}
+                        </div>
                       </div>
-                      )
-                    }
-                  </div>
-                 
+                    )}
+                    {error && (
+                      <div className="flex flex-col border-2 w-full border-[#F43F5E] rounded-xl py-8">
+                        <div className="flex flex-col items-center text-[#F43F5E]">
+                          <IoWarningOutline className="size-10" />
+                          <p className="font-extrabold m-0 text-xl">
+                            Transaction failed
+                          </p>
+                          <p className="text-[#9CA8B4] m-0">
+                            2024-04-24 7:09:23
+                          </p>
+                        </div>
+                        <div className="flex justify-center mb-3 mt-2">
+                          <div className="border w-10/12"></div>
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <p className="m-0 w-10/12">
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Voluptatum, labore nulla quia tempore incidunt
+                            voluptas facilis itaque, possimus dignissimos est
+                            impedit blanditiis perferendis expedita porro alias.
+                            Ut saepe pariatur odit.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {cancelled && (
+                      <div className="flex flex-col border-2 w-full border-[#52749F] rounded-xl py-8">
+                        <div className="flex flex-col items-center text-[#52749F]">
+                          <PiWarningCircleLight className="size-10" />
+                          <p className="font-extrabold m-0 text-xl">
+                            Cancel Transaction
+                          </p>
+                          <p className="text-[#9CA8B4] m-0">
+                            2024-04-24 7:09:23
+                          </p>
+                        </div>
+                        <div className="flex justify-center mb-3 mt-2">
+                          <div className="border w-10/12"></div>
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <p className="m-0 w-10/12">
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Voluptatum, labore nulla quia tempore incidunt
+                            voluptas facilis itaque, possimus dignissimos est
+                            impedit blanditiis perferendis expedita porro alias.
+                            Ut saepe pariatur odit.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <>
-                  {
-                      messageIndex == messageCount && functionTypes.swap && (
-                        <>
-                        <div className='flex flex-col w-[80%] mx-auto my-5 bg-[E5E7EB] rounded-xl'>
-                        <div className='flex flex-col'>
-                          <span>You pay</span>
-                          <div className='flex w-full justify-between mt-2'>
-                            {/* <input type="text" className='bg-transparent w-3/4 h-10 text-5xl outline-none' placeholder='0'/> */}
-                            <div className='bg-transparent w-3/4 h-10 text-5xl outline-none'>{swapObject?.amountIn ? swapObject?.amountIn : 0}</div>
-                            <div className='flex items-center gap-2 text-2xl'><SiNear /><span className='font-semibold'>{swapObject?.tokenIn ? swapObject?.tokenIn : 'ETH'}</span></div>
+                    {messageIndex == messageCount && functionTypes.swap && (
+                      <>
+                        {shouldRenderDiv && (
+                          <>
+                            <div className="flex flex-col w-full mx-auto my-5 border-2 border-[#38BDF8] px-4 py-6 rounded-xl">
+                              <div className="flex flex-row-reverse items-center gap-2">
+                                <div>SWAP</div>
+                                <PiSwap className="size-4" />{' '}
+                              </div>
+                              <h3 className="mt-0">Swap Summary</h3>
+                              <div className="flex flex-col border border-[#E5E7F0] p-4 rounded-lg">
+                                <div className="flex justify-between">
+                                  <p className="m-0">You Pay</p>
+                                  <p className="flex items-center gap-2 m-0">
+                                    <span className="text-[#8799A6]">
+                                      Balance
+                                    </span>
+                                    <span className="font-semibold">0</span>
+                                  </p>
+                                </div>
+
+                                <div className="flex w-full items-center justify-between mt-2 h-20">
+                                  <div>
+                                    <p className="p-0 m-0 text-3xl">
+                                      {swapObject.amountIn}
+                                    </p>
+                                    <p className="p-0 m-0 text-[#8799A6]">
+                                      $ {swapObject.amountIn}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center gap-2 text-2xl">
+                                    <Image
+                                      src={`/cryptoIcon/${swapObject.tokenIn.toLowerCase()}.svg`}
+                                      alt="Icon"
+                                      width={30}
+                                      height={30}
+                                      className="my-4"
+                                    />
+                                    <span className="font-semibold">
+                                      {swapObject?.tokenIn
+                                        ? swapObject?.tokenIn
+                                        : 'USDT'}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex h-10 w-full items-center justify-center">
+                                <IoIosArrowRoundDown className="size-8 text-[#38BDF8]" />
+                              </div>
+                              <div className="flex flex-col border border-[#E5E7F0] p-4 rounded-lg">
+                                <div className="flex justify-between">
+                                  <p className="m-0">You Get</p>
+                                  <p className="flex items-center gap-2 m-0">
+                                    <span className="text-[#8799A6]">
+                                      Balance
+                                    </span>{' '}
+                                    <span className="font-semibold">0</span>{' '}
+                                  </p>
+                                </div>
+
+                                <div className="flex w-full items-center justify-between mt-2 h-20">
+                                  <div>
+                                    <p className="p-0 m-0 text-3xl">
+                                      {swapObject.amountOut}
+                                    </p>
+                                    <p className="p-0 m-0 text-[#8799A6]">
+                                      $ {swapObject.amountOut}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center gap-2 text-2xl">
+                                    <Image
+                                      src={`/cryptoIcon/${swapObject.tokenOut.toLowerCase()}.svg`}
+                                      alt="Icon"
+                                      width={30}
+                                      height={30}
+                                      className="my-4"
+                                    />
+                                    <span className="font-semibold">
+                                      {swapObject?.tokenOut
+                                        ? swapObject?.tokenOut
+                                        : ''}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              <PerformSwap payload={MockSwapPayload} />
+                              <div className="flex justify-between my-2">
+                                <p className="m-0 font-bold">
+                                  1 NEAR ≈ 6.45 USDT ($6.45)
+                                </p>
+                                <div
+                                  className="flex justify-between items-center gap-2 cursor-pointer"
+                                  onClick={() => setShowDropdown(!showDropdown)}
+                                >
+                                  <p className="m-0">Detail</p>
+                                  <IoIosArrowDown
+                                    className={showDropdown ? 'rotate-180' : ''}
+                                  />
+                                </div>
+                              </div>
+                              {showDropdown && (
+                                <div className="flex justify-between items-center gap-2 text-[#9CA8B4]">
+                                  <div className="flex flex-col">
+                                    <p className="m-0">Price Impact</p>
+                                    <p className="m-0">Minimum Receive</p>
+                                  </div>
+                                  <div className="flex flex-col font-bold text-black">
+                                    <div className="flex justify-between items-center gap-1">
+                                      <IoIosArrowBack />
+                                      <p className="m-0">0.01 %</p>
+                                    </div>
+                                    <div className="flex justify-between items-center gap-2">
+                                      <p className="m-0">
+                                        {swapObject.amountOut}{' '}
+                                        {swapObject.tokenOut}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        )}
+                        {success && (
+                          <div className="flex flex-col border-2 w-full border-[#10B981] rounded-xl py-8">
+                            <div className="flex flex-col items-center text-[#10B981]">
+                              <IoIosCheckmarkCircleOutline className="size-10" />
+                              <p className="font-extrabold m-0 text-xl">
+                                Swap Successful
+                              </p>
+                              <p className="text-[#9CA8B4] m-0">{time}</p>
+                            </div>
+                            <div className="flex items-center justify-center gap-2 h-10 mt-4">
+                              <div className="flex items-center gap-2">
+                                <Image
+                                  src={`/cryptoIcon/${swapObject.tokenIn.toLowerCase()}.svg`}
+                                  alt="Icon"
+                                  width={30}
+                                  height={30}
+                                  className="my-4"
+                                />
+                                <p className="p-0 m-0 text-2xl">
+                                  {swapObject?.amountIn} {swapObject?.tokenIn}
+                                </p>
+                              </div>
+                              <IoIosArrowRoundDown className="size-8 text-[#38BDF8] -rotate-90" />
+                              <div className="flex items-center gap-2">
+                                <Image
+                                  src={`/cryptoIcon/${swapObject.tokenOut.toLowerCase()}.svg`}
+                                  alt="Icon"
+                                  width={30}
+                                  height={30}
+                                  className="my-4"
+                                />
+                                <p className="p-0 m-0 text-2xl">
+                                  650 ${swapObject.tokenOut}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex justify-center mb-3 mt-2">
+                              <div className="border w-10/12"></div>
+                            </div>
+
+                            <div className="flex justify-center">
+                              <button className="border border-[#D1D5DB] text-[#9CA8B4] w-10/12 flex gap-2 items-center justify-center">
+                                View Transaction Detail
+                                <GrShare className="size-4" />
+                              </button>
+                            </div>
                           </div>
-                          <div className='flex flex-row-reverse'><p>Balance: 0</p></div>
-                        </div>
-                        <div className='relative h-4 w-full'>
-                            <FaArrowCircleDown className='absolute left-1/2 top-1/2 w-5 h-5 -translate-x-2.5'/>
-                        </div>
-                        <div className='flex flex-col mt-4'>
-                          <span>You receive</span>
-                          <div className='flex w-full justify-between mt-2'>
-                          <div className='bg-transparent w-3/4 h-10 text-5xl outline-none'>{swapObject?.amountOut ? swapObject?.amountOut : 0}</div>
-                            <div className='flex items-center gap-2 text-2xl'><SiNear /><span className='font-semibold'>{swapObject?.tokenOut ? swapObject?.tokenOut : 'USDT'}</span></div>
+                        )}
+                        {error && (
+                          <div className="flex flex-col border-2 w-full border-[#F43F5E] rounded-xl py-8">
+                            <div className="flex flex-col items-center text-[#F43F5E]">
+                              <IoWarningOutline className="size-10" />
+                              <p className="font-extrabold m-0 text-xl">
+                                Swap failed
+                              </p>
+                              <p className="text-[#9CA8B4] m-0">{time}</p>
+                            </div>
+                            <div className="flex justify-center mb-3 mt-2">
+                              <div className="border w-10/12"></div>
+                            </div>
+                            <div className="flex justify-center items-center">
+                              <p className="m-0 w-10/12">
+                                Lorem ipsum dolor sit amet consectetur
+                                adipisicing elit. Voluptatum, labore nulla quia
+                                tempore incidunt voluptas facilis itaque,
+                                possimus dignissimos est impedit blanditiis
+                                perferendis expedita porro alias. Ut saepe
+                                pariatur odit.
+                              </p>
+                            </div>
                           </div>
-                          <div className='flex flex-row-reverse'>Balance: {swapObject?.amountOut ? swapObject?.amountOut : 0}</div>
-                        </div>
-                        </div>
-                        <button className='border-2 border-black' onClick={handleSwapClick}>
-                          Swap
-                        </button>
-                        {showSwap && <PerformSwap payload={MockSwapPayload} />}
-                        </>
-                      )
-                    }
-                    </>
+                        )}
+                        {cancelled && (
+                          <div className="flex flex-col border-2 w-full border-[#52749F] rounded-xl py-8">
+                            <div className="flex flex-col items-center text-[#52749F]">
+                              <PiWarningCircleLight className="size-10" />
+                              <p className="font-extrabold m-0 text-xl">
+                                Cancel Swap
+                              </p>
+                              <p className="text-[#9CA8B4] m-0">{time}</p>
+                            </div>
+                            <div className="flex justify-center mb-3 mt-2">
+                              <div className="border w-10/12"></div>
+                            </div>
+                            <div className="flex justify-center items-center">
+                              <p className="m-0 w-10/12">
+                                Lorem ipsum dolor sit amet consectetur
+                                adipisicing elit. Voluptatum, labore nulla quia
+                                tempore incidunt voluptas facilis itaque,
+                                possimus dignissimos est impedit blanditiis
+                                perferendis expedita porro alias. Ut saepe
+                                pariatur odit.
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </>
                 )}
               </>
             )}
           </div>
         </div>
       </div>
-    );
-  },
-);
-ChatMessage.displayName = 'ChatMessage';
+    )
+  }
+)
+ChatMessage.displayName = 'ChatMessage'
