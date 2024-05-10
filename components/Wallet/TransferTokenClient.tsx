@@ -12,20 +12,10 @@ import { PiSpinnerGapBold } from 'react-icons/pi'
 import { useTransferTokenStore } from '@/lib/store/store'
 import {
   THIRTY_TGAS,
-  connectionConfig,
+  getConnectionConfig,
   TOKEN_LIST,
   TransferPayload
 } from './constant'
-import { IoIosArrowDown } from 'react-icons/io'
-import { IoIosArrowBack } from 'react-icons/io'
-import { IoIosArrowRoundDown } from 'react-icons/io'
-import { IoIosCheckmarkCircleOutline } from 'react-icons/io'
-import { GrShare } from 'react-icons/gr'
-import { IoWarningOutline } from 'react-icons/io5'
-import { PiWarningCircleLight } from 'react-icons/pi'
-import { PiChecksBold } from 'react-icons/pi'
-import { SiNear } from 'react-icons/si'
-// import { PiSpinnerGapBold } from "react-icons/pi";
 
 interface NEP141_Contract extends ContractType {
   ft_balance_of: (args: { account_id: string }) => Promise<string>
@@ -116,8 +106,8 @@ export function TransferToken({ payload }: { payload: TransferPayload }) {
       //   helperUrl: "https://helper.testnet.near.org",
       //   explorerUrl: "https://testnet.nearblocks.io",
       // };
-
-      // // // mainnet config
+      let connectionConfig = getConnectionConfig('mainnet')
+      // // mainnet config
       // const connectionConfig = {
       //   networkId: "mainnet",
       //   keyStore: new keyStores.BrowserLocalStorageKeyStore(),

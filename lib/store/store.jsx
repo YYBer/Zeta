@@ -4,9 +4,13 @@ export const useInputJSONStore = create(set => ({
   inputJSON: '',
   transferObject: {},
   swapObject: {},
+  stakeObject: {},
+  unStakeObject: {},
   setInputJSON: newPrompt => set({ inputJSON: newPrompt }),
   setTransferObject: transferObject => set({ transferObject }),
-  setSwapObject: swapObject => set({ swapObject })
+  setSwapObject: swapObject => set({ swapObject }),
+  setStakeObject: stakeObject => set({ stakeObject }),
+  setUnStakeObject: stakeObject => set({ stakeObject })
 }))
 
 export const useWalletInfoStore = create(set => ({
@@ -23,6 +27,8 @@ export const useTransferTokenStore = create(set => ({
   messageCount: 0,
   confirmSwap: false,
   confirmTransfer: false,
+  confirmStake: false,
+  confirmUnstake: false,
   setSuccess: success => set({ success }),
   setError: error => set({ error }),
   setConfirmTransfer: confirm => {
@@ -30,6 +36,12 @@ export const useTransferTokenStore = create(set => ({
   },
   setConfirmSwap: confirm => {
     set({ confirmSwap: confirm })
+  },
+  setConfirmStake: confirm => {
+    set({ confirmStake: confirm })
+  },
+  setConfirmUnstake: confirm => {
+    set({ confirmUnstake: confirm })
   },
   setLoading: loading => set({ loading }),
   setCancelled: isCancel => set({ cancelled: isCancel }),

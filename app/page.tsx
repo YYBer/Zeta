@@ -81,7 +81,8 @@ const Home: FC = ({}) => {
 
   const [prompts, setPrompts] = useState<Prompt[]>([])
   // const [showPromptbar, setShowPromptbar] = useState<boolean>(true)
-  const { setInputJSON, setTransferObject, setSwapObject } = useInputJSONStore()
+  const { setInputJSON, setTransferObject, setSwapObject, setStakeObject } =
+    useInputJSONStore()
   const {
     setSuccess,
     setError,
@@ -99,6 +100,70 @@ const Home: FC = ({}) => {
 
   // FETCH RESPONSE ----------------------------------------------
 
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await fetch(
+  //         'https://validators.narwallets.com/metrics'
+  //       )
+  //       if (!response.ok) {
+  //         throw new Error('Network response was not ok')
+  //       }
+  //       // console.log('response', response)
+  //       // const jsonData = await response.json();
+  //       // setData(jsonData);
+  //       const reader = response?.body?.getReader()
+  //       const stream = new ReadableStream({
+  //         start(controller) {
+  //           const process = async () => {
+  //             try {
+  //               const { done, value } = await reader?.read()
+  //               if (done) {
+  //                 controller.close()
+  //                 return
+  //               }
+  //               controller.enqueue(value)
+  //               await process()
+  //             } catch (error) {
+  //               controller.error(error)
+  //             }
+  //           }
+  //           process()
+  //         }
+  //       })
+  //       // console.log('stream', stream)
+
+  //       const text = await new Response(stream).text()
+  //       // console.log('text', text)
+
+  //       const parseData = (text: string) => {
+  //         const pattern =
+  //           /metapool_(st_near_price|near_usd_price|st_near_30_day_apy|st_aur_30_day_apy|st_aur_price|eth_usd_price)\s([0-9.]+)/g
+  //         const matches = text.matchAll(pattern)
+  //         const parsedData = {}
+
+  //         for (const match of matches) {
+  //           const key = match[1]
+  //           const value = parseFloat(match[2]).toFixed(2)
+  //           parsedData[key] = value
+  //         }
+
+  //         console.log('parsedData', parsedData)
+
+  //         return parsedData
+  //       }
+
+  //       parseData(text)
+  //       // const jsonData = JSON.parse(text)
+  //       // console.log('jsonData', jsonData)
+  //     } catch (error) {
+  //       setError(error)
+  //     }
+  //   }
+
+  //   fetchData()
+  // }, [])
+
   const handleSend = async (
     message: Message,
     deleteCount = 0,
@@ -110,6 +175,35 @@ const Home: FC = ({}) => {
     setConfirmTransfer(false)
     setCancelled(false)
     setLoading(false)
+
+    // useEffect(() => {
+    //   const fetchData = async () => {
+    //     const response = await fetch('https://validators.narwallets.com/metrics')
+    //     // const data = await response.json()
+    //     console.log('fetchData', response)
+    //     return response
+    //   }
+    // }, [])
+    // useEffect(() => {
+    //   console.log('log')
+    //   const fetchData = async () => {
+    //     try {
+    //       const response = await fetch(
+    //         'https://validators.narwallets.com/metrics'
+    //       )
+    //       if (!response.ok) {
+    //         throw new Error('Network response was not ok')
+    //       }
+    //       console.log('response', response)
+    //       // const jsonData = await response.json();
+    //       // setData(jsonData);
+    //     } catch (error) {
+    //       setError(error)
+    //     }
+    //   }
+
+    //   fetchData()
+    // }, [])
 
     if (selectedConversation) {
       let updatedConversation: Conversation
@@ -166,7 +260,8 @@ const Home: FC = ({}) => {
         body: JSON.stringify({
           messages: updatedConversation.messages,
           prompt: updatedConversation.prompt,
-          address: 'bungeetest.testnet' //test only
+          address:
+            '9b5adfd2530b9c2657b088cfc8755e3c25a6cef7fb9b44c659d12b2bd30a3f62' //test only
         }),
         signal: controller.signal
       })
@@ -230,6 +325,7 @@ const Home: FC = ({}) => {
               if (jsonObject.functionType == 'transfer')
                 setTransferObject(jsonObject)
               if (jsonObject.functionType == 'swap') setSwapObject(jsonObject)
+              if (jsonObject.functionType == 'stake') setStakeObject(jsonObject)
             }
             setInputJSON(chunkValue)
           }
@@ -756,94 +852,94 @@ const Home: FC = ({}) => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <WalletSelectorContextProvider>
-        {selectedConversation && (
-          <main
-            className={`flex h-screen w-screen flex-col text-sm text-white dark:text-white ${lightMode}`}
-          >
-            <div className="fixed top-0 w-full sm:hidden">
-              <Navbar
-                selectedConversation={selectedConversation}
-                onNewConversation={handleNewConversation}
-              />
-            </div>
+      {/* <WalletSelectorContextProvider> */}
+      {selectedConversation && (
+        <main
+          className={`flex h-screen w-screen flex-col text-sm text-white dark:text-white ${lightMode}`}
+        >
+          <div className="fixed top-0 w-full sm:hidden">
+            <Navbar
+              selectedConversation={selectedConversation}
+              onNewConversation={handleNewConversation}
+            />
+          </div>
 
-            <div className="flex h-full w-full pt-[48px] sm:pt-0">
-              {showSidebar ? (
-                <div>
-                  <Chatbar
-                    loading={messageIsStreaming}
-                    conversations={conversations}
-                    // lightMode={lightMode}
-                    selectedConversation={selectedConversation}
-                    apiKey={apiKey}
-                    // pluginKeys={pluginKeys}
-                    folders={folders.filter(folder => folder.type === 'chat')}
-                    // onToggleLightMode={handleLightMode}
-                    // onCreateFolder={name => handleCreateFolder(name, 'chat')}
-                    onDeleteFolder={handleDeleteFolder}
-                    onUpdateFolder={handleUpdateFolder}
-                    onNewConversation={handleNewConversation}
-                    onSelectConversation={handleSelectConversation}
-                    onDeleteConversation={handleDeleteConversation}
-                    onUpdateConversation={handleUpdateConversation}
-                    // onApiKeyChange={handleApiKeyChange}
-                    onClearConversations={handleClearConversations}
-                    // onExportConversations={handleExportData}
-                    // onImportConversations={handleImportConversations}
-                    // onPluginKeyChange={handlePluginKeyChange}
-                    // onClearPluginKey={handleClearPluginKey}
-                  />
+          <div className="flex h-full w-full pt-[48px] sm:pt-0">
+            {showSidebar ? (
+              <div>
+                <Chatbar
+                  loading={messageIsStreaming}
+                  conversations={conversations}
+                  // lightMode={lightMode}
+                  selectedConversation={selectedConversation}
+                  apiKey={apiKey}
+                  // pluginKeys={pluginKeys}
+                  folders={folders.filter(folder => folder.type === 'chat')}
+                  // onToggleLightMode={handleLightMode}
+                  // onCreateFolder={name => handleCreateFolder(name, 'chat')}
+                  onDeleteFolder={handleDeleteFolder}
+                  onUpdateFolder={handleUpdateFolder}
+                  onNewConversation={handleNewConversation}
+                  onSelectConversation={handleSelectConversation}
+                  onDeleteConversation={handleDeleteConversation}
+                  onUpdateConversation={handleUpdateConversation}
+                  // onApiKeyChange={handleApiKeyChange}
+                  onClearConversations={handleClearConversations}
+                  // onExportConversations={handleExportData}
+                  // onImportConversations={handleImportConversations}
+                  // onPluginKeyChange={handlePluginKeyChange}
+                  // onClearPluginKey={handleClearPluginKey}
+                />
 
-                  {/* <button
+                {/* <button
                     className="fixed top-5 left-[270px] z-50 h-7 w-7  sm:top-0.5 sm:left-[270px] sm:h-8 sm:w-8 sm:text-neutral-700"
                     onClick={handleToggleChatbar}
                   >
                     <IoIosArrowBack />
                   </button> */}
-                  <button
-                    className="fixed bottom-[50%] left-[270px] text-black z-50 h-7 w-7 hover:text-gray-400"
-                    onClick={handleToggleChatbar}
-                    title="Toggle ChatBar"
-                  >
-                    <IoIosArrowBack className="w-[24px] h-[24px]" />
-                  </button>
-                  {/* <div
-                    onClick={handleToggleChatbar}
-                    className="absolute top-0 left-0 z-10 h-full w-full bg-black opacity-70 sm:hidden"
-                  ></div> */}
-                </div>
-              ) : (
                 <button
-                  className="fixed bottom-[50%] left-4 z-50 h-7 w-7 text-black hover:text-gray-400"
+                  className="fixed bottom-[50%] left-[270px] text-black z-50 h-7 w-7 hover:text-gray-400"
                   onClick={handleToggleChatbar}
                   title="Toggle ChatBar"
                 >
-                  <IoIosArrowForward className="w-[24px] h-[24px]" />
+                  <IoIosArrowBack className="w-[24px] h-[24px]" />
                 </button>
-              )}
-
-              <div className="flex flex-1">
-                <Chat
-                  conversation={selectedConversation}
-                  messageIsStreaming={messageIsStreaming}
-                  apiKey={apiKey}
-                  serverSideApiKeyIsSet={serverSideApiKeyIsSet}
-                  modelId={modelId}
-                  modelError={modelError}
-                  models={models}
-                  loading={messageLoading}
-                  prompts={prompts}
-                  onSend={handleSend}
-                  onUpdateConversation={handleUpdateConversation}
-                  onEditMessage={handleEditMessage}
-                  stopConversationRef={stopConversationRef}
-                />
+                {/* <div
+                    onClick={handleToggleChatbar}
+                    className="absolute top-0 left-0 z-10 h-full w-full bg-black opacity-70 sm:hidden"
+                  ></div> */}
               </div>
+            ) : (
+              <button
+                className="fixed bottom-[50%] left-4 z-50 h-7 w-7 text-black hover:text-gray-400"
+                onClick={handleToggleChatbar}
+                title="Toggle ChatBar"
+              >
+                <IoIosArrowForward className="w-[24px] h-[24px]" />
+              </button>
+            )}
+
+            <div className="flex flex-1">
+              <Chat
+                conversation={selectedConversation}
+                messageIsStreaming={messageIsStreaming}
+                apiKey={apiKey}
+                serverSideApiKeyIsSet={serverSideApiKeyIsSet}
+                modelId={modelId}
+                modelError={modelError}
+                models={models}
+                loading={messageLoading}
+                prompts={prompts}
+                onSend={handleSend}
+                onUpdateConversation={handleUpdateConversation}
+                onEditMessage={handleEditMessage}
+                stopConversationRef={stopConversationRef}
+              />
             </div>
-          </main>
-        )}
-      </WalletSelectorContextProvider>
+          </div>
+        </main>
+      )}
+      {/* </WalletSelectorContextProvider> */}
     </>
   )
 }

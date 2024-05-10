@@ -10,11 +10,10 @@ import {
 import * as nearAPI from 'near-api-js'
 import {
   THIRTY_TGAS,
-  connectionConfig,
   TOKEN_LIST,
   SwapPayload,
   MockSwapPayload,
-  connectionTestConfig,
+  getConnectionConfig,
   TOKEN_TEST_LIST
 } from './constant'
 import { getBalance } from './getBalanceClient'
@@ -117,9 +116,9 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
       const tokenOutContractId = TOKEN_TEST_LIST[tokenOut]
       // const refContractId = "v2.ref-finance.near"
       const refContractId = 'ref-finance-101.testnet'
-
+      let connectionConfig = getConnectionConfig('testnet')
       // const nearConnection = await connect(connectionConfig);
-      const nearConnection = await connect(connectionTestConfig)
+      const nearConnection = await connect(connectionConfig)
       const userAccount = await nearConnection.account(accountId)
 
       const tokenInContract = new Contract(userAccount, tokenInContractId, {

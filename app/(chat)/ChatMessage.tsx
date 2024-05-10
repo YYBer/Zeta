@@ -32,7 +32,9 @@ import { getBalance } from '@/components/Wallet/getBalanceClient'
 import { PerformSwap } from '@/components/Wallet/SwapClient'
 import {
   MockTransferPayload,
-  MockSwapPayload
+  MockSwapPayload,
+  MockStakePayload,
+  MockUnstakePayload
 } from '@/components/Wallet/constant'
 import { IoIosArrowDown } from 'react-icons/io'
 import { IoIosArrowBack } from 'react-icons/io'
@@ -46,6 +48,9 @@ import { PiSpinnerGapBold } from 'react-icons/pi'
 import Link from 'next/link'
 import { PiSwap } from 'react-icons/pi'
 import { RiArrowGoForwardFill } from 'react-icons/ri'
+import { StakeNEAR } from '@/components/Wallet/StakeNearClient'
+import { UnstakeNEAR } from '@/components/Wallet/UnstakeNearClient'
+import { stake } from 'near-api-js/lib/transaction'
 
 interface Props {
   message: Message
@@ -67,7 +72,8 @@ export const ChatMessage: FC<Props> = memo(
     const [isTyping, setIsTyping] = useState<boolean>(false)
     const [messageContent, setMessageContent] = useState(message.content)
     const [messagedCopied, setMessageCopied] = useState(false)
-    const { transferObject, swapObject } = useInputJSONStore()
+    const { transferObject, swapObject, stakeObject, unStakeObject } =
+      useInputJSONStore()
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const [isWalletConnected, setIsWalletConnected] = useState(true)
     const [showTransfer, setShowTransfer] = useState(false)
@@ -88,7 +94,9 @@ export const ChatMessage: FC<Props> = memo(
     const [tokenSymbol, setTokenSymbol] = useState('')
     const [functionTypes, setFunctionTypes] = useState({
       swap: false,
-      transfer: false
+      transfer: false,
+      stake: false,
+      unstake: false
     })
     const [showSwap, setShowSwap] = useState(false) // New state to control swap widget visibility
     const [shouldRenderDiv, setShouldRenderDiv] = useState(true)
@@ -193,7 +201,9 @@ export const ChatMessage: FC<Props> = memo(
           setFunctionTypes(prevState => ({
             ...prevState,
             transfer: false,
-            swap: true
+            swap: true,
+            stake: false,
+            unstake: false
           }))
         } else if (
           message.role === 'assistant' &&
@@ -202,7 +212,31 @@ export const ChatMessage: FC<Props> = memo(
           setFunctionTypes(prevState => ({
             ...prevState,
             transfer: true,
-            swap: false
+            swap: false,
+            stake: false,
+            unstake: false
+          }))
+        } else if (
+          message.role === 'assistant' &&
+          message.content.includes('unstake')
+        ) {
+          setFunctionTypes(prevState => ({
+            ...prevState,
+            transfer: false,
+            swap: false,
+            stake: false,
+            unstake: true
+          }))
+        } else if (
+          message.role === 'assistant' &&
+          message.content.includes('stake')
+        ) {
+          setFunctionTypes(prevState => ({
+            ...prevState,
+            transfer: false,
+            swap: false,
+            stake: true,
+            unstake: false
           }))
         }
       } catch (error) {
@@ -330,54 +364,58 @@ export const ChatMessage: FC<Props> = memo(
                   )}
                 </div>
 
-                <MemoizedReactMarkdown
-                  className="prose"
-                  remarkPlugins={[remarkGfm, remarkMath]}
-                  // rehypePlugins={[rehypeMathjax]}
-                  components={{
-                    code({ node, inline, className, children, ...props }) {
-                      const match = /language-(\w+)/.exec(className || '')
+                {message.content.includes('{') ? (
+                  <MemoizedReactMarkdown
+                    className="prose"
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    // rehypePlugins={[rehypeMathjax]}
+                    components={{
+                      code({ node, inline, className, children, ...props }) {
+                        const match = /language-(\w+)/.exec(className || '')
 
-                      return !inline && match ? (
-                        <CodeBlock
-                          key={Math.random()}
-                          language={match[1]}
-                          value={String(children).replace(/\n$/, '')}
-                          {...props}
-                        />
-                      ) : (
-                        <code className={className} {...props}>
-                          {children}
-                        </code>
-                      )
-                    },
-                    table({ children }) {
-                      return (
-                        <table className="border-collapse border border-black py-1 px-3 dark:border-white">
-                          {children}
-                        </table>
-                      )
-                    },
-                    th({ children }) {
-                      return (
-                        <th className="break-words border border-black bg-gray-500 py-1 px-3 text-white dark:border-white">
-                          {children}
-                        </th>
-                      )
-                    },
-                    td({ children }) {
-                      return (
-                        <td className="break-words border border-black py-1 px-3 dark:border-white">
-                          {children}
-                        </td>
-                      )
-                    }
-                  }}
-                >
-                  {message.content}
-                </MemoizedReactMarkdown>
+                        return !inline && match ? (
+                          <CodeBlock
+                            key={Math.random()}
+                            language={match[1]}
+                            value={String(children).replace(/\n$/, '')}
+                            {...props}
+                          />
+                        ) : (
+                          <code className={className} {...props}>
+                            {children}
+                          </code>
+                        )
+                      },
+                      table({ children }) {
+                        return (
+                          <table className="border-collapse border border-black py-1 px-3 dark:border-white">
+                            {children}
+                          </table>
+                        )
+                      },
+                      th({ children }) {
+                        return (
+                          <th className="break-words border border-black bg-gray-500 py-1 px-3 text-white dark:border-white">
+                            {children}
+                          </th>
+                        )
+                      },
+                      td({ children }) {
+                        return (
+                          <td className="break-words border border-black py-1 px-3 dark:border-white">
+                            {children}
+                          </td>
+                        )
+                      }
+                    }}
+                  >
+                    {message.content}
+                  </MemoizedReactMarkdown>
+                ) : (
+                  <div>No problem</div>
+                )}
 
-                {messageIndex == messageCount && functionTypes.transfer ? (
+                {messageIndex == messageCount && functionTypes.transfer && (
                   <>
                     {shouldRenderDiv && (
                       <div className="flex flex-col border-2 border-[#38BDF8] rounded-xl p-4">
@@ -392,9 +430,9 @@ export const ChatMessage: FC<Props> = memo(
                             {/* <div className="text-xl">Stella</div> */}
                             <div className="flex gap-2 items-center text-[#9CA8B4]">
                               <IoWalletSharp />
-                              {accounts[0].accountId.slice(0, 6) +
+                              {accounts[0]?.accountId?.slice(0, 6) +
                                 '...' +
-                                accounts[0].accountId.slice(-6)}
+                                accounts[0]?.accountId?.slice(-6)}
                             </div>
                           </div>
                           <IoIosArrowRoundDown className="size-10 text-[#38BDF8]" />
@@ -403,9 +441,9 @@ export const ChatMessage: FC<Props> = memo(
                             {/* <div className="text-xl">Stella</div> */}
                             <div className="flex gap-2 items-center text-[#9CA8B4]">
                               <IoWalletSharp />
-                              {transferObject.recipient.slice(0, 6) +
+                              {transferObject?.recipient?.slice(0, 6) +
                                 '...' +
-                                transferObject.recipient.slice(-6)}
+                                transferObject?.recipient?.slice(-6)}
                             </div>
                           </div>
                           <div className="flex justify-center mb-3 mt-2">
@@ -545,155 +583,80 @@ export const ChatMessage: FC<Props> = memo(
                       </div>
                     )}
                   </>
-                ) : (
+                )}
+
+                {messageIndex == messageCount && functionTypes.swap && (
                   <>
-                    {messageIndex == messageCount && functionTypes.swap && (
+                    {shouldRenderDiv && (
                       <>
-                        {shouldRenderDiv && (
-                          <>
-                            <div className="flex flex-col w-full mx-auto my-5 border-2 border-[#38BDF8] px-4 py-6 rounded-xl">
-                              <div className="flex flex-row-reverse items-center gap-2">
-                                <div>SWAP</div>
-                                <PiSwap className="size-4" />{' '}
-                              </div>
-                              <h3 className="mt-0">Swap Summary</h3>
-                              <div className="flex flex-col border border-[#E5E7F0] p-4 rounded-lg">
-                                <div className="flex justify-between">
-                                  <p className="m-0">You Pay</p>
-                                  <p className="flex items-center gap-2 m-0">
-                                    <span className="text-[#8799A6]">
-                                      Balance
-                                    </span>
-                                    <span className="font-semibold">0</span>
-                                  </p>
-                                </div>
-
-                                <div className="flex w-full items-center justify-between mt-2 h-20">
-                                  <div>
-                                    <p className="p-0 m-0 text-3xl">
-                                      {swapObject.amountIn}
-                                    </p>
-                                    <p className="p-0 m-0 text-[#8799A6]">
-                                      $ {swapObject.amountIn}
-                                    </p>
-                                  </div>
-                                  <div className="flex items-center gap-2 text-2xl">
-                                    <Image
-                                      src={`/cryptoIcon/${swapObject.tokenIn.toLowerCase()}.svg`}
-                                      alt="Icon"
-                                      width={30}
-                                      height={30}
-                                      className="my-4"
-                                    />
-                                    <span className="font-semibold">
-                                      {swapObject?.tokenIn
-                                        ? swapObject?.tokenIn
-                                        : 'USDT'}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex h-10 w-full items-center justify-center">
-                                <IoIosArrowRoundDown className="size-8 text-[#38BDF8]" />
-                              </div>
-                              <div className="flex flex-col border border-[#E5E7F0] p-4 rounded-lg">
-                                <div className="flex justify-between">
-                                  <p className="m-0">You Get</p>
-                                  <p className="flex items-center gap-2 m-0">
-                                    <span className="text-[#8799A6]">
-                                      Balance
-                                    </span>{' '}
-                                    <span className="font-semibold">0</span>{' '}
-                                  </p>
-                                </div>
-
-                                <div className="flex w-full items-center justify-between mt-2 h-20">
-                                  <div>
-                                    <p className="p-0 m-0 text-3xl">
-                                      {swapObject.amountOut}
-                                    </p>
-                                    <p className="p-0 m-0 text-[#8799A6]">
-                                      $ {swapObject.amountOut}
-                                    </p>
-                                  </div>
-                                  <div className="flex items-center gap-2 text-2xl">
-                                    <Image
-                                      src={`/cryptoIcon/${swapObject.tokenOut.toLowerCase()}.svg`}
-                                      alt="Icon"
-                                      width={30}
-                                      height={30}
-                                      className="my-4"
-                                    />
-                                    <span className="font-semibold">
-                                      {swapObject?.tokenOut
-                                        ? swapObject?.tokenOut
-                                        : ''}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                              <PerformSwap payload={MockSwapPayload} />
-                              <div className="flex justify-between my-2">
-                                <p className="m-0 font-bold">
-                                  1 NEAR ≈ 6.45 USDT ($6.45)
-                                </p>
-                                <div
-                                  className="flex justify-between items-center gap-2 cursor-pointer"
-                                  onClick={() => setShowDropdown(!showDropdown)}
-                                >
-                                  <p className="m-0">Detail</p>
-                                  <IoIosArrowDown
-                                    className={showDropdown ? 'rotate-180' : ''}
-                                  />
-                                </div>
-                              </div>
-                              {showDropdown && (
-                                <div className="flex justify-between items-center gap-2 text-[#9CA8B4]">
-                                  <div className="flex flex-col">
-                                    <p className="m-0">Price Impact</p>
-                                    <p className="m-0">Minimum Receive</p>
-                                  </div>
-                                  <div className="flex flex-col font-bold text-black">
-                                    <div className="flex justify-between items-center gap-1">
-                                      <IoIosArrowBack />
-                                      <p className="m-0">0.01 %</p>
-                                    </div>
-                                    <div className="flex justify-between items-center gap-2">
-                                      <p className="m-0">
-                                        {swapObject.amountOut}{' '}
-                                        {swapObject.tokenOut}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </>
-                        )}
-                        {success && (
-                          <div className="flex flex-col border-2 w-full border-[#10B981] rounded-xl py-8">
-                            <div className="flex flex-col items-center text-[#10B981]">
-                              <IoIosCheckmarkCircleOutline className="size-10" />
-                              <p className="font-extrabold m-0 text-xl">
-                                Swap Successful
+                        <div className="flex flex-col w-full mx-auto my-5 border-2 border-[#38BDF8] px-4 py-6 rounded-xl">
+                          <div className="flex flex-row-reverse items-center gap-2">
+                            <div>SWAP</div>
+                            <PiSwap className="size-4" />{' '}
+                          </div>
+                          <h3 className="mt-0">Swap Summary</h3>
+                          <div className="flex flex-col border border-[#E5E7F0] p-4 rounded-lg">
+                            <div className="flex justify-between">
+                              <p className="m-0">You Pay</p>
+                              <p className="flex items-center gap-2 m-0">
+                                <span className="text-[#8799A6]">Balance</span>
+                                <span className="font-semibold">0</span>
                               </p>
-                              <p className="text-[#9CA8B4] m-0">{time}</p>
                             </div>
-                            <div className="flex items-center justify-center gap-2 h-10 mt-4">
-                              <div className="flex items-center gap-2">
+
+                            <div className="flex w-full items-center justify-between mt-2 h-20">
+                              <div>
+                                <p className="p-0 m-0 text-3xl">
+                                  {swapObject?.amountIn}
+                                </p>
+                                <p className="p-0 m-0 text-[#8799A6]">
+                                  ${' '}
+                                  {Number(swapObject?.amountIn) *
+                                    Number(swapObject?.tokenInPrice)}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2 text-2xl">
                                 <Image
-                                  src={`/cryptoIcon/${swapObject.tokenIn.toLowerCase()}.svg`}
+                                  src={`/cryptoIcon/${swapObject?.tokenIn?.toLowerCase()}.svg`}
                                   alt="Icon"
                                   width={30}
                                   height={30}
                                   className="my-4"
                                 />
-                                <p className="p-0 m-0 text-2xl">
-                                  {swapObject?.amountIn} {swapObject?.tokenIn}
+                                <span className="font-semibold">
+                                  {swapObject?.tokenIn
+                                    ? swapObject?.tokenIn
+                                    : 'USDT'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex h-10 w-full items-center justify-center">
+                            <IoIosArrowRoundDown className="size-8 text-[#38BDF8]" />
+                          </div>
+                          <div className="flex flex-col border border-[#E5E7F0] p-4 rounded-lg">
+                            <div className="flex justify-between">
+                              <p className="m-0">You Get</p>
+                              <p className="flex items-center gap-2 m-0">
+                                <span className="text-[#8799A6]">Balance</span>{' '}
+                                <span className="font-semibold">0</span>{' '}
+                              </p>
+                            </div>
+
+                            <div className="flex w-full items-center justify-between mt-2 h-20">
+                              <div>
+                                <p className="p-0 m-0 text-3xl">
+                                  {(Number(swapObject?.amountIn) *
+                                    Number(swapObject?.tokenInPrice)) /
+                                    Number(swapObject?.tokenOutPrice)}
+                                </p>
+                                <p className="p-0 m-0 text-[#8799A6]">
+                                  ${' '}
+                                  {Number(swapObject?.amountIn) *
+                                    Number(swapObject?.tokenInPrice)}
                                 </p>
                               </div>
-                              <IoIosArrowRoundDown className="size-8 text-[#38BDF8] -rotate-90" />
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 text-2xl">
                                 <Image
                                   src={`/cryptoIcon/${swapObject.tokenOut.toLowerCase()}.svg`}
                                   alt="Icon"
@@ -701,72 +664,575 @@ export const ChatMessage: FC<Props> = memo(
                                   height={30}
                                   className="my-4"
                                 />
-                                <p className="p-0 m-0 text-2xl">
-                                  650 ${swapObject.tokenOut}
-                                </p>
+                                <span className="font-semibold">
+                                  {swapObject?.tokenOut
+                                    ? swapObject?.tokenOut
+                                    : ''}
+                                </span>
                               </div>
                             </div>
-                            <div className="flex justify-center mb-3 mt-2">
-                              <div className="border w-10/12"></div>
-                            </div>
-
-                            <div className="flex justify-center">
-                              <button className="border border-[#D1D5DB] text-[#9CA8B4] w-10/12 flex gap-2 items-center justify-center">
-                                View Transaction Detail
-                                <GrShare className="size-4" />
-                              </button>
+                          </div>
+                          <PerformSwap payload={MockSwapPayload} />
+                          <div className="flex justify-between my-2">
+                            <p className="m-0 font-bold">
+                              {`1 ${swapObject.tokenIn} ≈ ${swapObject.tokenInPrice} USDT`}
+                            </p>
+                            <div
+                              className="flex justify-between items-center gap-2 cursor-pointer"
+                              onClick={() => setShowDropdown(!showDropdown)}
+                            >
+                              <p className="m-0">Detail</p>
+                              <IoIosArrowDown
+                                className={showDropdown ? 'rotate-180' : ''}
+                              />
                             </div>
                           </div>
-                        )}
-                        {error && (
-                          <div className="flex flex-col border-2 w-full border-[#F43F5E] rounded-xl py-8">
-                            <div className="flex flex-col items-center text-[#F43F5E]">
-                              <IoWarningOutline className="size-10" />
-                              <p className="font-extrabold m-0 text-xl">
-                                Swap failed
-                              </p>
-                              <p className="text-[#9CA8B4] m-0">{time}</p>
+                          {showDropdown && (
+                            <div className="flex justify-between items-center gap-2 text-[#9CA8B4]">
+                              <div className="flex flex-col">
+                                <p className="m-0">Price Impact</p>
+                                <p className="m-0">Minimum Receive</p>
+                              </div>
+                              <div className="flex flex-col font-bold text-black">
+                                <div className="flex justify-between items-center gap-1">
+                                  <IoIosArrowBack />
+                                  <p className="m-0">0.01 %</p>
+                                </div>
+                                <div className="flex justify-between items-center gap-2">
+                                  <p className="m-0">
+                                    {swapObject?.amountOut}{' '}
+                                    {swapObject?.tokenOut}
+                                  </p>
+                                </div>
+                              </div>
                             </div>
-                            <div className="flex justify-center mb-3 mt-2">
-                              <div className="border w-10/12"></div>
-                            </div>
-                            <div className="flex justify-center items-center">
-                              <p className="m-0 w-10/12">
-                                Lorem ipsum dolor sit amet consectetur
-                                adipisicing elit. Voluptatum, labore nulla quia
-                                tempore incidunt voluptas facilis itaque,
-                                possimus dignissimos est impedit blanditiis
-                                perferendis expedita porro alias. Ut saepe
-                                pariatur odit.
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                        {cancelled && (
-                          <div className="flex flex-col border-2 w-full border-[#52749F] rounded-xl py-8">
-                            <div className="flex flex-col items-center text-[#52749F]">
-                              <PiWarningCircleLight className="size-10" />
-                              <p className="font-extrabold m-0 text-xl">
-                                Cancel Swap
-                              </p>
-                              <p className="text-[#9CA8B4] m-0">{time}</p>
-                            </div>
-                            <div className="flex justify-center mb-3 mt-2">
-                              <div className="border w-10/12"></div>
-                            </div>
-                            <div className="flex justify-center items-center">
-                              <p className="m-0 w-10/12">
-                                Lorem ipsum dolor sit amet consectetur
-                                adipisicing elit. Voluptatum, labore nulla quia
-                                tempore incidunt voluptas facilis itaque,
-                                possimus dignissimos est impedit blanditiis
-                                perferendis expedita porro alias. Ut saepe
-                                pariatur odit.
-                              </p>
-                            </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </>
+                    )}
+                    {success && (
+                      <div className="flex flex-col border-2 w-full border-[#10B981] rounded-xl py-8">
+                        <div className="flex flex-col items-center text-[#10B981]">
+                          <IoIosCheckmarkCircleOutline className="size-10" />
+                          <p className="font-extrabold m-0 text-xl">
+                            Swap Successful
+                          </p>
+                          <p className="text-[#9CA8B4] m-0">{time}</p>
+                        </div>
+                        <div className="flex items-center justify-center gap-2 h-10 mt-4">
+                          <div className="flex items-center gap-2">
+                            <Image
+                              src={`/cryptoIcon/${swapObject?.tokenIn?.toLowerCase()}.svg`}
+                              alt="Icon"
+                              width={30}
+                              height={30}
+                              className="my-4"
+                            />
+                            <p className="p-0 m-0 text-2xl">
+                              {swapObject?.amountIn} {swapObject?.tokenIn}
+                            </p>
+                          </div>
+                          <IoIosArrowRoundDown className="size-8 text-[#38BDF8] -rotate-90" />
+                          <div className="flex items-center gap-2">
+                            <Image
+                              src={`/cryptoIcon/${swapObject?.tokenOut?.toLowerCase()}.svg`}
+                              alt="Icon"
+                              width={30}
+                              height={30}
+                              className="my-4"
+                            />
+                            <p className="p-0 m-0 text-2xl">
+                              650 ${swapObject?.tokenOut}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex justify-center mb-3 mt-2">
+                          <div className="border w-10/12"></div>
+                        </div>
+
+                        <div className="flex justify-center">
+                          <button className="border border-[#D1D5DB] text-[#9CA8B4] w-10/12 flex gap-2 items-center justify-center">
+                            View Transaction Detail
+                            <GrShare className="size-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    {error && (
+                      <div className="flex flex-col border-2 w-full border-[#F43F5E] rounded-xl py-8">
+                        <div className="flex flex-col items-center text-[#F43F5E]">
+                          <IoWarningOutline className="size-10" />
+                          <p className="font-extrabold m-0 text-xl">
+                            Swap failed
+                          </p>
+                          <p className="text-[#9CA8B4] m-0">{time}</p>
+                        </div>
+                        <div className="flex justify-center mb-3 mt-2">
+                          <div className="border w-10/12"></div>
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <p className="m-0 w-10/12">
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Voluptatum, labore nulla quia tempore incidunt
+                            voluptas facilis itaque, possimus dignissimos est
+                            impedit blanditiis perferendis expedita porro alias.
+                            Ut saepe pariatur odit.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {cancelled && (
+                      <div className="flex flex-col border-2 w-full border-[#52749F] rounded-xl py-8">
+                        <div className="flex flex-col items-center text-[#52749F]">
+                          <PiWarningCircleLight className="size-10" />
+                          <p className="font-extrabold m-0 text-xl">
+                            Cancel Swap
+                          </p>
+                          <p className="text-[#9CA8B4] m-0">{time}</p>
+                        </div>
+                        <div className="flex justify-center mb-3 mt-2">
+                          <div className="border w-10/12"></div>
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <p className="m-0 w-10/12">
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Voluptatum, labore nulla quia tempore incidunt
+                            voluptas facilis itaque, possimus dignissimos est
+                            impedit blanditiis perferendis expedita porro alias.
+                            Ut saepe pariatur odit.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {messageIndex == messageCount && functionTypes.stake && (
+                  <>
+                    {shouldRenderDiv && (
+                      <div className="flex flex-col border-2 border-[#38BDF8] rounded-xl p-4">
+                        <div className="flex flex-row-reverse items-center gap-2">
+                          <div>STAKE</div>
+                          <PiSwap className="size-4" />{' '}
+                        </div>
+                        <h3 className="my-2">Stake Summary</h3>
+                        <div className="flex flex-col">
+                          <div className="flex justify-between items-center border border-[#E5E7F0] rounded-lg px-2">
+                            <div className="flex items-center gap-2 text-2xl">
+                              <Image
+                                src={`/cryptoIcon/${stakeObject?.token?.toLowerCase()}.svg`}
+                                alt="Icon"
+                                width={30}
+                                height={30}
+                                className="my-4"
+                              />
+                              <span className="font-semibold">
+                                {stakeObject?.token ? stakeObject?.token : ''}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <p className="p-0 m-0 text-[#38BDF8] font-bold">
+                                APR{' '}
+                                {stakeObject?.tokenAPY
+                                  ? stakeObject?.tokenAPY
+                                  : '0'}
+                              </p>
+                              <IoIosArrowDown />
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-4">
+                            <div className="mt-4 font-bold">Amont to Stake</div>
+                            <div className="border-2 bg-[#F5FAFF] border-black rounded-3xl px-6">
+                              <div className="flex w-full items-center justify-between mt-2 h-20">
+                                <div>
+                                  <p className="p-0 m-0 text-3xl">
+                                    {stakeObject?.amount}
+                                  </p>
+                                  <p className="p-0 m-0 text-[#8799A6]">
+                                    ${' '}
+                                    {Number(stakeObject?.amount) *
+                                      Number(stakeObject?.tokenPrice)}
+                                  </p>
+                                </div>
+                                <div className="flex flex-col items-end gap-1">
+                                  <div className="flex gap-2">
+                                    <div className="text-[#8799A6]">
+                                      Balance
+                                    </div>
+                                    <span className="font-bold">
+                                      {stakeObject?.amount}
+                                    </span>
+                                  </div>
+                                  <button className="rounded-lg bg-[#E6E6E6] px-2">
+                                    Max
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-start gap-2 pt-4 pb-2">
+                            <div className="flex flex-col justify-start items-start">
+                              <p className="m-0 text-black font-bold">
+                                You'll Get
+                              </p>
+                              <p className="m-0"></p>
+                            </div>
+                            <div className="flex flex-col items-end font-bold text-black">
+                              <div className="flex justify-between items-center gap-1">
+                                <div className="flex items-center justify-end gap-2 ">
+                                  <Image
+                                    src={`/cryptoIcon/${stakeObject?.token?.toLowerCase()}.svg`}
+                                    alt="Icon"
+                                    width={15}
+                                    height={15}
+                                    className="m-0"
+                                  />
+                                  <div className="font-semibold flex gap-2">
+                                    <div>
+                                      {stakeObject?.amount
+                                        ? stakeObject?.amount
+                                        : 'NEAR'}
+                                    </div>
+                                    <div>
+                                      {stakeObject?.token
+                                        ? stakeObject?.token
+                                        : 'NEAR'}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex justify-between items-center gap-2">
+                                <p className="m-0">1 NEAR ≈ 1.12 stNEAR</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex justify-center mb-3 mt-1">
+                            <div className="border w-full"></div>
+                          </div>
+                          <div className="flex justify-between">
+                            <div>Fee</div>
+                            <div className="text-black">0.8 NEAR</div>
+                          </div>
+                        </div>
+                        <StakeNEAR payload={MockStakePayload} />
+                      </div>
+                    )}
+                    {success && (
+                      <div className="flex flex-col border-2 w-full border-[#10B981] items-center rounded-xl py-8">
+                        <div className="flex flex-col items-center text-[#10B981]">
+                          <IoIosCheckmarkCircleOutline className="size-10" />
+                          <p className="font-extrabold m-0 text-xl">
+                            Stake Successful
+                          </p>
+                          <p className="text-[#9CA8B4] m-0">{time}</p>
+                        </div>
+                        <div className="flex flex-col border border-[#D1D5DB] w-[90%] p-4 mt-6">
+                          {/* <div className="flex items-center gap-2">
+                            <div className="text-xl font-bold">
+                              {transferObject?.recipient?.slice(0, 6) +
+                                '...' +
+                                transferObject?.recipient?.slice(-6)}
+                            </div>
+                            <div>receive</div>
+                          </div> */}
+                          <div className="flex items-center gap-2">
+                            <Image
+                              src={`/cryptoIcon/near.svg`}
+                              alt="Icon"
+                              width={30}
+                              height={30}
+                              className="my-4"
+                            />
+                            <p className="p-0 m-0 text-2xl font-bold">
+                              {stakeObject?.amount} {stakeObject?.token}
+                            </p>
+                          </div>
+                          <div>
+                            Lorem ipsum dolor sit, amet consectetur adipisicing
+                            elit. Doloribus iusto nulla quae minus distinctio
+                            temporibus quidem impedit voluptatem harum sapiente
+                            pariatur veniam architecto, consequatur nemo magni,
+                            ratione facere voluptatibus voluptatum?
+                          </div>
+                        </div>
+                        <div className="flex justify-center mb-3 mt-2">
+                          <div className="border w-10/12"></div>
+                        </div>
+
+                        <div className="flex justify-center w-full">
+                          {accounts && (
+                            <Link
+                              href={`https://nearblocks.io/address/${accounts[0].accountId}`}
+                              className="border border-[#D1D5DB] text-[#9CA8B4] w-[90%] flex gap-2 items-center justify-center py-1"
+                            >
+                              View Transaction Detail
+                              <GrShare className="size-4" />
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {error && (
+                      <div className="flex flex-col border-2 w-full border-[#F43F5E] rounded-xl py-8">
+                        <div className="flex flex-col items-center text-[#F43F5E]">
+                          <IoWarningOutline className="size-10" />
+                          <p className="font-extrabold m-0 text-xl">
+                            Stake failed
+                          </p>
+                          <p className="text-[#9CA8B4] m-0">{time}</p>
+                        </div>
+                        <div className="flex justify-center mb-3 mt-2">
+                          <div className="border w-10/12"></div>
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <p className="m-0 w-10/12">
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Voluptatum, labore nulla quia tempore incidunt
+                            voluptas facilis itaque, possimus dignissimos est
+                            impedit blanditiis perferendis expedita porro alias.
+                            Ut saepe pariatur odit.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {cancelled && (
+                      <div className="flex flex-col border-2 w-full border-[#52749F] rounded-xl py-8">
+                        <div className="flex flex-col items-center text-[#52749F]">
+                          <PiWarningCircleLight className="size-10" />
+                          <p className="font-extrabold m-0 text-xl">
+                            Cancel Stake
+                          </p>
+                          <p className="text-[#9CA8B4] m-0">{time}</p>
+                        </div>
+                        <div className="flex justify-center mb-3 mt-2">
+                          <div className="border w-10/12"></div>
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <p className="m-0 w-10/12">
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Voluptatum, labore nulla quia tempore incidunt
+                            voluptas facilis itaque, possimus dignissimos est
+                            impedit blanditiis perferendis expedita porro alias.
+                            Ut saepe pariatur odit.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {messageIndex == messageCount && functionTypes.unstake && (
+                  <>
+                    {shouldRenderDiv && (
+                      <div className="flex flex-col border-2 border-[#38BDF8] rounded-xl p-4">
+                        <div className="flex flex-row-reverse items-center gap-2">
+                          <div>Unstake</div>
+                          <PiSwap className="size-4" />{' '}
+                        </div>
+                        <h3 className="my-2">Unstake Summary</h3>
+                        <div className="flex flex-col">
+                          <div className="flex justify-between items-center border border-[#E5E7F0] rounded-lg px-2">
+                            <div className="flex items-center gap-2 text-2xl">
+                              <Image
+                                src={`/cryptoIcon/${unStakeObject?.token?.toLowerCase()}.svg`}
+                                alt="Icon"
+                                width={30}
+                                height={30}
+                                className="my-4"
+                              />
+                              <span className="font-semibold">
+                                {stakeObject?.token
+                                  ? stakeObject?.token
+                                  : 'NEAR'}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <p className="p-0 m-0 text-[#38BDF8] font-bold">
+                                APR 8.88%
+                              </p>
+                              <IoIosArrowDown />
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-4">
+                            <div className="mt-4 font-bold">
+                              Amont to Unstake
+                            </div>
+                            <div className="border-2 bg-[#F5FAFF] border-black rounded-3xl px-6">
+                              <div className="flex w-full items-center justify-between mt-2 h-20">
+                                <div>
+                                  <p className="p-0 m-0 text-3xl">
+                                    {stakeObject?.amount
+                                      ? stakeObject?.amount
+                                      : 'All'}
+                                  </p>
+                                  {/* <p className="p-0 m-0 text-[#8799A6]">
+                                    $ {stakeObject?.amount}
+                                  </p> */}
+                                </div>
+                                {/* <div className="flex flex-col items-end gap-1">
+                                  <div className="flex gap-2">
+                                    <div className="text-[#8799A6]">
+                                      Balance
+                                    </div>
+                                    <span className="font-bold">
+                                      {stakeObject?.amount}
+                                    </span>
+                                  </div>
+                                  <button className="rounded-lg bg-[#E6E6E6] px-2">
+                                    Max
+                                  </button>
+                                </div> */}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-start gap-2 pt-4 pb-2">
+                            {/* <div className="flex flex-col justify-start items-start">
+                              <p className="m-0 text-black font-bold">
+                                You'll Get
+                              </p>
+                              <p className="m-0"></p>
+                            </div> */}
+                            {/* <div className="flex flex-col items-end font-bold text-black">
+                              <div className="flex justify-between items-center gap-1">
+                                <div className="flex items-center justify-end gap-2 ">
+                                  <Image
+                                    src={`/cryptoIcon/${stakeObject?.token?.toLowerCase()}.svg`}
+                                    alt="Icon"
+                                    width={15}
+                                    height={15}
+                                    className="m-0"
+                                  />
+                                  <div className="font-semibold flex gap-2">
+                                    <div>
+                                      {stakeObject?.amount
+                                        ? stakeObject?.amount
+                                        : 'NEAR'}
+                                    </div>
+                                    <div>
+                                      {stakeObject?.token
+                                        ? stakeObject?.token
+                                        : 'NEAR'}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex justify-between items-center gap-2">
+                                <p className="m-0">1 NEAR ≈ 1.12 stNEAR</p>
+                              </div>
+                            </div> */}
+                          </div>
+                          <div className="flex justify-center mb-3 mt-1">
+                            <div className="border w-full"></div>
+                          </div>
+                          <div className="flex justify-between">
+                            <div>Fee</div>
+                            <div className="text-black">0.08 NEAR</div>
+                          </div>
+                        </div>
+                        <UnstakeNEAR payload={MockUnstakePayload} />
+                      </div>
+                    )}
+                    {success && (
+                      <div className="flex flex-col border-2 w-full border-[#10B981] items-center rounded-xl py-8">
+                        <div className="flex flex-col items-center text-[#10B981]">
+                          <IoIosCheckmarkCircleOutline className="size-10" />
+                          <p className="font-extrabold m-0 text-xl">
+                            Unstake Successful
+                          </p>
+                          <p className="text-[#9CA8B4] m-0">{time}</p>
+                        </div>
+                        <div className="flex flex-col border border-[#D1D5DB] w-[90%] p-4 mt-6">
+                          {/* <div className="flex items-center gap-2">
+                            <div className="text-xl font-bold">
+                              {transferObject?.recipient?.slice(0, 6) +
+                                '...' +
+                                transferObject?.recipient?.slice(-6)}
+                            </div>
+                            <div>receive</div>
+                          </div> */}
+                          <div className="flex items-center gap-2">
+                            <Image
+                              src={`/cryptoIcon/near.svg`}
+                              alt="Icon"
+                              width={30}
+                              height={30}
+                              className="my-4"
+                            />
+                            <p className="p-0 m-0 text-2xl font-bold">
+                              {/* {stakeObject?.amount} {stakeObject?.token} */}
+                              All
+                            </p>
+                          </div>
+                          <div>
+                            Lorem ipsum dolor sit, amet consectetur adipisicing
+                            elit. Doloribus iusto nulla quae minus distinctio
+                            temporibus quidem impedit voluptatem harum sapiente
+                            pariatur veniam architecto, consequatur nemo magni,
+                            ratione facere voluptatibus voluptatum?
+                          </div>
+                        </div>
+                        <div className="flex justify-center mb-3 mt-2">
+                          <div className="border w-10/12"></div>
+                        </div>
+
+                        <div className="flex justify-center w-full">
+                          {accounts && (
+                            <Link
+                              href={`https://nearblocks.io/address/${accounts[0].accountId}`}
+                              className="border border-[#D1D5DB] text-[#9CA8B4] w-[90%] flex gap-2 items-center justify-center py-1"
+                            >
+                              View Transaction Detail
+                              <GrShare className="size-4" />
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {error && (
+                      <div className="flex flex-col border-2 w-full border-[#F43F5E] rounded-xl py-8">
+                        <div className="flex flex-col items-center text-[#F43F5E]">
+                          <IoWarningOutline className="size-10" />
+                          <p className="font-extrabold m-0 text-xl">
+                            Unstake failed
+                          </p>
+                          <p className="text-[#9CA8B4] m-0">{time}</p>
+                        </div>
+                        <div className="flex justify-center mb-3 mt-2">
+                          <div className="border w-10/12"></div>
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <p className="m-0 w-10/12">
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Voluptatum, labore nulla quia tempore incidunt
+                            voluptas facilis itaque, possimus dignissimos est
+                            impedit blanditiis perferendis expedita porro alias.
+                            Ut saepe pariatur odit.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {cancelled && (
+                      <div className="flex flex-col border-2 w-full border-[#52749F] rounded-xl py-8">
+                        <div className="flex flex-col items-center text-[#52749F]">
+                          <PiWarningCircleLight className="size-10" />
+                          <p className="font-extrabold m-0 text-xl">
+                            Cancel Unstake
+                          </p>
+                          <p className="text-[#9CA8B4] m-0">{time}</p>
+                        </div>
+                        <div className="flex justify-center mb-3 mt-2">
+                          <div className="border w-10/12"></div>
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <p className="m-0 w-10/12">
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Voluptatum, labore nulla quia tempore incidunt
+                            voluptas facilis itaque, possimus dignissimos est
+                            impedit blanditiis perferendis expedita porro alias.
+                            Ut saepe pariatur odit.
+                          </p>
+                        </div>
+                      </div>
                     )}
                   </>
                 )}
