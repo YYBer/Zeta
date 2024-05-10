@@ -6,7 +6,7 @@ import { JsonOutputFunctionsParser } from '@langchain/core/output_parsers/openai
 import { NextResponse } from 'next/server'
 import { HumanMessage, AIMessage, ToolMessage } from '@langchain/core/messages'
 import { fetchCoinData } from './price'
-import { getBalance } from './balance'
+//import { getBalance } from './balance'
 import {
   SystemMessagePromptTemplate,
   ChatPromptTemplate,
@@ -51,14 +51,13 @@ function createStreamFromText(input: string): ReadableStream<string> {
 export async function POST(req: Request) {
   const body = await req.json()
   const messages: Message[] = body.messages
-  const bodyprompt: string = body.prompt
   const address: string = body.address
 
   const inputText = messages[messages.length - 1].content
   console.log('text', inputText)
   console.log('address', address)
-  const checkBalance = getBalance(address, 'USDC')
-  console.log('getBalance', checkBalance)
+  //const checkBalance = getBalance(address, 'USDC')
+  //console.log('getBalance', checkBalance)
 
   const transferSchema = z.object({
     functionType: z
@@ -70,15 +69,15 @@ export async function POST(req: Request) {
       .positive()
       .nullable()
       .describe('The amount to be transferred'),
-    recipient: z.string().describe("The recipient's wallet id")
+    recipient: z.string().describe("The receiver")
   })
 
   const swapSchema = z.object({
     functionType: z
       .string()
       .describe("The function type : swap, can only be 'swap'"),
-    tokenIn: z.string().describe('The token symbol you want to swap'),
-    tokenOut: z.string().describe('The token symbol you want to receive'),
+    tokenIn: z.string().describe('The token symbol you want to swap, or use to sell for another token'),
+    tokenOut: z.string().describe('The token symbol you want to receive or you want to buy'),
     amountIn: z
       .number()
       .positive()
@@ -96,6 +95,17 @@ export async function POST(req: Request) {
       .number()
       .nullable()
       .describe('The fee amount for the swap, fixed at 100')
+  })
+  const stakeSchema = z.object({
+    functionType: z
+      .string()
+      .describe("The function type : stake, can only be 'stake'"),
+    token: z.string().describe('The token symbol to be staked'),
+    amount: z
+      .number()
+      .positive()
+      .nullable()
+      .describe('The amount you want to stake'),
   })
 
   const checkSchema = z.object({
@@ -149,7 +159,12 @@ export async function POST(req: Request) {
         name: 'check',
         description: 'Check token price or balance',
         parameters: zodToJsonSchema(checkSchema)
-      }
+      },
+      {
+        name: 'stake',
+        description: 'stake the token and the amounts',
+        parameters: zodToJsonSchema(stakeSchema)
+      },
     ]
   })
   const instruction = `You are a crypto wallet assistant, and also an intent resolver. 
@@ -199,7 +214,6 @@ export async function POST(req: Request) {
 
   if (response.response_metadata.finish_reason === 'stop') {
     // text output
-    console.log('aaaa')
     const stream = createStreamFromText(String(response.content))
 
     return new NextResponse(stream, {
