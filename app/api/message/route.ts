@@ -58,6 +58,77 @@ export async function POST(req: Request) {
   console.log('address', address)
   //const checkBalance = getBalance(address, 'USDC')
   //console.log('getBalance', checkBalance)
+  const tokenDictionary: { [key: string]: string } = {
+    "ETH": "Ethereum",
+    "Ethereum": "Ethereum",
+    "NEAR": "NEAR",
+    "near": "NEAR",
+    "eth": "Ethereum",
+    "bitcoin": "Bitcoin",
+    "Bitcoin": "Bitcoin",
+  };
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch(
+        'https://validators.narwallets.com/metrics'
+      )
+      if (!response.ok) {
+        throw new Error('Network response was not ok')
+      }
+      // console.log('response', response)
+      // const jsonData = await response.json();
+      // setData(jsonData);
+      const reader = response?.body?.getReader()
+      const stream = new ReadableStream({
+        start(controller) {
+          const process = async () => {
+            try {
+              const { done, value } = await reader?.read()
+              if (done) {
+                controller.close()
+                return
+              }
+              controller.enqueue(value)
+              await process()
+            } catch (error) {
+              controller.error(error)
+            }
+          }
+          process()
+        }
+      })
+      // console.log('stream', stream)
+
+      const text = await new Response(stream).text()
+      // console.log('text', text)
+      
+      const parseData = (text: string) => {
+        const pattern =
+          /metapool_(st_near_price|near_usd_price|st_near_30_day_apy|st_aur_30_day_apy|st_aur_price|eth_usd_price)\s([0-9.]+)/g
+        const matches = text.matchAll(pattern)
+        const parsedData = {}
+
+        for (const match of matches) {
+          const key = match[1]
+          const value = parseFloat(match[2]).toFixed(2)
+          parsedData[key] = value
+        }
+
+        console.log('parsedData', parsedData)
+
+        return parsedData
+      }
+
+      parseData(text)
+      // const jsonData = JSON.parse(text)
+      // console.log('jsonData', jsonData)
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const parsedData = fetchData();
 
   const transferSchema = z.object({
     functionType: z
@@ -106,6 +177,17 @@ export async function POST(req: Request) {
       .positive()
       .nullable()
       .describe('The amount you want to stake'),
+  })
+  const unStakeSchema = z.object({
+    functionType: z
+      .string()
+      .describe("The function type : unstake, can only be 'unstake'"),
+    token: z.string().describe('The token symbol to unstake'),
+    amount: z
+      .number()
+      .positive()
+      .nullable()
+      .describe('The amount you want to unstake'),
   })
 
   const checkSchema = z.object({
@@ -164,6 +246,11 @@ export async function POST(req: Request) {
         name: 'stake',
         description: 'stake the token and the amounts',
         parameters: zodToJsonSchema(stakeSchema)
+      },
+      {
+        name: 'unstake',
+        description: 'unstake the token and the amounts',
+        parameters: zodToJsonSchema(unStakeSchema)
       },
     ]
   })
@@ -231,7 +318,7 @@ export async function POST(req: Request) {
       // for check function
       const ticker: string = transferDetail.token
       try {
-        const data = await fetchCoinData(ticker)
+        const data = await fetchCoinData(tokenDictionary[ticker])
         const tokenName = Object.keys(data)[0]
         const tokenPrice = data[tokenName].usd
         const replyMessage: string = `The current price of ${tokenName} is ${tokenPrice} USD.`
@@ -243,6 +330,61 @@ export async function POST(req: Request) {
             'Transfer-Encoding': 'chunked'
           }
         })
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    if (transferDetail["functionType"] === "swap") {
+      // for check function
+      const tokenIn: string = transferDetail.tokenIn;
+      const tokenOut: string = transferDetail.tokenOut;
+
+      try {
+        if (tokenIn === "USDC" || tokenIn === "USDT") {
+          transferDetail.tokenInPrice = 1;
+        }
+        else{
+          const inData = await fetchCoinData(tokenDictionary[tokenIn]);
+          const tokenName = Object.keys(inData)[0];
+          const tokenInPrice = inData[tokenName].usd;
+          transferDetail.tokenInPrice = tokenInPrice;
+        }
+
+        if (tokenOut === "USDC" || tokenOut === "USDT") {
+          transferDetail.tokenOutPrice = 1;
+        }
+        else{
+          const OutData = await fetchCoinData(tokenDictionary[tokenOut]);
+          const tokenName = Object.keys(OutData)[0];
+          const tokenOutPrice = OutData[tokenName].usd;
+          transferDetail.tokenOutPrice = tokenOutPrice;
+        }
+        
+        const replyMessage: string = `The current price of ${tokenName} is ${tokenPrice} USD.`
+        const stream = createStreamFromText(replyMessage)
+
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    if (transferDetail["functionType"] === "stake") {
+      // for check function
+      const token: string = transferDetail.token;
+      
+      try {
+        if (token === "USDC" || token === "USDT") {
+          transferDetail.tokenPrice = 1;
+        }
+        else{
+          const inData = await fetchCoinData(tokenDictionary[token]);
+          const tokenName = Object.keys(inData)[0];
+          const tokenInPrice = inData[tokenName].usd;
+          transferDetail.tokenPrice = tokenInPrice;
+          transferDetail.tokenAPY = "8.92";
+        }
+
       } catch (error) {
         console.error(error)
       }
