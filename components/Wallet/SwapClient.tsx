@@ -52,11 +52,11 @@ interface REF_Contract extends ContractType {
 
 export function PerformSwap({ payload }: { payload: SwapPayload }) {
   const { selector, modal, accounts } = useWalletSelector()
-  // const [loading, setLoading] = useState(false);
-  // const [error, setError] = useState<string | null>(null);
-  // const [success, setSuccess] = useState(false);
-  // const [confirmSwap, setConfirmSwap] = useState(false);
-  // const [cancelled, setCancelled] = useState(false);
+  // const [loading, setLoading] = useState(false)
+  // const [error, setError] = useState<string | null>(null)
+  // const [success, setSuccess] = useState(false)
+  // const [confirmSwap, setConfirmSwap] = useState(false)
+  // const [cancelled, setCancelled] = useState(false)
   const {
     setSuccess,
     error,
@@ -101,23 +101,13 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
       }
       console.log(`Account ID: ${accountId}`)
 
-      const tokenInBalance = getBalance(accountId, payload.tokenIn)
-      if (parseFloat(await tokenInBalance) < parseFloat(payload.amountIn)) {
-        throw new Error('Insufficient balance')
-        console.log('Insufficient balance')
-      }
-
       const tokenIn = payload.tokenIn
       const tokenOut = payload.tokenOut
       const amountIn = payload.amountIn
-      // const tokenInContractId = TOKEN_LIST[tokenIn];
-      // const tokenOutContractId = TOKEN_LIST[tokenOut];
       const tokenInContractId = TOKEN_TEST_LIST[tokenIn]
       const tokenOutContractId = TOKEN_TEST_LIST[tokenOut]
-      // const refContractId = "v2.ref-finance.near"
       const refContractId = 'ref-finance-101.testnet'
       let connectionConfig = getConnectionConfig('testnet')
-      // const nearConnection = await connect(connectionConfig);
       const nearConnection = await connect(connectionConfig)
       const userAccount = await nearConnection.account(accountId)
 
@@ -150,6 +140,7 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
       // const unit_convert = 10**decimals
       // console.log(`Decimals of ${tokenIn} contract: ${unit_convert}`);
 
+      console.log('accountId', accountId)
       // get storage balance of user in tokenIn contract
       const storageBalanceOfTokenIn = await tokenInContract.storage_balance_of({
         account_id: accountId
@@ -268,6 +259,7 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
         AccountId: accountId
       })
       console.log(JSON.stringify(swapTx, null, 2))
+
       const i = swapTx.length
       console.log('swapTx length: ', i)
       const receiverId = swapTx[i - 1].receiverId
@@ -279,7 +271,6 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
 
       // Check if functionCall has all necessary properties
       if (receiverId && methodName && args && gas && amount) {
-        console.log('get all functionCall')
         // Create the function call action
         const swapToken: FunctionCallAction = {
           type: 'FunctionCall',
@@ -302,6 +293,7 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
 
       if (tx.length > 0) {
         await wallet.signAndSendTransactions({ transactions: tx })
+        console.log('here!')
       }
       setSuccess(true)
       // TODO: implement the result of the swap

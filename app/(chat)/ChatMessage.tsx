@@ -50,7 +50,6 @@ import { PiSwap } from 'react-icons/pi'
 import { RiArrowGoForwardFill } from 'react-icons/ri'
 import { StakeNEAR } from '@/components/Wallet/StakeNearClient'
 import { UnstakeNEAR } from '@/components/Wallet/UnstakeNearClient'
-import { stake } from 'near-api-js/lib/transaction'
 
 interface Props {
   message: Message
@@ -101,6 +100,7 @@ export const ChatMessage: FC<Props> = memo(
     const [showSwap, setShowSwap] = useState(false) // New state to control swap widget visibility
     const [shouldRenderDiv, setShouldRenderDiv] = useState(true)
     const [showDropdown, setShowDropdown] = useState(false)
+    const [payloads, setPayloads] = useState({})
 
     const toggleEditing = () => {
       setIsEditing(!isEditing)
@@ -248,6 +248,19 @@ export const ChatMessage: FC<Props> = memo(
       setShouldRenderDiv(!success && !error && !cancelled)
     }, [success, error, cancelled])
 
+    // console.log('content', message?.content, message.content.includes('{'))
+    // console.log('swapObject', swapObject)
+
+    // useEffect(() => {
+    //   let payload = {
+    //     tokenIn: swapObject?.tokenIn?.toUpperCase(),
+    //     tokenOut: swapObject?.tokenOut?.toUpperCase(),
+    //     amountIn: swapObject?.amountIn?.toString(),
+    //     slippageTolerance: 0.01
+    //   }
+    //   setPayloads(payload)
+    // }, [functionTypes && functionTypes.swap])
+
     return (
       <div
         className="group px-4 bg-white text-gray-800"
@@ -364,7 +377,7 @@ export const ChatMessage: FC<Props> = memo(
                   )}
                 </div>
 
-                {message.content.includes('{') ? (
+                {!message.content.includes('{') ? (
                   <MemoizedReactMarkdown
                     className="prose"
                     remarkPlugins={[remarkGfm, remarkMath]}
@@ -522,7 +535,7 @@ export const ChatMessage: FC<Props> = memo(
                         <div className="flex justify-center w-full">
                           {accounts && (
                             <Link
-                              href={`https://nearblocks.io/address/${accounts[0].accountId}`}
+                              href={`https://nearblocks.io/address/${accounts[0]?.accountId}`}
                               className="border border-[#D1D5DB] text-[#9CA8B4] w-[90%] flex gap-2 items-center justify-center py-1"
                             >
                               View Transaction Detail
@@ -672,7 +685,15 @@ export const ChatMessage: FC<Props> = memo(
                               </div>
                             </div>
                           </div>
-                          <PerformSwap payload={MockSwapPayload} />
+                          <PerformSwap
+                            payload={MockSwapPayload}
+                            // payload={{
+                            //   tokenIn: swapObject?.tokenIn.toUpperCase(),
+                            //   tokenOut: swapObject?.tokenOut.toUpperCase(),
+                            //   amountIn: String(swapObject?.amountIn),
+                            //   slippageTolerance: 0.01
+                            // }}
+                          />
                           <div className="flex justify-between my-2">
                             <p className="m-0 font-bold">
                               {`1 ${swapObject.tokenIn} ≈ ${swapObject.tokenInPrice} USDT`}
@@ -742,7 +763,12 @@ export const ChatMessage: FC<Props> = memo(
                               className="my-4"
                             />
                             <p className="p-0 m-0 text-2xl">
-                              650 ${swapObject?.tokenOut}
+                              {(
+                                (Number(swapObject?.amountIn) *
+                                  Number(swapObject?.tokenInPrice)) /
+                                Number(swapObject?.tokenOutPrice)
+                              ).toFixed(6)}{' '}
+                              ${swapObject?.tokenOut}
                             </p>
                           </div>
                         </div>
@@ -891,7 +917,7 @@ export const ChatMessage: FC<Props> = memo(
                                     <div>
                                       {stakeObject?.amount
                                         ? stakeObject?.amount
-                                        : 'NEAR'}
+                                        : ''}
                                     </div>
                                     <div>
                                       {stakeObject?.token
@@ -911,7 +937,7 @@ export const ChatMessage: FC<Props> = memo(
                           </div>
                           <div className="flex justify-between">
                             <div>Fee</div>
-                            <div className="text-black">0.8 NEAR</div>
+                            <div className="text-black">0.01 NEAR</div>
                           </div>
                         </div>
                         <StakeNEAR payload={MockStakePayload} />
@@ -962,7 +988,7 @@ export const ChatMessage: FC<Props> = memo(
                         <div className="flex justify-center w-full">
                           {accounts && (
                             <Link
-                              href={`https://nearblocks.io/address/${accounts[0].accountId}`}
+                              href={`https://nearblocks.io/address/${accounts[0]?.accountId}`}
                               className="border border-[#D1D5DB] text-[#9CA8B4] w-[90%] flex gap-2 items-center justify-center py-1"
                             >
                               View Transaction Detail
@@ -1034,7 +1060,7 @@ export const ChatMessage: FC<Props> = memo(
                           <div className="flex justify-between items-center border border-[#E5E7F0] rounded-lg px-2">
                             <div className="flex items-center gap-2 text-2xl">
                               <Image
-                                src={`/cryptoIcon/${unStakeObject?.token?.toLowerCase()}.svg`}
+                                src={`/cryptoIcon/near.svg`}
                                 alt="Icon"
                                 width={30}
                                 height={30}
@@ -1046,12 +1072,12 @@ export const ChatMessage: FC<Props> = memo(
                                   : 'NEAR'}
                               </span>
                             </div>
-                            <div className="flex items-center gap-2">
+                            {/* <div className="flex items-center gap-2">
                               <p className="p-0 m-0 text-[#38BDF8] font-bold">
                                 APR 8.88%
                               </p>
                               <IoIosArrowDown />
-                            </div>
+                            </div> */}
                           </div>
                           <div className="flex flex-col gap-4">
                             <div className="mt-4 font-bold">
@@ -1126,7 +1152,7 @@ export const ChatMessage: FC<Props> = memo(
                           </div>
                           <div className="flex justify-between">
                             <div>Fee</div>
-                            <div className="text-black">0.08 NEAR</div>
+                            <div className="text-black">0.01 NEAR</div>
                           </div>
                         </div>
                         <UnstakeNEAR payload={MockUnstakePayload} />
@@ -1178,7 +1204,7 @@ export const ChatMessage: FC<Props> = memo(
                         <div className="flex justify-center w-full">
                           {accounts && (
                             <Link
-                              href={`https://nearblocks.io/address/${accounts[0].accountId}`}
+                              href={`https://nearblocks.io/address/${accounts[0]?.accountId}`}
                               className="border border-[#D1D5DB] text-[#9CA8B4] w-[90%] flex gap-2 items-center justify-center py-1"
                             >
                               View Transaction Detail

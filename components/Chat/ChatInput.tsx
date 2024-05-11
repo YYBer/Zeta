@@ -79,7 +79,8 @@ export const ChatInput: FC<Props> = ({
     setCancelled,
     setConfirmTransfer,
     setConfirmStake,
-    setConfirmSwap
+    setConfirmSwap,
+    setConfirmUnstake
   } = useTransferTokenStore()
   // const [value, setValue] = useState('i am the most handsome man');
   // const [html, setHtml] = useState();
@@ -120,11 +121,11 @@ export const ChatInput: FC<Props> = ({
     },
     {
       heading: 'Stake Near',
-      message: `<p> I want to stake <span style="color: #0040ff">0.01</span> <span style="color: #0040ff">NEAR</span></p>`
+      message: `<p> I want to stake <span style="color: #0040ff"> 1.5 </span> <span style="color: #0040ff">NEAR</span></p>`
     },
     {
-      heading: 'Exchange NEAR',
-      message: `<p> I would like to swap <span style="color: #0040ff">0.01 </span><span style="color: #0040ff">NEAR </span>to <span style="color: #0040ff">USDC</span>`
+      heading: 'Exchange ETH',
+      message: `<p> I would like to swap <span style="color: #0040ff">0.01 </span><span style="color: #0040ff">USDC </span>to <span style="color: #0040ff">ETH</span>`
     },
     {
       heading: 'UnStake Near',
@@ -174,6 +175,7 @@ export const ChatInput: FC<Props> = ({
     setConfirmTransfer(false)
     setConfirmSwap(false)
     setConfirmStake(false)
+    setConfirmUnstake(false)
 
     if (messageIsStreaming) {
       return
