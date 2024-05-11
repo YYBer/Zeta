@@ -873,7 +873,7 @@ export const ChatMessage: FC<Props> = memo(
                           <div className="flex justify-between items-start gap-2 pt-4 pb-2">
                             <div className="flex flex-col justify-start items-start">
                               <p className="m-0 text-black font-bold">
-                                You'll Get
+                                You&apos;ll Get
                               </p>
                               <p className="m-0"></p>
                             </div>

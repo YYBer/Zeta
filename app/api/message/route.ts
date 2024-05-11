@@ -59,20 +59,18 @@ export async function POST(req: Request) {
   //const checkBalance = getBalance(address, 'USDC')
   //console.log('getBalance', checkBalance)
   const tokenDictionary: { [key: string]: string } = {
-    "ETH": "Ethereum",
-    "Ethereum": "Ethereum",
-    "NEAR": "NEAR",
-    "near": "NEAR",
-    "eth": "Ethereum",
-    "bitcoin": "Bitcoin",
-    "Bitcoin": "Bitcoin",
-  };
+    ETH: 'Ethereum',
+    Ethereum: 'Ethereum',
+    NEAR: 'NEAR',
+    near: 'NEAR',
+    eth: 'Ethereum',
+    bitcoin: 'Bitcoin',
+    Bitcoin: 'Bitcoin'
+  }
 
   const fetchData = async () => {
     try {
-      const response = await fetch(
-        'https://validators.narwallets.com/metrics'
-      )
+      const response = await fetch('https://validators.narwallets.com/metrics')
       if (!response.ok) {
         throw new Error('Network response was not ok')
       }
@@ -84,7 +82,8 @@ export async function POST(req: Request) {
         start(controller) {
           const process = async () => {
             try {
-              const { done, value } = await reader?.read()
+              const result = (await reader?.read()) ?? { done: true } // Provide a default value
+              const { done, value } = result
               if (done) {
                 controller.close()
                 return
@@ -102,12 +101,12 @@ export async function POST(req: Request) {
 
       const text = await new Response(stream).text()
       // console.log('text', text)
-      
+
       const parseData = (text: string) => {
         const pattern =
           /metapool_(st_near_price|near_usd_price|st_near_30_day_apy|st_aur_30_day_apy|st_aur_price|eth_usd_price)\s([0-9.]+)/g
-        const matches = text.matchAll(pattern)
-        const parsedData = {}
+        const matches = Array.from(text.matchAll(pattern))
+        const parsedData: { [key: string]: string } = {} // Define type explicitly
 
         for (const match of matches) {
           const key = match[1]
@@ -124,11 +123,11 @@ export async function POST(req: Request) {
       // const jsonData = JSON.parse(text)
       // console.log('jsonData', jsonData)
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
   }
 
-  const parsedData = fetchData();
+  const parsedData = fetchData()
 
   const transferSchema = z.object({
     functionType: z
@@ -140,15 +139,21 @@ export async function POST(req: Request) {
       .positive()
       .nullable()
       .describe('The amount to be transferred'),
-    recipient: z.string().describe("The receiver")
+    recipient: z.string().describe('The receiver')
   })
 
   const swapSchema = z.object({
     functionType: z
       .string()
       .describe("The function type : swap, can only be 'swap'"),
-    tokenIn: z.string().describe('The token symbol you want to swap, or use to sell for another token'),
-    tokenOut: z.string().describe('The token symbol you want to receive or you want to buy'),
+    tokenIn: z
+      .string()
+      .describe(
+        'The token symbol you want to swap, or use to sell for another token'
+      ),
+    tokenOut: z
+      .string()
+      .describe('The token symbol you want to receive or you want to buy'),
     amountIn: z
       .number()
       .positive()
@@ -176,7 +181,7 @@ export async function POST(req: Request) {
       .number()
       .positive()
       .nullable()
-      .describe('The amount you want to stake'),
+      .describe('The amount you want to stake')
   })
   const unStakeSchema = z.object({
     functionType: z
@@ -187,7 +192,7 @@ export async function POST(req: Request) {
       .number()
       .positive()
       .nullable()
-      .describe('The amount you want to unstake'),
+      .describe('The amount you want to unstake')
   })
 
   const checkSchema = z.object({
@@ -251,7 +256,7 @@ export async function POST(req: Request) {
         name: 'unstake',
         description: 'unstake the token and the amounts',
         parameters: zodToJsonSchema(unStakeSchema)
-      },
+      }
     ]
   })
   const instruction = `You are a crypto wallet assistant, and also an intent resolver. 
@@ -335,56 +340,52 @@ export async function POST(req: Request) {
       }
     }
 
-    if (transferDetail["functionType"] === "swap") {
+    if (transferDetail['functionType'] === 'swap') {
       // for check function
-      const tokenIn: string = transferDetail.tokenIn;
-      const tokenOut: string = transferDetail.tokenOut;
+      const tokenIn: string = transferDetail.tokenIn
+      const tokenOut: string = transferDetail.tokenOut
+      let tokenName, tokenPrice
 
       try {
-        if (tokenIn === "USDC" || tokenIn === "USDT") {
-          transferDetail.tokenInPrice = 1;
-        }
-        else{
-          const inData = await fetchCoinData(tokenDictionary[tokenIn]);
-          const tokenName = Object.keys(inData)[0];
-          const tokenInPrice = inData[tokenName].usd;
-          transferDetail.tokenInPrice = tokenInPrice;
+        if (tokenIn === 'USDC' || tokenIn === 'USDT') {
+          transferDetail.tokenInPrice = 1
+        } else {
+          const inData = await fetchCoinData(tokenDictionary[tokenIn])
+          tokenName = Object.keys(inData)[0]
+          const tokenInPrice = inData[tokenName].usd
+          transferDetail.tokenInPrice = tokenInPrice
         }
 
-        if (tokenOut === "USDC" || tokenOut === "USDT") {
-          transferDetail.tokenOutPrice = 1;
+        if (tokenOut === 'USDC' || tokenOut === 'USDT') {
+          transferDetail.tokenOutPrice = 1
+        } else {
+          const OutData = await fetchCoinData(tokenDictionary[tokenOut])
+          tokenName = Object.keys(OutData)[0]
+          const tokenOutPrice = OutData[tokenName].usd
+          transferDetail.tokenOutPrice = tokenOutPrice
         }
-        else{
-          const OutData = await fetchCoinData(tokenDictionary[tokenOut]);
-          const tokenName = Object.keys(OutData)[0];
-          const tokenOutPrice = OutData[tokenName].usd;
-          transferDetail.tokenOutPrice = tokenOutPrice;
-        }
-        
+
         const replyMessage: string = `The current price of ${tokenName} is ${tokenPrice} USD.`
         const stream = createStreamFromText(replyMessage)
-
       } catch (error) {
         console.error(error)
       }
     }
 
-    if (transferDetail["functionType"] === "stake") {
+    if (transferDetail['functionType'] === 'stake') {
       // for check function
-      const token: string = transferDetail.token;
-      
-      try {
-        if (token === "USDC" || token === "USDT") {
-          transferDetail.tokenPrice = 1;
-        }
-        else{
-          const inData = await fetchCoinData(tokenDictionary[token]);
-          const tokenName = Object.keys(inData)[0];
-          const tokenInPrice = inData[tokenName].usd;
-          transferDetail.tokenPrice = tokenInPrice;
-          transferDetail.tokenAPY = "8.92";
-        }
+      const token: string = transferDetail.token
 
+      try {
+        if (token === 'USDC' || token === 'USDT') {
+          transferDetail.tokenPrice = 1
+        } else {
+          const inData = await fetchCoinData(tokenDictionary[token])
+          const tokenName = Object.keys(inData)[0]
+          const tokenInPrice = inData[tokenName].usd
+          transferDetail.tokenPrice = tokenInPrice
+          transferDetail.tokenAPY = '8.92'
+        }
       } catch (error) {
         console.error(error)
       }
