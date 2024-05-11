@@ -89,7 +89,7 @@ export const TOKEN_TEST_LIST: { [key: string]: string } = {
 export const THIRTY_TGAS = '30000000000000'
 
 export const MockTransferPayload: TransferPayload = {
-  userId: '9b5adfd2530b9c2657b088cfc8755e3c25a6cef7fb9b44c659d12b2bd30a3f62',
+  userId: 'b32d7e4ea30cdeb78a6b9aa754892877ae64c54ec75e812c04cf134e7ad73241',
   receiverId:
     'c7413c9c61fd11557efbfae8a063daebfa5774432aca543833d05bcd7050d9e6',
   amount: '0.01',
