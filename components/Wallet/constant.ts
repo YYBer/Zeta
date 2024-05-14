@@ -68,7 +68,7 @@ export const getConnectionConfig = (networkId: string) => {
 
 export const TOKEN_LIST: { [key: string]: string } = {
   ETH: 'aurora',
-  wNEAR: 'wrap.near',
+  NEAR: 'wrap.near',
   AURORA: 'aaaaaa20d9e0e2461697782ef11675f668207961.factory.bridge.near',
   USDC: '17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1',
   USDT: 'dac17f958d2ee523a2206206994597c13d831ec7.factory.bridge.near',
@@ -98,8 +98,8 @@ export const MockTransferPayload: TransferPayload = {
 
 export const MockSwapPayload: SwapPayload = {
   tokenIn: 'USDC', // symbol
-  tokenOut: 'ETH', // symbol
-  amountIn: '0.1',
+  tokenOut: 'NEAR', // symbol
+  amountIn: '3',
   slippageTolerance: 0.01
 }
 

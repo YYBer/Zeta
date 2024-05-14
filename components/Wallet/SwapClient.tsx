@@ -87,7 +87,7 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
   }
 
   async function swap(payload: SwapPayload) {
-    init_env('testnet')
+    // init_env('testnet')
 
     setLoading(true)
     setError(null)
@@ -104,10 +104,11 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
       const tokenIn = payload.tokenIn
       const tokenOut = payload.tokenOut
       const amountIn = payload.amountIn
-      const tokenInContractId = TOKEN_TEST_LIST[tokenIn]
-      const tokenOutContractId = TOKEN_TEST_LIST[tokenOut]
-      const refContractId = 'ref-finance-101.testnet'
-      let connectionConfig = getConnectionConfig('testnet')
+      const tokenInContractId = TOKEN_LIST[tokenIn]
+      const tokenOutContractId = TOKEN_LIST[tokenOut]
+      //const refContractId = 'ref-finance-101.testnet'
+      const refContractId = "v2.ref-finance.near"
+      let connectionConfig = getConnectionConfig('mainnet')
       const nearConnection = await connect(connectionConfig)
       const userAccount = await nearConnection.account(accountId)
 
@@ -115,7 +116,8 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
         viewMethods: [
           'storage_balance_of',
           'storage_balance_bounds',
-          'ft_metadata'
+          'ft_metadata',
+          'ft_balance_of'
         ],
         changeMethods: []
       }) as unknown as NEP141_Contract
@@ -134,13 +136,7 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
         changeMethods: []
       }) as unknown as REF_Contract
 
-      // // get decimals of tokenIn contract
-      // const metadata = await contract.ft_metadata();
-      // const decimals = metadata.decimals;
-      // const unit_convert = 10**decimals
-      // console.log(`Decimals of ${tokenIn} contract: ${unit_convert}`);
-
-      console.log('accountId', accountId)
+      // console.log('accountId', accountId)
       // get storage balance of user in tokenIn contract
       const storageBalanceOfTokenIn = await tokenInContract.storage_balance_of({
         account_id: accountId
@@ -198,6 +194,27 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
         }
       }
       let tx = []
+      const balanceOfWrappedNEAR = await tokenInContract.ft_balance_of({ account_id: accountId });
+      const amountInInYocto = utils.format.parseNearAmount(amountIn) || '0';
+      console.log("balanceOfWrappedNEAR: ", balanceOfWrappedNEAR)
+      console.log("amountIn: ", amountInInYocto)
+      if(tokenIn == "NEAR" && BigInt(balanceOfWrappedNEAR) < BigInt(amountInInYocto)){
+        const amountInYocto = String(BigInt(amountInInYocto) - BigInt(balanceOfWrappedNEAR));
+        const nearDeposit: FunctionCallAction = {
+          type: 'FunctionCall',
+          params: {
+              methodName: 'near_deposit',
+              args: {},
+              gas: THIRTY_TGAS,
+              deposit: amountInYocto || '0'
+          }
+        }
+        tx.push({
+          receiverId: tokenInContractId,
+          actions: [nearDeposit]
+        })
+      }
+
       if (!storageBalanceOfTokenIn || storageBalanceOfTokenIn.total == '0') {
         console.log('tokenIn not registered!')
         tx.push({
