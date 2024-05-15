@@ -194,12 +194,21 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
         }
       }
       let tx = []
-      const balanceOfWrappedNEAR = await tokenInContract.ft_balance_of({ account_id: accountId });
-      const amountInInYocto = utils.format.parseNearAmount(amountIn) || '0';
-      console.log("balanceOfWrappedNEAR: ", balanceOfWrappedNEAR)
-      console.log("amountIn: ", amountInInYocto)
-      if(tokenIn == "NEAR" && BigInt(balanceOfWrappedNEAR) < BigInt(amountInInYocto)){
-        const amountInYocto = String(BigInt(amountInInYocto) - BigInt(balanceOfWrappedNEAR));
+      if (!storageBalanceOfTokenIn || storageBalanceOfTokenIn.total == '0') {
+        console.log('tokenIn not registered!')
+        tx.push({
+          receiverId: tokenInContractId,
+          actions: [storageDepositForTokenA]
+        })
+      }
+
+      // const balanceOfWrappedNEAR = await tokenInContract.ft_balance_of({ account_id: accountId });
+      // const amountInInYocto = utils.format.parseNearAmount(amountIn) || '0';
+      // console.log("balanceOfWrappedNEAR: ", balanceOfWrappedNEAR)
+      // console.log("amountIn: ", amountInInYocto)
+      if(tokenIn == "NEAR" /*&& BigInt(balanceOfWrappedNEAR) < BigInt(amountInInYocto)*/){
+        console.log("NEAR -> wNEAR")
+        const amountInYocto = utils.format.parseNearAmount(amountIn) || '0';
         const nearDeposit: FunctionCallAction = {
           type: 'FunctionCall',
           params: {
@@ -213,23 +222,7 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
           receiverId: tokenInContractId,
           actions: [nearDeposit]
         })
-      }
-
-      if (!storageBalanceOfTokenIn || storageBalanceOfTokenIn.total == '0') {
-        console.log('tokenIn not registered!')
-        tx.push({
-          receiverId: tokenInContractId,
-          actions: [storageDepositForTokenA]
-        })
-        // await wallet.signAndSendTransactions({
-        //   transactions:[
-        //     {
-        //       receiverId: tokenInContractId,
-        //       actions: [storageDepositForTokenA]
-        //     }
-        //   ]
-        // })
-      }
+      }      
 
       if (!storageBalanceOfTokenOut || storageBalanceOfTokenOut.total == '0') {
         console.log('tokenOut not registered!')
@@ -237,14 +230,6 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
           receiverId: tokenOutContractId,
           actions: [storageDepositForTokenB]
         })
-        // await wallet.signAndSendTransactions({
-        //   transactions:[
-        //     {
-        //       receiverId: tokenOutContractId,
-        //       actions: [storageDepositForTokenB]
-        //     }
-        //   ]
-        // })
       }
 
       if (!storageBalanceOfRef || storageBalanceOfRef.total == '0') {
@@ -253,14 +238,6 @@ export function PerformSwap({ payload }: { payload: SwapPayload }) {
           receiverId: refContractId,
           actions: [storageDepositForRef]
         })
-        // await wallet.signAndSendTransactions({
-        //   transactions:[
-        //     {
-        //       receiverId: refContractId,
-        //       actions: [storageDepositForRef]
-        //     }
-        //   ]
-        // })
       }
 
       console.log('storage tx: ', tx)
