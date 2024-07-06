@@ -45,6 +45,8 @@ import { v4 as uuidv4 } from 'uuid'
 import { WalletSelectorContextProvider } from '@/components/contexts/WalletSelectorContext'
 import { useInputJSONStore, useTransferTokenStore } from '@/lib/store/store'
 import { FC } from 'react'
+import main from '@/utils/aiIndex'
+import 'dotenv/config'
 
 // export type OpenAIModelID = string;
 interface HomeProps {
@@ -165,6 +167,26 @@ const Home: FC = ({}) => {
   //   fetchData()
   // }, [])
 
+  function stringToReadableStream(text: string) {
+    const encoder = new TextEncoder();
+    const encodedText = encoder.encode(text);
+    let offset = 0;
+
+    return new ReadableStream({
+        pull(controller) {
+            const chunkSize = 1024;
+            if (offset < encodedText.length) {
+                const chunk = encodedText.slice(offset, offset + chunkSize);
+                controller.enqueue(chunk);
+                offset += chunkSize;
+            } else {
+                controller.close();
+            }
+        }
+    });
+}
+
+
   const handleSend = async (
     message: Message,
     deleteCount = 0,
@@ -256,25 +278,82 @@ const Home: FC = ({}) => {
 
       const controller = new AbortController()
 
-      const response = await fetch('api/message', {
-        method: 'POST',
-        body: JSON.stringify({
-          messages: updatedConversation.messages,
-          prompt: updatedConversation.prompt,
-          address:
-            '9b5adfd2530b9c2657b088cfc8755e3c25a6cef7fb9b44c659d12b2bd30a3f62' //test only
-        }),
-        signal: controller.signal
-      })
+      const execute = async(inputObj: any)  => {
+        const inputJson = JSON.stringify(inputObj);
+        console.log('INPUT:', inputJson);
+    
+        const { method, path, queries, secret, headers, body } = inputObj;
+    
+        // Replace this with your actual secret key directly for the client-side
+        const openaiApiKey = 'sk-qVBlJkO3e99t81623PsB0zHookSQJxU360gDMooLenN01gv2'
+        console.log('openaiApiKey',openaiApiKey)
+    
+        let result = '';
+    
+        try {
+            const response = await fetch('https://api.red-pill.ai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${openaiApiKey}`,
+                },
+                body: JSON.stringify({
+                    messages: [{ role: "user", content: queries.chatQuery[0] }],
+                    model: queries.openAiModel[0],
+                }),
+            });
+    
+            if (!response.ok) {
+                throw new Error('Error fetching chat completion');
+            }
+    
+            const responseData = await response.json();
+            result = responseData.choices[0].message.content;
+        } catch (error) {
+            console.error('Error fetching chat completion:', error);
+            result = error.message;
+        }
+    
+        return result;
+    }
 
-      if (!response.ok) {
+    console.log('message', message)
+    
+    
+    const response = await execute({
+        method: 'GET',
+        path: '/ipfs/QmVHbLYhhYA5z6yKpQr4JWr3D54EhbSsh7e7BFAAyrkkMf',
+        queries: {
+            chatQuery: [message.content],
+            openAiModel: ["gpt-4o"]
+        },
+        secret: { openaiApiKey: process.env.OPENAI_API_KEY },
+        headers: {},
+    });
+
+      // const response = await fetch('api/message', {
+      //   method: 'GET',
+      //   body: JSON.stringify({
+      //     messages: updatedConversation.messages,
+      //     prompt: updatedConversation.prompt,
+      //     address:
+      //       '9b5adfd2530b9c2657b088cfc8755e3c25a6cef7fb9b44c659d12b2bd30a3f62' //test only
+      //   }),
+      //   signal: controller.signal
+      // })
+
+      console.log('response', response)
+
+      // return response
+
+      if (!response) {
         setMessageLoading(false)
         setMessageIsStreaming(false)
-        toast.error(response.statusText)
+        toast.error(response)
         return
       }
 
-      const data = response.body
+      const data = response
 
       if (!data) {
         setMessageLoading(false)
@@ -296,7 +375,9 @@ const Home: FC = ({}) => {
 
         setMessageLoading(false)
 
-        const reader = data.getReader()
+        const stream = stringToReadableStream(data);
+
+        const reader = stream.getReader()
         const decoder = new TextDecoder()
         let done = false
         let isFirst = true

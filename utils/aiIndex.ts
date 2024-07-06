@@ -1,8 +1,7 @@
-import { Request, Response, route } from '../../../utils/httpSupport'
-import { renderHtml } from '../../../utils/uiSupport'
+import { Request, Response, route } from './httpSupport'
+import { renderHtml } from './uiSupport'
 
-export async function GET(req: Request): Promise<Response> {
-    console.log('req', req)
+async function GET(req: Request): Promise<Response> {
     const secret = req.queries?.key ?? '';
     const openaiApiKey = req.secret?.openaiApiKey as string;
     const openAiModel = 'gpt-4o';
@@ -31,10 +30,10 @@ export async function GET(req: Request): Promise<Response> {
     return new Response(renderHtml(result));
 }
 
-export async function POST(req: Request): Promise<Response> {
+async function POST(req: Request): Promise<Response> {
     return new Response('Not Implemented')
 }
- 
+
 export default async function main(request: string) {
     return await route({ GET, POST }, request)
 }
