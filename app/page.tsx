@@ -65,7 +65,7 @@ const Home: FC = ({}) => {
   const [messageLoading, setMessageLoading] = useState<boolean>(false)
   const [lightMode, setLightMode] = useState<'dark' | 'light'>('dark')
   const [messageIsStreaming, setMessageIsStreaming] = useState<boolean>(false)
-
+  const [session, setSession] = useState(0);
   const [modelError, setModelError] = useState<ErrorMessage | null>(null)
 
   const [models, setModels] = useState<OpenAIModel[]>([])
@@ -78,7 +78,8 @@ const Home: FC = ({}) => {
   const [currentMessage, setCurrentMessage] = useState<Message>()
 
   const [showSidebar, setShowSidebar] = useState<boolean>(true)
-
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [prompts, setPrompts] = useState<Prompt[]>([])
   // const [showPromptbar, setShowPromptbar] = useState<boolean>(true)
   const { setInputJSON, setTransferObject, setSwapObject, setStakeObject } =
@@ -841,10 +842,12 @@ const Home: FC = ({}) => {
     }
   }, [serverSideApiKeyIsSet])
 
+  
+
   return (
     <>
       <Head>
-        <title>Sender OS</title>
+        <title>ZETA AI</title>
         <meta name="description" content="ChatGPT but better." />
         <meta
           name="viewport"
@@ -853,7 +856,48 @@ const Home: FC = ({}) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       {/* <WalletSelectorContextProvider> */}
-      {selectedConversation && (
+      {
+        selectedConversation && session == 0 && (
+          <div
+          className={`flex h-screen w-screen flex-col text-sm text-black dark:text-white ${lightMode}`}
+        >
+           <div className="flex h-full w-full pt-[48px] sm:pt-0 justify-center items-center">
+            <div className='w-[30rem] h-60 border-black border-2 rounded-xl'>
+            <div className="grid w-full items-center gap-1.5 p-2">
+        <label htmlFor="email">Email</label>
+        <input
+          className="w-full border-2 border-black"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          id="email"
+          type="email"
+        />
+      </div>
+      <div className="grid w-full items-center gap-1.5 p-2">
+        <label htmlFor="password">Password</label>
+        <input
+          className="w-full border-2 border-black"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          id="password"
+          type="password"
+        />
+      </div>
+      <div className='flex justify-center items-center mt-5'>
+      <button className='w-1/2 border-2 border-black rounded-lg flex justify-center items-center' onClick={() => setSession(1)}>
+Login
+</button>
+      </div>
+     
+            </div>
+          </div>
+        </div>
+        )
+      }
+
+      {selectedConversation && session == 1 && (
         <main
           className={`flex h-screen w-screen flex-col text-sm text-white dark:text-white ${lightMode}`}
         >

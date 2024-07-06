@@ -357,6 +357,11 @@ export const ChatInput: FC<Props> = ({
     editor.commands.setContent(newContent)
   }
 
+  const handleSetAndSendContents = (content: string) => {
+    handleSetContents(content)
+    handleSend()
+  }
+
   return (
     <div
       className={`${conversationIsEmpty ? 'h-full flex justify-center items-start ' : ''}`}
@@ -365,36 +370,15 @@ export const ChatInput: FC<Props> = ({
         <div className="w-full border-transparent  pt-6 md:pt-2">
           <div className="flex gap-2 justify-center flex-col items-center">
             <h1 className="font-raleway font-medium text-6xl text-[#141C2A]">
-              Sender <span className="font-raleway font-light">OS</span>{' '}
+              Zeta <span className="font-raleway font-light">AI</span>{' '}
             </h1>
             <p className=" text-xl text-[#9CA8B4]">How can I help you today</p>
           </div>
 
-          <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
+          {/* <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
             <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md bg-white sm:mx-4">
               <div className="relative flex max-h-60 max-w-full mx-2 lg:mx-0 gradientBorder p-4 grow flex-col overflow-x-auto border-transparent overflow-y-auto">
                 <div className="flex items-end mt-4">
-                  {/* <textarea
-                  ref={textareaRef}
-                  className="min-h-[40px] py-4 w-full resize-none pr-4 focus-within:outline-none sm:text-sm bg-transparent text-black"
-                  style={{
-                    resize: 'none',
-                    // bottom: '0px',
-                    bottom: `${textareaRef?.current?.scrollHeight}px`,
-                    maxHeight: '400px',
-                    overflow: `${
-                      textareaRef.current && textareaRef.current.scrollHeight > 400
-                        ? 'auto'
-                        : 'hidden'
-                    }`,
-                  }}
-                  value={content}
-                  rows={1}
-                  onCompositionStart={() => setIsTyping(true)}
-                  onCompositionEnd={() => setIsTyping(false)}
-                  onChange={handleChange}
-                  onKeyDown={handleKeyDown}
-                /> */}
                   <EditorContent
                     className="min-h-[40px] py-4 w-full resize-none pr-4 focus-within:outline-none sm:text-sm bg-transparent text-black overflow-y-auto"
                     editor={editor}
@@ -456,7 +440,25 @@ export const ChatInput: FC<Props> = ({
                 </div>
               </div>
             </div>
+          </div> */}
+
+          <div className='w-full h-full flex justify-center items-center gap-5 mt-10'>
+            <div className='w-60 h-20 border border-black text-black flex justify-center items-center cursor-pointer' onClick={() => {
+                        handleSetAndSendContents('1')
+                      }}>
+1
+            </div>
+            <div className='w-60 h-20 border border-black text-black flex justify-center items-center cursor-pointer'>
+2
+            </div>
+            <div className='w-60 h-20 border border-black text-black flex justify-center items-center cursor-pointer'>
+3
+            </div>
+            <div className='w-60 h-20 border border-black text-black flex justify-center items-center cursor-pointer'>
+4
+            </div>
           </div>
+
         </div>
       ) : (
         <div className="absolute bottom-0 left-0 w-full border-transparent bg-gradient-to-b from-transparent via-white to-white pt-6 md:pt-2">
