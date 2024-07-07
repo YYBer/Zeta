@@ -170,7 +170,7 @@ export const Chat: FC<Props> = memo(
               ref={chatContainerRef}
               onScroll={handleScroll}
             >
-              <Image className='p-6' src={'/senderOS_top_logo.svg'} alt="intent" width={200} height={100} />
+              <Image className='p-6' src={'/zeta.svg'} alt="intent" width={200} height={100} />
 
               {conversation.messages.length === 0 ? (
                 <>

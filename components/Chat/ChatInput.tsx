@@ -549,7 +549,7 @@ export const ChatInput: FC<Props> = ({
                   className="w-full bg-black"
                   style={{ height: '1px' }}
                 ></div>
-                <div className="flex justify-start max-w-full py-4 overflow-x-auto gap-3">
+                {/* <div className="flex justify-start max-w-full py-4 overflow-x-auto gap-3">
                   <div className="flex gap-1 items-center">
                     <Image
                       src={'/intent.png'}
@@ -571,7 +571,7 @@ export const ChatInput: FC<Props> = ({
                       </div>
                     </div>
                   ))}
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

@@ -56,7 +56,7 @@ export default function LoginWallet({ onWalletConnect }: LoginWalletProps) {
         // </div>
       ) : (
         <div className='navbar-nav pt-1 flex items-center justify-center'>
-          <button className="btn btn-secondary bg-white w-52 text-black rounded-3xl h-10" onClick={onLoginWallet} > Sign In </button>
+          {/* <button className="btn btn-secondary bg-white w-52 text-black rounded-3xl h-10" onClick={onLoginWallet} > Sign In </button> */}
         </div>
       )}
     </div>

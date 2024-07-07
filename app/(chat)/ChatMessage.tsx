@@ -271,7 +271,7 @@ export const ChatMessage: FC<Props> = memo(
             {message.role === 'assistant' ? (
               <Image
                 className="float-right"
-                src="/brand-logo.svg"
+                src="/zetaLogo.svg"
                 alt="brand-logo"
                 width={30}
                 height={30}
@@ -283,7 +283,7 @@ export const ChatMessage: FC<Props> = memo(
 
           <div className="prose mt-[-2px] w-full">
             {message.role === 'assistant' ? (
-              <p className="text-lg font-semibold mb-2">Sender</p>
+              <p className="text-lg font-semibold mb-2">Zeta</p>
             ) : (
               <p className="text-lg font-semibold mb-2">User</p>
             )}
