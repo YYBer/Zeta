@@ -442,20 +442,26 @@ export const ChatInput: FC<Props> = ({
             </div>
           </div> */}
 
-          <div className='w-full h-full flex justify-center items-center gap-5 mt-10'>
+<div className='w-full h-full flex justify-center items-center gap-5 mt-10'>
             <div className='w-60 h-20 border border-black text-black flex justify-center items-center cursor-pointer' onClick={() => {
-                        handleSetAndSendContents('1')
+                        handleSetAndSendContents('Stock')
                       }}>
-1
+Stock
             </div>
-            <div className='w-60 h-20 border border-black text-black flex justify-center items-center cursor-pointer'>
-2
+            <div className='w-60 h-20 border border-black text-black flex justify-center items-center cursor-pointer' onClick={() => {
+                        handleSetAndSendContents('DeFi')
+                      }}>
+DeFi
             </div>
-            <div className='w-60 h-20 border border-black text-black flex justify-center items-center cursor-pointer'>
-3
+            <div className='w-60 h-20 border border-black text-black flex justify-center items-center cursor-pointer' onClick={() => {
+                        handleSetAndSendContents('RWA')
+                      }}>
+RWA
             </div>
-            <div className='w-60 h-20 border border-black text-black flex justify-center items-center cursor-pointer'>
-4
+            <div className='w-60 h-20 border border-black text-black flex justify-center items-center cursor-pointer' onClick={() => {
+                        handleSetAndSendContents('Buy')
+                      }}>
+Buy
             </div>
           </div>
 
