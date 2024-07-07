@@ -455,7 +455,7 @@ const Home: FC = ({}) => {
           done = doneReading
           const chunkValue = decoder.decode(value)
 
-          // console.log('chunkValue', chunkValue)
+          console.log('chunkValue', chunkValue)
 
           if (chunkValue.includes('{')) {
             if (chunkValue.length > 0) {

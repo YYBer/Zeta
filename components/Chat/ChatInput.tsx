@@ -459,7 +459,7 @@ DeFi
 RWA
             </div>
             <div className='w-60 h-20 border border-black text-black flex justify-center items-center cursor-pointer' onClick={() => {
-                        handleSetAndSendContents('Buy')
+                        handleSetAndSendContents('Buy 1 Near token')
                       }}>
 Buy
             </div>
