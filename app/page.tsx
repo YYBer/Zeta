@@ -47,6 +47,7 @@ import { useInputJSONStore, useTransferTokenStore } from '@/lib/store/store'
 import { FC } from 'react'
 import main from '@/utils/aiIndex'
 import 'dotenv/config'
+import { useRouter } from 'next/navigation';
 
 // export type OpenAIModelID = string;
 interface HomeProps {
@@ -78,6 +79,7 @@ const Home: FC = ({}) => {
   const [selectedConversation, setSelectedConversation] =
     useState<Conversation>()
   const [currentMessage, setCurrentMessage] = useState<Message>()
+  const router = useRouter()
 
   const [showSidebar, setShowSidebar] = useState<boolean>(true)
   const [email, setEmail] = useState('')
@@ -289,6 +291,66 @@ const Home: FC = ({}) => {
         console.log('openaiApiKey',openaiApiKey)
     
         let result = '';
+        // if (queries.chatQuery && queries.chatQuery[0] === "buy") {
+        //   const response = inputJson;
+        // }
+        if (queries.chatQuery && queries.chatQuery[0] === "BNB price predict") {
+          window.open('http://model-v2-api-471546444.us-east-1.elb.amazonaws.com:8001/api/v1/predict/0xB8c77482e45F1F44dE1745F52C74426C631bDD52');
+
+          try {
+            const response = await fetch('http://model-v2-api-471546444.us-east-1.elb.amazonaws.com:8001/api/v1/predict/0xB8c77482e45F1F44dE1745F52C74426C631bDD52');
+            console.log(response)
+              if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+              }
+      
+              const data = await response.json();
+              console.log(data);
+          } catch (error) {
+              console.error('Error fetching BNB price prediction:', error);
+          }
+        }
+
+        console.log('2', queries.chatQuery)
+
+      if (queries.chatQuery && queries.chatQuery[0] === "ENS price predict") {
+        console.log('2')
+        window.open('http://model-v2-api-471546444.us-east-1.elb.amazonaws.com:8001/api/v1/predict/0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72');
+
+        try {
+            const response = await fetch('http://model-v2-api-471546444.us-east-1.elb.amazonaws.com:8001/api/v1/predict/0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72')
+    
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+    
+            const data = await response.json();
+            console.log(data);
+        } catch (error) {
+            console.error('Error fetching ENS price prediction:', error);
+        }
+      }
+    if (queries.chatQuery && queries.chatQuery[0] === "BTC price predict") {
+      window.open('http://model-v2-api-471546444.us-east-1.elb.amazonaws.com:8001/api/v1/predict/0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599');
+
+
+      try {
+          const response = await fetch('http://model-v2-api-471546444.us-east-1.elb.amazonaws.com:8001/api/v1/predict/0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', {
+              method: 'GET'
+          });
+  
+          if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+          }
+  
+          const data = await response.json();
+          console.log(data);
+      } catch (error) {
+          console.error('Error fetching BTC price prediction:', error);
+      }
+    }
+      
+
     
         try {
             const response = await fetch('https://api.red-pill.ai/v1/chat/completions', {
